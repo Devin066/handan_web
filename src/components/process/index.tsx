@@ -17,7 +17,7 @@ const ProcessList: React.FC = () => {
 
   const [createProcess] = useCreateProcessMutation({
     onCompleted: () => {
-      messageApi?.success('创建成功');
+      messageApi?.success('Created successfully');
       handleReloadTable();
     },
     onError,
@@ -35,12 +35,12 @@ const ProcessList: React.FC = () => {
 
   const columns: ProColumns<any>[] = [
     {
-      title: '名称',
+      title: 'Name',
       key: 'name',
       dataIndex: 'name',
     },
     {
-      title: '创建时间',
+      title: 'Created At',
       search: false,
       dataIndex: 'insertedAt',
       valueType: 'dateTime',

@@ -19,10 +19,10 @@ const SalesInvoiceNew = (props: any) => {
   return (
     <div>
       <Button size="small" type="link" onClick={() => setVisible(true)}>
-        添加收款凭证
+        Add Receipt Voucher
       </Button>
       <Popover
-        title="添加收款凭证"
+        title="Add Receipt Voucher"
         overlayInnerStyle={{ width: '200px' }}
         content={
           <ProForm onFinish={onFinish} initialValues={{ salesOrderUuid: record.uuid }}>
@@ -30,9 +30,9 @@ const SalesInvoiceNew = (props: any) => {
             <ProFormText
               width="sm"
               name="amount"
-              label="收款金额"
-              placeholder="请输入金额"
-              rules={[{ required: true, message: '请输入金额' }]}
+              label="Receipt Amount"
+              placeholder="Enter amount"
+              rules={[{ required: true, message: 'Enter amount' }]}
             />
           </ProForm>
         }

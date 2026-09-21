@@ -42,7 +42,7 @@ const ReportJobCard = (props: any) => {
           setModalVisible(true);
         }}
       >
-        生产报工
+        Report Job Card
       </Button>
 
       <ModalForm
@@ -53,7 +53,7 @@ const ReportJobCard = (props: any) => {
         }}
         width={'70%'}
         onOpenChange={setModalVisible}
-        title={<Space>生产报工</Space>}
+        title={<Space>Report Job Card</Space>}
         submitTimeout={2000}
         autoFocusFirstInput
         open={modalVisible}
@@ -63,43 +63,43 @@ const ReportJobCard = (props: any) => {
           <ProFormSelect
             width="sm"
             name="staffUuid"
-            label="员工"
+            label="Employee"
             request={async (e) => fetchStaff(e)}
-            placeholder="请选择员工"
-            rules={[{ required: true, message: '请选择员工' }]}
+            placeholder="Select employee"
+            rules={[{ required: true, message: 'Select employee' }]}
           />
 
           <ProFormDigit
             width="sm"
             name="producedQty"
-            label="生产数量"
+            label="Produced Qty"
             fieldProps={{
               precision: 0,
             }}
-            placeholder="请输入生产数量"
-            rules={[{ required: true, message: '请输入生产数量' }]}
+            placeholder="Enter produced qty"
+            rules={[{ required: true, message: 'Enter produced qty' }]}
           />
 
           {/* <ProFormDigit
             width="sm"
             name="defectiveQty"
-            label="缺陷数量"
+            label="Defective Qty"
             fieldProps={{
               precision: 0,
             }}
-            placeholder="请输入缺陷数量"
-            rules={[{ required: true, message: '请输入缺陷数量' }]}
+            placeholder="Enter defective qty"
+            rules={[{ required: true, message: 'Enter defective qty' }]}
           /> */}
 
           <ProFormDateTimePicker
             name="startTime"
-            label="开始时间"
-            rules={[{ required: true, message: '请输入开始时间' }]}
+            label="Start Time"
+            rules={[{ required: true, message: 'Enter start time' }]}
           />
           <ProFormDateTimePicker
             name="endTime"
-            label="结束时间"
-            rules={[{ required: true, message: '请输入结束时间' }]}
+            label="End Time"
+            rules={[{ required: true, message: 'Enter end time' }]}
           />
         </ProForm.Group>
       </ModalForm>

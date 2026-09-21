@@ -8,17 +8,17 @@ import { WarehousesDocument } from '@/gql';
 const WarehouseList: React.FC = () => {
   const columns: ProColumns<any>[] = [
     {
-      title: '名称',
+      title: 'Name',
       dataIndex: 'name',
       key: 'name',
     },
     {
-      title: '地址',
+      title: 'Address',
       dataIndex: 'address',
       key: 'address',
     },
     {
-      title: '创建时间',
+      title: 'Created At',
       dataIndex: 'insertedAt',
       valueType: 'dateTime',
     },

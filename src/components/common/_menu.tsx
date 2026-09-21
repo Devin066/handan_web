@@ -15,142 +15,142 @@ const menuProps = {
     routes: [
       {
         path: '/dashboard',
-        name: '首页',
+        name: 'Dashboard',
         icon: <DashboardOutlined />,
       },
       {
         path: '/selling',
-        name: '销售管理',
+        name: 'Selling',
         icon: <ProfileOutlined />,
         routes: [
           {
             path: '/selling/sales-orders',
-            name: '销售订单',
+            name: 'Sales Orders',
           },
           {
             path: '/selling/customers',
-            name: '客户管理',
+            name: 'Customers',
           },
           {
             path: '/selling/stats',
-            name: '销售统计',
+            name: 'Sales Stats',
           },
         ],
       },
       {
         path: '/purchasing',
-        name: '采购管理',
+        name: 'Purchasing',
         icon: <ShoppingCartOutlined />,
         routes: [
           {
             path: '/purchasing/purchase-orders',
-            name: '采购订单',
+            name: 'Purchase Orders',
           },
           {
             path: '/purchasing/suppliers',
-            name: '供应商管理',
+            name: 'Suppliers',
           },
           {
             path: '/purchasing/stats',
-            name: '采购统计',
+            name: 'Purchase Stats',
           },
         ],
       },
       {
         path: '/production',
-        name: '生产管理',
+        name: 'Production',
         icon: <RocketOutlined />,
         routes: [
           {
             path: '/production/work-orders',
-            name: '生产工单',
+            name: 'Work Orders',
           },
           {
             path: '/production/work-order-items',
-            name: '生产任务',
+            name: 'Work Order Items',
           },
           {
             path: '/production/boms',
-            name: 'BOM 管理',
+            name: 'BOM Management',
           },
           {
             path: '/production/processes',
-            name: '生产工序',
+            name: 'Processes',
           },
           {
-            name: '生产班组',
+            name: 'Workstations',
             path: '/production/workstations',
           },
         ],
       },
       {
         path: '/stock',
-        name: '库存管理',
+        name: 'Stock',
         icon: <BookOutlined />,
         routes: [
           {
-            name: '出库记录',
+            name: 'Delivery Notes',
             path: '/stock/delivery-notes',
           },
           {
-            name: '入库记录',
+            name: 'Receipt Notes',
             path: '/stock/receipt-notes',
           },
           {
-            name: '库存记录',
+            name: 'Inventory Entries',
             path: '/stock/inventory-entries',
           },
         ],
       },
       {
         path: '/finance',
-        name: '财务管理',
+        name: 'Finance',
         icon: <PayCircleOutlined />,
         routes: [
           {
-            name: '销售收款凭证',
+            name: 'Sales Invoices',
             path: '/finance/sales-invoices',
           },
           {
-            name: '采购付款凭证',
+            name: 'Purchase Invoices',
             path: '/finance/purchase-invoices',
           },
           {
-            name: '交易记录',
+            name: 'Payment Entries',
             path: '/finance/payment-entries',
           },
           {
-            name: '支付方式',
+            name: 'Payment Methods',
             path: '/finance/payment-methods',
           },
         ],
       },
       {
         path: '/setup',
-        name: '产品管理',
+        name: 'Products',
         icon: <DatabaseOutlined />,
         routes: [
           {
             path: '/setup/items',
-            name: '产品档案',
+            name: 'Items',
           },
           {
             path: '/setup/uoms',
-            name: '计量单位',
+            name: 'Units of Measure',
           },
           {
             path: '/setup/warehouses',
-            name: '仓库管理',
+            name: 'Warehouses',
           },
         ],
       },
       {
         path: '/system',
-        name: '系统设置',
+        name: 'Settings',
         icon: <SettingOutlined />,
         routes: [
           {
-            name: '成员管理',
+            name: 'Members',
             path: '/system/users',
           },
         ],

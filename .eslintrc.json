@@ -1,6 +1,6 @@
 {
   "extends": "next/core-web-vitals",
-  "ignorePatterns": ["node_modules/", "dist/", "build/", "coverage/", "src/gql/"],
+  "ignorePatterns": ["node_modules/", "dist/", "build/", "coverage/", "src/gql/", "src/generated/"],
   "plugins": [
     "react",
     "prettier",

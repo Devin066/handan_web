@@ -2,10 +2,6 @@ import { from, ApolloClient, ApolloLink, HttpLink, InMemoryCache } from '@apollo
 import { RetryLink } from '@apollo/client/link/retry';
 import { onError } from '@apollo/client/link/error';
 
-// import {message as AM} from 'antd';
-
-// const API_URL = `${process.env.APP_API}/api`;
-
 // // const REFRESH_AUTHENTICATION_MUTATION = `
 // //   mutation Refresh($request: RefreshRequest!) {
 // //     refresh(request: $request) {
@@ -15,9 +11,12 @@ import { onError } from '@apollo/client/link/error';
 // //   }
 // // `;
 
+// Defaults to this app's own /api/graphql route. Set NEXT_PUBLIC_HANDAN_API only
+// when pointing at a backend on another origin.
 const httpLink = new HttpLink({
-  uri: `${process.env.NEXT_PUBLIC_HANDAN_API}/api`,
-  fetchOptions: 'no-cors',
+  uri: process.env.NEXT_PUBLIC_HANDAN_API
+    ? `${process.env.NEXT_PUBLIC_HANDAN_API}/api/graphql`
+    : '/api/graphql',
   fetch
 });
 
@@ -47,7 +46,7 @@ const authLink = new ApolloLink((operation, forward) => {
     return forward(operation);
   }
 
-  // TODO [ ] 如果过期应该如何处理
+  // TODO [ ] handle token expiration
   operation.setContext({
     headers: {
       Authorization: accessToken ? `Bearer ${accessToken}` : '',

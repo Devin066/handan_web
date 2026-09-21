@@ -14,28 +14,28 @@ import React, { useState } from 'react';
 const GITHUB_URL = 'https://github.com/zven21/handan';
 const HELP_URL = 'https://github.com/zven21/handan/blob/master/README.md';
 
-// 通知数据（功能开发中）
+// Notification data (work in progress)
 const mockNotifications: any[] = [];
 
-// 快捷操作菜单（简化版）
+// Quick actions menu (simplified)
 const quickActions = [
   {
     key: 'sales-order',
-    label: '销售订单',
+    label: 'Sales Orders',
     icon: <ShoppingCartOutlined />,
     color: '#1890ff',
     path: '/selling/sales-orders',
   },
   {
     key: 'purchase-order',
-    label: '采购订单',
+    label: 'Purchase Orders',
     icon: <ShopOutlined />,
     color: '#52c41a',
     path: '/purchasing/purchase-orders',
   },
   {
     key: 'item',
-    label: '产品管理',
+    label: 'Products',
     icon: <AppstoreAddOutlined />,
     color: '#722ed1',
     path: '/setup/items',
@@ -47,24 +47,24 @@ interface HeaderActionsProps {
 }
 
 /**
- * 头部操作按钮组件
- * 包含：通知、快捷操作、GitHub、帮助文档
+ * Header action buttons component
+ * includes: notifications, Quick Actions, GitHub, Help
  */
 const HeaderActions: React.FC<HeaderActionsProps> = ({ isMobile = false }) => {
   const router = useRouter();
   const [popoverVisible, setPopoverVisible] = useState(false);
 
-  // 移动端或服务端渲染时不显示
+  // Hidden on mobile and during server-side rendering
   if (isMobile) return null;
   if (typeof window === 'undefined') return null;
 
-  // 处理快捷操作点击
+  // Handle quick action click
   const handleQuickAction = (path: string) => {
     setPopoverVisible(false);
     router.push(path);
   };
 
-  // 通知内容
+  // Notification content
   const notificationContent = (
     <div style={{ width: 320 }}>
       {mockNotifications.length > 0 ? (
@@ -80,13 +80,13 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ isMobile = false }) => {
       ) : (
         <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
           <BellOutlined style={{ fontSize: 48, marginBottom: 16, color: '#d9d9d9' }} />
-          <div style={{ fontSize: 14 }}>暂无通知</div>
+          <div style={{ fontSize: 14 }}>No notifications</div>
         </div>
       )}
     </div>
   );
 
-  // 快捷操作内容
+  // Quick actions content
   const quickActionsContent = (
     <div style={{ width: 220 }}>
       <List
@@ -131,7 +131,7 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ isMobile = false }) => {
       <Popover
         key="notification"
         content={notificationContent}
-        title="系统通知"
+        title="Notifications"
         trigger="click"
         placement="bottomRight"
       >
@@ -143,7 +143,7 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ isMobile = false }) => {
       <Popover
         key="quick-actions"
         content={quickActionsContent}
-        title="快捷操作"
+        title="Quick Actions"
         trigger="click"
         placement="bottomRight"
         open={popoverVisible}
@@ -173,7 +173,7 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ isMobile = false }) => {
         style={{ display: 'flex', alignItems: 'center', gap: 4 }}
       >
         <QuestionCircleOutlined />
-        帮助文档
+        Help
       </a>
     </>
   );

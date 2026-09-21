@@ -2,6 +2,7 @@ import { ApolloProvider } from '@apollo/client';
 import { useRouter } from 'next/router';
 import type { ReactNode } from 'react';
 import { ConfigProvider } from 'antd';
+import enUS from 'antd/locale/en_US';
 
 import theme from './theme';
 import client from '@/gql/apollo';
@@ -16,14 +17,16 @@ const Providers = ({ children }: { children: ReactNode }) => {
   if (noAuthRoutes.includes(router.pathname)) {
     return (
       <ErrorBoundary>
-        <ApolloProvider client={client}>{children}</ApolloProvider>
+        <ConfigProvider locale={enUS} theme={theme}>
+          <ApolloProvider client={client}>{children}</ApolloProvider>
+        </ConfigProvider>
       </ErrorBoundary>
     );
   }
 
   return (
     <ErrorBoundary>
-      <ConfigProvider theme={theme}>
+      <ConfigProvider locale={enUS} theme={theme}>
         <ApolloProvider client={client}>
           <MessageProvider>
             <Layout>{children}</Layout>

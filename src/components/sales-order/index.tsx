@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
-import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
-import { Popconfirm, Tag, Button } from 'antd';
+import { Popconfirm, Button } from 'antd';
 import size from 'lodash.size';
 
 // locale
@@ -15,6 +14,9 @@ import {
 } from '@/gql';
 import { onError } from '@/utils';
 import { fetchCustomers } from '@/utils/api';
+import { salesOrderStatusEnum, salesOrderDeliveryStatusEnum, salesOrderBillingStatusEnum } from '@/utils/enum';
+import DataTable from '@/components/shared/data-table';
+import { amountBreakdownColumn, codeColumn, progressColumn, statusColumn } from '@/components/shared/columns';
 
 import SalesOrderNew from './new';
 import SalesOrderDetail from './detail';
@@ -28,7 +30,7 @@ const SalesOrderList: React.FC = () => {
 
   const [createSalesOrder] = useCreateSalesOrderMutation({
     onCompleted: () => {
-      messageApi?.success('销售订单创建成功');
+      messageApi?.success('Sales order created successfully');
       handleReloadTable();
     },
     onError,
@@ -36,7 +38,7 @@ const SalesOrderList: React.FC = () => {
 
   const [createDeliveryNote] = useCreateDeliveryNoteMutation({
     onCompleted: () => {
-      messageApi?.success('出库凭证创建成功');
+      messageApi?.success('Delivery note created successfully');
       handleReloadTable();
     },
     onError,
@@ -44,7 +46,7 @@ const SalesOrderList: React.FC = () => {
 
   const [createSalesInvoice] = useCreateSalesInvoiceMutation({
     onCompleted: () => {
-      messageApi?.success('收款凭证创建成功');
+      messageApi?.success('Payment receipt created successfully');
       handleReloadTable();
     },
     onError,
@@ -84,59 +86,34 @@ const SalesOrderList: React.FC = () => {
   };
 
   const columns: ProColumns<any>[] = [
+    codeColumn('No.', 'code', handleDetail),
     {
-      title: '单号',
-      dataIndex: 'code',
-      width: 100,
-      render: (text, record) => (
-        <Button type="link" onClick={() => handleDetail(record)}>
-          {text}
-        </Button>
-      ),
-    },
-    {
-      title: '客户名称',
+      title: 'Customer Name',
       key: 'customerUuid',
       dataIndex: 'customerName',
       valueType: 'select',
       request: () => fetchCustomers({}),
     },
+    statusColumn('Status', 'status', salesOrderStatusEnum, { width: 170 }),
+    statusColumn('Delivery', 'deliveryStatus', salesOrderDeliveryStatusEnum),
+    statusColumn('Payment', 'billingStatus', salesOrderBillingStatusEnum),
+    progressColumn('Delivered', 'deliveredQty', 'totalQty'),
     {
-      title: '状态',
-      dataIndex: 'status',
-    },
-    {
-      title: '发货状态',
-      dataIndex: 'deliveryStatus',
-    },
-    {
-      title: '支付状态',
-      dataIndex: 'billingStatus',
-    },
-    {
-      title: '仓库',
+      title: 'Warehouse',
       dataIndex: 'warehouseName',
     },
+    amountBreakdownColumn('Amount', {
+      due: 'remainingAmount',
+      paid: 'paidAmount',
+      total: 'totalAmount',
+    }),
     {
-      title: '待支付/已支付/总额',
-      dataIndex: 'totalAmount',
-      search: false,
-      width: 200,
-      render: (item: any, record: any) => (
-        <>
-          <Tag color="red">{record.remainingAmount}</Tag>
-          <Tag color="green">{record.paidAmount}</Tag>
-          <Tag>{record.totalAmount}</Tag>
-        </>
-      ),
-    },
-    {
-      title: '创建时间',
+      title: 'Created At',
       dataIndex: 'insertedAt',
       valueType: 'dateTime',
     },
     {
-      title: '操作',
+      title: 'Actions',
       width: 180,
       key: 'option',
       valueType: 'option',
@@ -150,13 +127,13 @@ const SalesOrderList: React.FC = () => {
           {record.status !== 'draft' && record.deliveryStatus != 'fully_delivered' && (
             <Popconfirm
               key="link2"
-              title="确定出库吗？"
+              title="Confirm stock out?"
               onConfirm={() => handleCreateDeliveryNote(record)}
-              okText="是"
-              cancelText="否"
+              okText="Yes"
+              cancelText="No"
             >
               <Button size="small" type="link">
-                添加出库凭证
+                Add Delivery Note
               </Button>
             </Popconfirm>
           )}
@@ -167,7 +144,9 @@ const SalesOrderList: React.FC = () => {
 
   return (
     <>
-      <ProTable
+      <DataTable
+        entityName="sales orders"
+        emptyHint="Create a sales order to start the order-to-cash flow."
         actionRef={actionRef}
         columns={columns}
         request={async (params, sorter, filter) => {
@@ -184,17 +163,6 @@ const SalesOrderList: React.FC = () => {
             success: true,
           };
         }}
-        rowKey="uuid"
-        pagination={{
-          showQuickJumper: true,
-        }}
-        search={false}
-        // search={{
-        //   span: 6,
-        //   layout: 'vertical',
-        //   defaultCollapsed: true,
-        // }}
-        dateFormatter="string"
         toolBarRender={() => [<SalesOrderNew key="sales-order-new" onCreate={(values: any) => handleCreate(values)} />]}
       />
 

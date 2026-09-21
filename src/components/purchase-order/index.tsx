@@ -1,8 +1,7 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/router';
-import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
-import { Popconfirm, Button, Tag } from 'antd';
+import { Popconfirm, Button } from 'antd';
 
 // locale
 import { useMessageContext } from '@/components/common/message-context';
@@ -14,6 +13,9 @@ import {
   PurchaseOrdersDocument,
 } from '@/gql';
 import { onError } from '@/utils';
+import { purchaseOrderStatusEnum, purchaseOrderReceiptStatusEnum, purchaseOrderBillingStatusEnum } from '@/utils/enum';
+import DataTable from '@/components/shared/data-table';
+import { amountBreakdownColumn, codeColumn, progressColumn, statusColumn } from '@/components/shared/columns';
 
 import PurchaseOrderNew from './new';
 import PurchaseOrderDetail from './detail';
@@ -28,7 +30,7 @@ const PurchaseOrderList: React.FC = () => {
 
   const [createPurchaseOrder] = useCreatePurchaseOrderMutation({
     onCompleted: () => {
-      messageApi?.success('采购订单创建成功');
+      messageApi?.success('Purchase order created successfully');
       handleReloadTable();
     },
     onError,
@@ -36,7 +38,7 @@ const PurchaseOrderList: React.FC = () => {
 
   const [createReceiptNote] = useCreateReceiptNoteMutation({
     onCompleted: () => {
-      messageApi?.success('收货凭证创建成功');
+      messageApi?.success('Receipt note created successfully');
       handleReloadTable();
     },
     onError,
@@ -44,7 +46,7 @@ const PurchaseOrderList: React.FC = () => {
 
   const [createPurchaseInvoice] = useCreatePurchaseInvoiceMutation({
     onCompleted: () => {
-      messageApi?.success('采购发票创建成功');
+      messageApi?.success('Purchase invoice created successfully');
       handleReloadTable();
     },
     onError,
@@ -84,56 +86,32 @@ const PurchaseOrderList: React.FC = () => {
   };
 
   const columns: ProColumns<any>[] = [
+    codeColumn('No.', 'code', handleDetail),
     {
-      title: '单号',
-      dataIndex: 'code',
-      render: (text, record) => (
-        <Button type="link" onClick={() => handleDetail(record)}>
-          {text}
-        </Button>
-      ),
-    },
-    {
-      title: '供应商名称',
+      title: 'Supplier Name',
       key: 'supplierName',
       dataIndex: 'supplierName',
     },
+    statusColumn('Status', 'status', purchaseOrderStatusEnum, { width: 170 }),
+    statusColumn('Receipt', 'receiptStatus', purchaseOrderReceiptStatusEnum),
+    statusColumn('Payment', 'billingStatus', purchaseOrderBillingStatusEnum),
+    progressColumn('Received', 'receivedQty', 'totalQty'),
+    amountBreakdownColumn('Amount', {
+      due: 'remainingAmount',
+      paid: 'paidAmount',
+      total: 'totalAmount',
+    }),
     {
-      title: '状态',
-      dataIndex: 'status',
-    },
-    {
-      title: '入库状态',
-      dataIndex: 'receiptStatus',
-    },
-    {
-      title: '付款状态',
-      dataIndex: 'billingStatus',
-    },
-    {
-      title: '待支付/已支付/总额',
-      dataIndex: 'totalAmount',
-      search: false,
-      width: 200,
-      render: (item: any, record: any) => (
-        <>
-          <Tag color="red">{record.remainingAmount}</Tag>
-          <Tag color="green">{record.paidAmount}</Tag>
-          <Tag>{record.totalAmount}</Tag>
-        </>
-      ),
-    },
-    {
-      title: '仓库',
+      title: 'Warehouse',
       dataIndex: 'warehouseName',
     },
     {
-      title: '创建时间',
+      title: 'Created At',
       dataIndex: 'insertedAt',
       valueType: 'dateTime',
     },
     {
-      title: '操作',
+      title: 'Actions',
       width: 180,
       key: 'option',
       valueType: 'option',
@@ -147,13 +125,13 @@ const PurchaseOrderList: React.FC = () => {
           {record.status !== 'draft' && record.receiptStatus != 'fully_received' && (
             <Popconfirm
               key="link2"
-              title="确定入库吗？"
+              title="Confirm stock in?"
               onConfirm={() => handleReceiptNote(record)}
-              okText="是"
-              cancelText="否"
+              okText="Yes"
+              cancelText="No"
             >
               <Button size="small" type="link">
-                添加入库凭证
+                Add Receipt Note
               </Button>
             </Popconfirm>
           )}
@@ -164,7 +142,9 @@ const PurchaseOrderList: React.FC = () => {
 
   return (
     <>
-      <ProTable
+      <DataTable
+        entityName="purchase orders"
+        emptyHint="Raise a purchase order to bring stock in from a supplier."
         actionRef={actionRef}
         columns={columns}
         request={async (params, sorter, filter) => {
@@ -181,17 +161,6 @@ const PurchaseOrderList: React.FC = () => {
             success: true,
           };
         }}
-        rowKey="uuid"
-        pagination={{
-          showQuickJumper: true,
-        }}
-        search={false}
-        // search={{
-        //   span: 6,
-        //   layout: 'vertical',
-        //   defaultCollapsed: true,
-        // }}
-        dateFormatter="string"
         toolBarRender={() => [
           <PurchaseOrderNew key="purchase-order-new" onCreate={(values: any) => handleCreate(values)} />,
         ]}

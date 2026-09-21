@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { Popconfirm, Button } from 'antd';
 import size from 'lodash.size';
@@ -9,6 +8,9 @@ import { useMessageContext } from '@/components/common/message-context';
 import client from '@/gql/apollo';
 import { useCompleteReceiptNoteMutation, ReceiptNotesDocument } from '@/gql';
 import { onError } from '@/utils';
+import { receiptNoteStatusEnum } from '@/utils/enum';
+import DataTable from '@/components/shared/data-table';
+import { codeColumn, qtyColumn, statusColumn } from '@/components/shared/columns';
 
 import DeliveryNoteDetail from './detail';
 
@@ -20,7 +22,7 @@ const ReceiptNoteList: React.FC = () => {
 
   const [completeReceiptNote] = useCompleteReceiptNoteMutation({
     onCompleted: () => {
-      messageApi?.success('入库凭证完成成功');
+      messageApi?.success('Receipt note completed successfully');
       handleReloadTable();
     },
     onError,
@@ -47,41 +49,25 @@ const ReceiptNoteList: React.FC = () => {
   };
 
   const columns: ProColumns<any>[] = [
+    codeColumn('No.', 'code', handleDetail),
     {
-      title: '单号',
-      width: 200,
-      dataIndex: 'code',
-      search: false,
-      render: (text, record) => (
-        <Button type="link" onClick={() => handleDetail(record)}>
-          {text}
-        </Button>
-      ),
-    },
-    {
-      title: '仓库名称',
+      title: 'Warehouse Name',
       key: 'warehouseUuid',
       dataIndex: ['warehouse', 'name'],
     },
     {
-      title: '供应商名称',
+      title: 'Supplier Name',
       dataIndex: 'supplierName',
     },
+    qtyColumn('Total Qty', 'totalQty'),
+    statusColumn('Status', 'status', receiptNoteStatusEnum, { width: 170 }),
     {
-      title: '总数量',
-      dataIndex: 'totalQty',
-    },
-    {
-      title: '状态',
-      dataIndex: 'status',
-    },
-    {
-      title: '创建时间',
+      title: 'Created At',
       dataIndex: 'insertedAt',
       valueType: 'dateTime',
     },
     {
-      title: '操作',
+      title: 'Actions',
       width: 180,
       key: 'option',
       valueType: 'option',
@@ -90,13 +76,13 @@ const ReceiptNoteList: React.FC = () => {
           {record.status === 'to_receive' && (
             <Popconfirm
               key="link2"
-              title="确定入库吗？"
+              title="Confirm stock in?"
               onConfirm={() => handleCompleteReceiptNote(record)}
-              okText="是"
-              cancelText="否"
+              okText="Yes"
+              cancelText="No"
             >
               <Button size="small" type="link">
-                入库
+                Stock In
               </Button>
             </Popconfirm>
           )}
@@ -107,7 +93,9 @@ const ReceiptNoteList: React.FC = () => {
 
   return (
     <>
-      <ProTable
+      <DataTable
+        entityName="receipt notes"
+        emptyHint="Receipt notes are created from a purchase order, then stocked in here."
         actionRef={actionRef}
         columns={columns}
         request={async (params, sorter, filter) => {
@@ -124,17 +112,6 @@ const ReceiptNoteList: React.FC = () => {
             success: true,
           };
         }}
-        rowKey="uuid"
-        pagination={{
-          showQuickJumper: true,
-        }}
-        search={false}
-        // search={{
-        //   span: 6,
-        //   layout: 'vertical',
-        //   defaultCollapsed: true,
-        // }}
-        dateFormatter="string"
       />
 
       <DeliveryNoteDetail

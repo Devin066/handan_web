@@ -1,10 +1,12 @@
 import { useRef, useState } from 'react';
 import { Button } from 'antd';
-import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 
 // locale
 import client from '@/gql/apollo';
+import { invoiceStatusEnum } from '@/utils/enum';
+import DataTable from '@/components/shared/data-table';
+import { codeColumn, moneyColumn, statusColumn } from '@/components/shared/columns';
 import { SalesInvoicesDocument } from '@/gql';
 
 import PaymentEntryNew from '@/components/payment-entry/new';
@@ -31,39 +33,28 @@ const SalesInvoiceList: React.FC = () => {
   };
 
   const columns: ProColumns<any>[] = [
+    codeColumn('No.'),
     {
-      title: '单号',
-      width: 200,
-      dataIndex: 'code',
-    },
-    {
-      title: '客户名称',
+      title: 'Customer Name',
       dataIndex: 'customerName',
     },
+    moneyColumn('Amount', 'amount'),
+    statusColumn('Status', 'status', invoiceStatusEnum, { width: 150 }),
     {
-      title: '金额',
-      dataIndex: 'amount',
-      valueType: 'money',
-    },
-    {
-      title: '状态',
-      dataIndex: 'status',
-    },
-    {
-      title: '创建时间',
+      title: 'Created At',
       dataIndex: 'insertedAt',
       valueType: 'dateTime',
     },
     {
-      title: '操作',
+      title: 'Actions',
       width: 180,
       key: 'option',
       valueType: 'option',
       render: (item: any, record: any) => [
         <>
-          {record.status === 'unpaid' && (
+          {record.status !== 'paid' && (
             <Button size="small" type="link" onClick={() => handleEntryNew(record)}>
-              支付
+              Pay
             </Button>
           )}
         </>,
@@ -73,7 +64,9 @@ const SalesInvoiceList: React.FC = () => {
 
   return (
     <>
-      <ProTable
+      <DataTable
+        entityName="sales invoices"
+        emptyHint="Invoices are raised from a sales order."
         actionRef={actionRef}
         columns={columns}
         request={async (params, sorter, filter) => {
@@ -90,17 +83,6 @@ const SalesInvoiceList: React.FC = () => {
             success: true,
           };
         }}
-        rowKey="uuid"
-        pagination={{
-          showQuickJumper: true,
-        }}
-        search={false}
-        // search={{
-        //   span: 6,
-        //   layout: 'vertical',
-        //   defaultCollapsed: true,
-        // }}
-        dateFormatter="string"
       />
 
       <PaymentEntryNew visible={detailVisible} saleInvoice={record} onClose={() => handleClose()} />

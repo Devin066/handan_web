@@ -14,7 +14,7 @@ const CustomerList: React.FC = () => {
 
   const [createCustomer] = useCreateCustomerMutation({
     onCompleted: () => {
-      messageApi?.success('客户创建成功');
+      messageApi?.success('Customer created successfully');
       handleReloadTable();
     },
     onError,
@@ -32,18 +32,18 @@ const CustomerList: React.FC = () => {
 
   const columns: ProColumns<any>[] = [
     {
-      title: '名称',
+      title: 'Name',
       key: 'name',
       dataIndex: 'name',
     },
     {
-      title: '地址',
+      title: 'Address',
       key: 'address',
       search: false,
       dataIndex: 'address',
     },
     {
-      title: '创建时间',
+      title: 'Created At',
       dataIndex: 'insertedAt',
       search: false,
       valueType: 'dateTime',

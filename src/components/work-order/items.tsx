@@ -20,7 +20,7 @@ const WorkOrderItems: React.FC = () => {
 
   const [reportJobCard] = useReportJobCardMutation({
     onCompleted: () => {
-      messageApi?.success('生产报工成功');
+      messageApi?.success('Job card reported successfully');
       handleReloadTable();
     },
     onError,
@@ -43,7 +43,7 @@ const WorkOrderItems: React.FC = () => {
 
   const columns: ProColumns<any>[] = [
     {
-      title: '任务名称',
+      title: 'Task Name',
       key: 'itemName',
       dataIndex: 'itemName',
       width: 100,
@@ -54,32 +54,32 @@ const WorkOrderItems: React.FC = () => {
       ),
     },
     {
-      title: '生产单号',
+      title: 'Work Order No.',
       dataIndex: ['workOrder', 'code'],
     },
     {
-      title: '需求数量',
+      title: 'Required Qty',
       dataIndex: 'requiredQty',
     },
     {
-      title: '已生产数量',
+      title: 'Produced Qty',
       dataIndex: 'producedQty',
     },
     // {
-    //   title: '缺陷数量',
+    //   title: 'Defective Qty',
     //   dataIndex: 'defectiveQty',
     // },
     {
-      title: '顺序',
+      title: 'Position',
       dataIndex: 'position',
     },
     {
-      title: '创建时间',
+      title: 'Created At',
       valueType: 'dateTime',
       dataIndex: 'insertedAt',
     },
     {
-      title: '操作',
+      title: 'Actions',
       width: 180,
       key: 'option',
       valueType: 'option',

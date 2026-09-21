@@ -26,27 +26,27 @@ const WorkOrderDetail = ({ uuid, visible, record, onClose }: any) => {
 
   const workOrderItemColumns = [
     {
-      title: '名称',
+      title: 'Name',
       dataIndex: 'itemName',
       key: 'itemName',
     },
     {
-      title: '工艺名称',
+      title: 'Process Name',
       dataIndex: 'processName',
       key: 'processName',
     },
     {
-      title: '需求数量',
+      title: 'Required Qty',
       dataIndex: 'requiredQty',
       key: 'requiredQty',
     },
     {
-      title: '已完成数量',
+      title: 'Completed Qty',
       dataIndex: 'producedQty',
       key: 'producedQty',
     },
     {
-      title: '顺序',
+      title: 'Position',
       dataIndex: 'position',
       key: 'position',
     },
@@ -54,17 +54,17 @@ const WorkOrderDetail = ({ uuid, visible, record, onClose }: any) => {
 
   const materialRequestColumns = [
     {
-      title: '物料名称',
+      title: 'Material Name',
       dataIndex: 'itemName',
       key: 'itemName',
     },
     {
-      title: '仓库',
+      title: 'Warehouse',
       dataIndex: ['warehouse', 'name'],
       key: 'warehouseName',
     },
     {
-      title: '需求数量',
+      title: 'Required Qty',
       dataIndex: 'actualQty',
       key: 'actualQty',
       render: (item: any, record: any) => (
@@ -75,7 +75,7 @@ const WorkOrderDetail = ({ uuid, visible, record, onClose }: any) => {
       ),
     },
     {
-      title: '已接收数量',
+      title: 'Received Qty',
       dataIndex: 'receivedQty',
       key: 'receivedQty',
       render: (item: any, record: any) => (
@@ -86,7 +86,7 @@ const WorkOrderDetail = ({ uuid, visible, record, onClose }: any) => {
       ),
     },
     {
-      title: '待领取数量',
+      title: 'Pending Qty',
       dataIndex: 'remainingQty',
       key: 'remainingQty',
       render: (item: any, record: any) => (
@@ -100,20 +100,20 @@ const WorkOrderDetail = ({ uuid, visible, record, onClose }: any) => {
 
   return (
     <Drawer width={'60%'} title={entry?.code} onClose={onClose} open={visible} style={{ backgroundColor: '#f7f8fa' }}>
-      <ProCard title="基本信息" style={{ marginTop: '10px' }}>
+      <ProCard title="Basic Info" style={{ marginTop: '10px' }}>
         <ProDescriptions column={3} size="small">
-          <ProDescriptions.Item label="生产产品">{entry.itemName}</ProDescriptions.Item>
-          <ProDescriptions.Item label="状态">{entry.status}</ProDescriptions.Item>
-          <ProDescriptions.Item label="开始时间" valueType="dateTime">
+          <ProDescriptions.Item label="Product">{entry.itemName}</ProDescriptions.Item>
+          <ProDescriptions.Item label="Status">{entry.status}</ProDescriptions.Item>
+          <ProDescriptions.Item label="Start Time" valueType="dateTime">
             {entry.startTime}
           </ProDescriptions.Item>
-          <ProDescriptions.Item label="结束时间" valueType="dateTime">
+          <ProDescriptions.Item label="End Time" valueType="dateTime">
             {entry.endTime}
           </ProDescriptions.Item>
         </ProDescriptions>
       </ProCard>
 
-      <ProCard title="工单信息" style={{ marginTop: '10px' }}>
+      <ProCard title="Work Order Info" style={{ marginTop: '10px' }}>
         <ProTable
           columns={workOrderItemColumns}
           dataSource={entry?.items}
@@ -124,7 +124,7 @@ const WorkOrderDetail = ({ uuid, visible, record, onClose }: any) => {
           options={false}
         />
       </ProCard>
-      <ProCard title="物料需求" style={{ marginTop: '10px' }}>
+      <ProCard title="Material Requirements" style={{ marginTop: '10px' }}>
         <ProTable
           columns={materialRequestColumns}
           dataSource={entry?.materialRequests}

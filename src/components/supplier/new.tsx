@@ -20,7 +20,7 @@ const SupplierNew = (props: any) => {
           setModalVisible(true);
         }}
       >
-        新增供应商
+        New Supplier
       </Button>
 
       <ModalForm
@@ -30,7 +30,7 @@ const SupplierNew = (props: any) => {
         }}
         width={'70%'}
         onOpenChange={setModalVisible}
-        title={<Space>新增供应商</Space>}
+        title={<Space>New Supplier</Space>}
         submitTimeout={2000}
         autoFocusFirstInput
         open={modalVisible}
@@ -40,17 +40,17 @@ const SupplierNew = (props: any) => {
           <ProFormText
             width="sm"
             name="name"
-            label="名称"
-            placeholder="请输入名称"
-            rules={[{ required: true, message: '请输入名称' }]}
+            label="Name"
+            placeholder="Enter name"
+            rules={[{ required: true, message: 'Enter name' }]}
           />
 
           <ProFormText
             width="sm"
             name="address"
-            label="地址"
-            placeholder="请输入地址"
-            rules={[{ required: true, message: '请输入地址' }]}
+            label="Address"
+            placeholder="Enter address"
+            rules={[{ required: true, message: 'Enter address' }]}
           />
         </ProForm.Group>
       </ModalForm>

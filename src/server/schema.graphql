@@ -1,0 +1,633 @@
+scalar DateTime
+scalar Decimal
+
+schema {
+  query: RootQueryType
+  mutation: RootMutationType
+}
+
+type Company {
+  uuid: ID
+  name: String
+  description: String
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type User {
+  uuid: ID
+  email: String
+  nickname: String
+  bio: String
+  avatarUrl: String
+  accessToken: String
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type Staff {
+  uuid: ID
+  email: String
+  name: String
+  user: User
+  company: Company
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type Uom {
+  uuid: ID
+  name: String
+  description: String
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type StockUom {
+  uuid: ID
+  uomName: String
+  conversionFactor: Int
+  sequence: Int
+  item: Item
+}
+
+type Item {
+  uuid: ID
+  name: String
+  spec: String
+  description: String
+  sellingPrice: Decimal
+  defaultStockUomUuid: ID
+  defaultStockUomName: String
+  stockUoms: [StockUom]
+  stockItems: [StockItem]
+  bom: Bom
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type StockItem {
+  uuid: ID
+  totalOnHand: Decimal
+  item: Item
+  stockUom: StockUom
+  warehouse: Warehouse
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type Warehouse {
+  uuid: ID
+  name: String
+  address: String
+  area: String
+  contactName: String
+  contactEmail: String
+  isDefault: Boolean
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type Customer {
+  uuid: ID
+  name: String
+  address: String
+  balance: Decimal
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type Supplier {
+  uuid: ID
+  name: String
+  address: String
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type Process {
+  uuid: ID
+  name: String
+  code: String
+  description: String
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type Workstation {
+  uuid: ID
+  name: String
+  adminUuid: String
+  members: [Staff]
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type PaymentMethod {
+  uuid: ID
+  name: String
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type Bom {
+  uuid: ID
+  name: String
+  itemName: String
+  item: Item
+  bomItems: [BomItem]
+  bomProcesses: [BomProcess]
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type BomItem {
+  uuid: ID
+  itemName: String
+  uomName: String
+  qty: Int
+  stockUomUuid: ID
+  stockUom: StockUom
+  item: Item
+  bom: Bom
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type BomProcess {
+  uuid: ID
+  position: Int
+  processName: String
+  toolRequired: String
+  process: Process
+  bom: Bom
+}
+
+type SalesOrder {
+  uuid: ID
+  code: String
+  status: String
+  billingStatus: String
+  deliveryStatus: String
+  customerUuid: ID
+  customerName: String
+  customer: Customer
+  warehouseUuid: ID
+  warehouseName: String
+  warehouse: Warehouse
+  totalAmount: Decimal
+  paidAmount: Decimal
+  remainingAmount: Decimal
+  totalQty: Decimal
+  deliveredQty: Decimal
+  remainingQty: Decimal
+  items: [SalesOrderItem]
+  deliveryNotes: [DeliveryNote]
+  salesInvoices: [SalesInvoice]
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type SalesOrderItem {
+  uuid: ID
+  itemUuid: ID
+  itemName: String
+  item: Item
+  uomName: String
+  stockUomUuid: ID
+  unitPrice: Decimal
+  orderedQty: Decimal
+  deliveredQty: Decimal
+  remainingQty: Decimal
+  amount: Decimal
+  salesOrder: SalesOrder
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type DeliveryNote {
+  uuid: ID
+  code: String
+  status: String
+  customerName: String
+  customer: Customer
+  salesOrderUuid: ID
+  salesOrder: SalesOrder
+  warehouse: Warehouse
+  totalAmount: Decimal
+  totalQty: Decimal
+  items: [DeliveryNoteItem]
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type DeliveryNoteItem {
+  uuid: ID
+  itemName: String
+  item: Item
+  actualQty: Decimal
+  unitPrice: Decimal
+  amount: Decimal
+  uomName: String
+  stockUomUuid: ID
+  deliveryNote: DeliveryNote
+  salesOrder: SalesOrder
+  salesOrderItem: SalesOrderItem
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type SalesInvoice {
+  uuid: ID
+  code: String
+  status: String
+  amount: Decimal
+  customerUuid: ID
+  customerName: String
+  customer: Customer
+  salesOrderUuid: ID
+  salesOrder: SalesOrder
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type PurchaseOrder {
+  uuid: ID
+  code: String
+  status: String
+  receiptStatus: String
+  billingStatus: String
+  supplierUuid: ID
+  supplierName: String
+  supplierAddress: String
+  supplier: Supplier
+  warehouseUuid: ID
+  warehouseName: String
+  warehouse: Warehouse
+  totalAmount: Decimal
+  paidAmount: Decimal
+  remainingAmount: Decimal
+  totalQty: Decimal
+  receivedQty: Decimal
+  remainingQty: Decimal
+  items: [PurchaseOrderItem]
+  purchaseInvoices: [PurchaseInvoice]
+  receiptNotes: [ReceiptNote]
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type PurchaseOrderItem {
+  uuid: ID
+  itemName: String
+  uomName: String
+  stockUomUuid: ID
+  unitPrice: Decimal
+  orderedQty: Decimal
+  receivedQty: Decimal
+  remainingQty: Decimal
+  amount: Decimal
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type ReceiptNote {
+  uuid: ID
+  code: String
+  status: String
+  supplierName: String
+  purchaseOrderUuid: ID
+  warehouse: Warehouse
+  totalAmount: Decimal
+  totalQty: Decimal
+  items: [ReceiptNoteItem]
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type ReceiptNoteItem {
+  uuid: ID
+  itemName: String
+  uomName: String
+  stockUomUuid: ID
+  unitPrice: Decimal
+  actualQty: Decimal
+  amount: Decimal
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type PurchaseInvoice {
+  uuid: ID
+  code: String
+  status: String
+  amount: Decimal
+  supplierUuid: ID
+  supplierName: String
+  supplier: Supplier
+  purchaseOrderUuid: ID
+  purchaseOrder: PurchaseOrder
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type WorkOrder {
+  uuid: ID
+  code: String
+  title: String
+  type: String
+  status: String
+  startTime: DateTime
+  endTime: DateTime
+  plannedQty: Decimal
+  storedQty: Decimal
+  producedQty: Decimal
+  scrapedQty: Decimal
+  itemUuid: ID
+  itemName: String
+  item: Item
+  uomName: String
+  stockUomUuid: ID
+  bomUuid: ID
+  bom: Bom
+  supplierUuid: ID
+  supplierName: String
+  salesOrderUuid: ID
+  warehouse: Warehouse
+  items: [WorkOrderItem]
+  materialRequests: [WorkOrderMaterialRequest]
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type WorkOrderItem {
+  uuid: ID
+  workOrderUuid: ID
+  workOrder: WorkOrder
+  itemName: String
+  processName: String
+  position: Int
+  requiredQty: Decimal
+  defectiveQty: Decimal
+  producedQty: Decimal
+  jobCards: [JobCard]
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type WorkOrderMaterialRequest {
+  uuid: ID
+  itemName: String
+  itemUuid: ID
+  item: Item
+  actualQty: Decimal
+  remainingQty: Decimal
+  receivedQty: Decimal
+  uomName: String
+  stockUomUuid: ID
+  stockUom: StockUom
+  bomUuid: ID
+  warehouseUuid: ID
+  warehouse: Warehouse
+  workOrderUuid: ID
+  workOrder: WorkOrder
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type JobCard {
+  uuid: ID
+  startTime: DateTime
+  endTime: DateTime
+  status: String
+  defectiveQty: Decimal
+  producedQty: Decimal
+  operatorStaffUuid: ID
+  operatorStaff: Staff
+  workOrderItemUuid: ID
+  workOrderItem: WorkOrderItem
+  workOrderUuid: ID
+  workOrder: WorkOrder
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type InventoryEntry {
+  uuid: ID
+  code: String
+  type: String
+  actualQty: Decimal
+  qtyAfterTransaction: Decimal
+  threadType: String
+  threadUuid: ID
+  item: Item
+  warehouse: Warehouse
+  stockUomUuid: ID
+  stockUom: StockUom
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+type PaymentEntry {
+  uuid: ID
+  code: String
+  type: String
+  partyName: String
+  partyType: String
+  partyUuid: ID
+  paymentMethodUuid: ID
+  paymentMethod: PaymentMethod
+  totalAmount: Decimal
+  memo: String
+  attachments: [String]
+  purchaseInvoiceIds: [String]
+  salesInvoiceIds: [String]
+  insertedAt: DateTime
+  updatedAt: DateTime
+}
+
+input IdRequest { uuid: ID }
+input LoginRequest { email: String, password: String }
+input CreateCustomerRequest { name: String!, address: String! }
+input CreateSupplierRequest { name: String!, address: String! }
+input CreateProcessRequest { name: String, code: String, description: String }
+input CreateWorkstationRequest { name: String, description: String }
+input CreatePaymentMethodRequest { name: String }
+
+input StockUomArg { uomUuid: ID, conversionFactor: Int, sequence: Int }
+input OpeningStockArg { warehouseUuid: ID, qty: Float }
+input CreateItemRequest {
+  name: String!
+  spec: String
+  description: String
+  sellingPrice: Decimal!
+  stockUoms: [StockUomArg]!
+  openingStocks: [OpeningStockArg]
+}
+
+input BomItemArg { itemUuid: ID, qty: Int }
+input BomProcessArg { processUuid: ID, position: Int }
+input CreateBomRequest {
+  name: String
+  itemUuid: ID
+  bomItems: [BomItemArg]
+  bomProcesses: [BomProcessArg]
+}
+
+input SalesOrderItemArg {
+  itemUuid: ID
+  orderedQty: Float
+  unitPrice: Float
+  stockUomUuid: ID
+  uomName: String
+}
+input CreateSalesOrderRequest {
+  customerUuid: ID
+  customerAddress: String
+  warehouseUuid: ID
+  salesItems: [SalesOrderItemArg]
+}
+input SalesOrderRequest { salesOrderUuid: ID }
+
+input DeliveryNoteItemArg { salesOrderItemUuid: ID, actualQty: Decimal }
+input CreateDeliveryNoteRequest { salesOrderUuid: ID, deliveryItems: [DeliveryNoteItemArg] }
+input DeliveryNoteRequest { deliveryNoteUuid: ID, salesOrderUuid: ID }
+
+input CreateSalesInvoiceRequest { salesOrderUuid: ID, amount: Decimal }
+input SalesInvoiceRequest { salesInvoiceUuid: ID, salesOrderUuid: ID }
+
+input PurchaseOrderItemArg {
+  itemUuid: ID
+  orderedQty: Decimal
+  unitPrice: Decimal
+  stockUomUuid: ID
+  uomName: String
+}
+input CreatePurchaseOrderRequest {
+  supplierUuid: ID
+  warehouseUuid: ID
+  purchaseItems: [PurchaseOrderItemArg]
+}
+input PurchaseOrderRequest { purchaseOrderUuid: ID }
+
+input ReceiptNoteItemArg { purchaseOrderItemUuid: ID, actualQty: Decimal }
+input CreateReceiptNoteRequest { purchaseOrderUuid: ID, receiptItems: [ReceiptNoteItemArg] }
+input ReceiptNoteRequest { purchaseOrderUuid: ID, receiptNoteUuid: ID }
+
+input CreatePurchaseInvoiceRequest { purchaseOrderUuid: ID, amount: Decimal }
+input PurchaseInvoiceRequest { purchaseInvoiceUuid: ID, purchaseOrderUuid: ID }
+
+input CreateWorkOrderRequest {
+  bomUuid: ID
+  warehouseUuid: ID
+  plannedQty: Decimal
+  startTime: DateTime
+  endTime: DateTime
+}
+input WorkOrderRequest { workOrderUuid: ID }
+input ReportJobCardRequest {
+  workOrderUuid: ID
+  workOrderItemUuid: ID
+  operatorStaffUuid: ID
+  producedQty: Decimal
+  defectiveQty: Decimal
+  startTime: DateTime
+  endTime: DateTime
+}
+input StoreFinishItemRequest { workOrderUuid: ID, storedQty: Decimal }
+
+input CreatePaymentEntryRequest {
+  type: String!
+  partyType: String!
+  partyUuid: ID!
+  paymentMethodUuid: ID!
+  totalAmount: Float
+  memo: String
+  attachments: [String]
+  salesInvoiceIds: [ID]
+  purchaseInvoiceIds: [ID]
+}
+
+"the root of query."
+type RootQueryType {
+  company: Company
+  currentUser: User
+  listStaff: [Staff]
+
+  item(request: IdRequest!): Item
+  items: [Item]
+  uoms: [Uom]
+  warehouses: [Warehouse]
+  stockItems: [StockItem]
+  inventoryEntries: [InventoryEntry]
+
+  customer(request: IdRequest!): Customer
+  customers: [Customer]
+  supplier(request: IdRequest!): Supplier
+  suppliers: [Supplier]
+
+  process(request: IdRequest!): Process
+  processes: [Process]
+  workstation(request: IdRequest!): Workstation
+  workstations: [Workstation]
+
+  bom(request: IdRequest!): Bom
+  boms: [Bom]
+
+  salesOrder(request: SalesOrderRequest!): SalesOrder
+  salesOrders: [SalesOrder]
+  deliveryNote(request: DeliveryNoteRequest!): DeliveryNote
+  deliveryNotes: [DeliveryNote]
+  salesInvoice(request: SalesInvoiceRequest!): SalesInvoice
+  salesInvoices: [SalesInvoice]
+
+  purchaseOrder(request: PurchaseOrderRequest!): PurchaseOrder
+  purchaseOrders: [PurchaseOrder]
+  receiptNote(request: ReceiptNoteRequest!): ReceiptNote
+  receiptNotes: [ReceiptNote]
+  purchaseInvoice(request: PurchaseInvoiceRequest!): PurchaseInvoice
+  purchaseInvoices: [PurchaseInvoice]
+
+  workOrder(request: IdRequest!): WorkOrder
+  workOrders: [WorkOrder]
+  workOrderItem(request: IdRequest!): WorkOrderItem
+  workOrderItems: [WorkOrderItem]
+
+  paymentEntry(request: IdRequest!): PaymentEntry
+  paymentEntries: [PaymentEntry]
+  paymentMethod(request: IdRequest!): PaymentMethod
+  paymentMethods: [PaymentMethod]
+
+  unpaidSalesInvoicesByCustomer(request: IdRequest!): [SalesInvoice]
+  unpaidPurchaseInvoicesBySupplier(request: IdRequest!): [PurchaseInvoice]
+}
+
+"the root of mutaion."
+type RootMutationType {
+  login(request: LoginRequest!): User
+
+  createItem(request: CreateItemRequest!): Item
+  createCustomer(request: CreateCustomerRequest!): Customer
+  createSupplier(request: CreateSupplierRequest!): Supplier
+  createProcess(request: CreateProcessRequest!): Process
+  createWorkstation(request: CreateWorkstationRequest!): Workstation
+  createPaymentMethod(request: CreatePaymentMethodRequest!): PaymentMethod
+  createBom(request: CreateBomRequest!): Bom
+
+  createSalesOrder(request: CreateSalesOrderRequest!): SalesOrder
+  createDeliveryNote(request: CreateDeliveryNoteRequest!): DeliveryNote
+  completeDeliveryNote(request: DeliveryNoteRequest!): DeliveryNote
+  createSalesInvoice(request: CreateSalesInvoiceRequest!): SalesInvoice
+
+  createPurchaseOrder(request: CreatePurchaseOrderRequest!): PurchaseOrder
+  createReceiptNote(request: CreateReceiptNoteRequest!): ReceiptNote
+  completeReceiptNote(request: ReceiptNoteRequest!): ReceiptNote
+  createPurchaseInvoice(request: CreatePurchaseInvoiceRequest!): PurchaseInvoice
+
+  createWorkOrder(request: CreateWorkOrderRequest!): WorkOrder
+  scheduleWorkOrder(request: WorkOrderRequest!): WorkOrder
+  reportJobCard(request: ReportJobCardRequest!): WorkOrder
+  storeFinishItem(request: StoreFinishItemRequest!): WorkOrder
+
+  createPaymentEntry(request: CreatePaymentEntryRequest!): PaymentEntry
+}

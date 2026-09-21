@@ -26,23 +26,23 @@ const WorkOrderDetail = ({ uuid, visible, record, onClose }: any) => {
 
   const jobCardColumns = [
     {
-      title: '操作员',
+      title: 'Operator',
       key: 'operatorStaffUuid',
       dataIndex: ['operatorStaff', 'email'],
     },
     {
-      title: '生产数量',
+      title: 'Produced Qty',
       dataIndex: 'producedQty',
       key: 'producedQty',
     },
     {
-      title: '开始时间',
+      title: 'Start Time',
       dataIndex: 'startTime',
       valueType: 'dateTime',
       key: 'startTime',
     },
     {
-      title: '结束时间',
+      title: 'End Time',
       dataIndex: 'endTime',
       valueType: 'dateTime',
       key: 'endTime',
@@ -51,18 +51,18 @@ const WorkOrderDetail = ({ uuid, visible, record, onClose }: any) => {
 
   return (
     <Drawer width={'60%'} title={entry?.uuid} onClose={onClose} open={visible} style={{ backgroundColor: '#f7f8fa' }}>
-      <ProCard title="基本信息" style={{ marginTop: '10px' }}>
+      <ProCard title="Basic Info" style={{ marginTop: '10px' }}>
         <ProDescriptions column={3} size="small">
-          <ProDescriptions.Item label="产品名称">{entry.itemName}</ProDescriptions.Item>
-          <ProDescriptions.Item label="工艺名称">{entry.processName}</ProDescriptions.Item>
-          <ProDescriptions.Item label="顺序">{entry.position}</ProDescriptions.Item>
-          <ProDescriptions.Item label="数量">{entry.requiredQty}</ProDescriptions.Item>
-          {/* <ProDescriptions.Item label="缺陷数量">{entry.defectiveQty}</ProDescriptions.Item> */}
-          <ProDescriptions.Item label="生产数量">{entry.producedQty}</ProDescriptions.Item>
+          <ProDescriptions.Item label="Product Name">{entry.itemName}</ProDescriptions.Item>
+          <ProDescriptions.Item label="Process Name">{entry.processName}</ProDescriptions.Item>
+          <ProDescriptions.Item label="Position">{entry.position}</ProDescriptions.Item>
+          <ProDescriptions.Item label="Qty">{entry.requiredQty}</ProDescriptions.Item>
+          {/* <ProDescriptions.Item label="Defective Qty">{entry.defectiveQty}</ProDescriptions.Item> */}
+          <ProDescriptions.Item label="Produced Qty">{entry.producedQty}</ProDescriptions.Item>
         </ProDescriptions>
       </ProCard>
 
-      <ProCard title="生产报工" style={{ marginTop: '10px' }}>
+      <ProCard title="Report Job Card" style={{ marginTop: '10px' }}>
         <ProTable
           columns={jobCardColumns}
           dataSource={entry?.jobCards}

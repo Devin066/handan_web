@@ -27,22 +27,22 @@ const SalesOrderDetail = ({ uuid, visible, record, onClose }: any) => {
 
   const salesOrderItemColumns = [
     {
-      title: '商品名称',
+      title: 'Item Name',
       dataIndex: 'itemName',
       key: 'itemName',
     },
     {
-      title: '数量',
+      title: 'Qty',
       dataIndex: 'orderedQty',
       key: 'orderedQty',
     },
     {
-      title: '单价',
+      title: 'Unit Price',
       dataIndex: 'unitPrice',
       key: 'unitPrice',
     },
     {
-      title: '金额',
+      title: 'Amount',
       dataIndex: 'amount',
       key: 'amount',
     },
@@ -50,23 +50,23 @@ const SalesOrderDetail = ({ uuid, visible, record, onClose }: any) => {
 
   const deliveryNoteColumns = [
     {
-      title: '单号',
+      title: 'No.',
       dataIndex: 'code',
       width: '100px',
       key: 'code',
     },
     {
-      title: '出库数量',
+      title: 'Delivered Qty',
       dataIndex: 'totalQty',
       key: 'totalQty',
     },
     // {
-    //   title: '商品名称',
+    //   title: 'Item Name',
     //   dataIndex: 'itemName',
     //   key: 'itemName',
     // },
     {
-      title: '状态',
+      title: 'Status',
       dataIndex: 'status',
       key: 'status',
     },
@@ -74,19 +74,19 @@ const SalesOrderDetail = ({ uuid, visible, record, onClose }: any) => {
 
   const salesInvoiceColumins = [
     {
-      title: '单号',
+      title: 'No.',
       dataIndex: 'code',
       width: '100px',
       key: 'code',
     },
     {
-      title: '金额',
+      title: 'Amount',
       valueType: 'money',
       dataIndex: 'amount',
       key: 'amount',
     },
     {
-      title: '状态',
+      title: 'Status',
       dataIndex: 'status',
       key: 'status',
     },
@@ -95,7 +95,7 @@ const SalesOrderDetail = ({ uuid, visible, record, onClose }: any) => {
   const items: TabsProps['items'] = [
     {
       key: '1',
-      label: `商品信息(${size(entry?.items)})`,
+      label: `Items(${size(entry?.items)})`,
       children: (
         <ProTable
           columns={salesOrderItemColumns}
@@ -110,7 +110,7 @@ const SalesOrderDetail = ({ uuid, visible, record, onClose }: any) => {
     },
     {
       key: '2',
-      label: `出库凭证(${size(entry?.deliveryNotes)})`,
+      label: `Delivery Notes(${size(entry?.deliveryNotes)})`,
       children: (
         <ProTable
           columns={deliveryNoteColumns}
@@ -125,7 +125,7 @@ const SalesOrderDetail = ({ uuid, visible, record, onClose }: any) => {
     },
     {
       key: '3',
-      label: `收款凭证(${size(entry?.salesInvoices)})`,
+      label: `Receipt Vouchers(${size(entry?.salesInvoices)})`,
       children: (
         <ProTable
           columns={salesInvoiceColumins}
@@ -142,14 +142,14 @@ const SalesOrderDetail = ({ uuid, visible, record, onClose }: any) => {
 
   return (
     <Drawer width={'60%'} title={entry?.code} onClose={onClose} open={visible} style={{ backgroundColor: '#f7f8fa' }}>
-      <ProCard title="基本信息" style={{ marginTop: '10px' }}>
+      <ProCard title="Basic Info" style={{ marginTop: '10px' }}>
         <ProDescriptions column={3} size="small">
-          <ProDescriptions.Item label="客户名称">{entry?.customerName}</ProDescriptions.Item>
-          <ProDescriptions.Item label="状态">{entry.status}</ProDescriptions.Item>
-          <ProDescriptions.Item label="支付状态">{entry.billingStatus}</ProDescriptions.Item>
-          <ProDescriptions.Item label="发货状态">{entry.deliveryStatus}</ProDescriptions.Item>
-          <ProDescriptions.Item label="仓库">{entry.warehouseName}</ProDescriptions.Item>
-          <ProDescriptions.Item label="创建时间" valueType="dateTime">
+          <ProDescriptions.Item label="Customer Name">{entry?.customerName}</ProDescriptions.Item>
+          <ProDescriptions.Item label="Status">{entry.status}</ProDescriptions.Item>
+          <ProDescriptions.Item label="Payment Status">{entry.billingStatus}</ProDescriptions.Item>
+          <ProDescriptions.Item label="Delivery Status">{entry.deliveryStatus}</ProDescriptions.Item>
+          <ProDescriptions.Item label="Warehouse">{entry.warehouseName}</ProDescriptions.Item>
+          <ProDescriptions.Item label="Created At" valueType="dateTime">
             {entry.insertedAt}
           </ProDescriptions.Item>
         </ProDescriptions>

@@ -27,12 +27,12 @@ const DeliveryNoteDetail = ({ uuid, visible, record, onClose }: any) => {
 
   const deliveryNoteItemColumns = [
     {
-      title: '商品名称',
+      title: 'Item Name',
       dataIndex: 'itemName',
       key: 'itemName',
     },
     {
-      title: '数量',
+      title: 'Qty',
       dataIndex: 'actualQty',
       key: 'actualQty',
       render: (text: any, record: any) => (
@@ -42,12 +42,12 @@ const DeliveryNoteDetail = ({ uuid, visible, record, onClose }: any) => {
       ),
     },
     {
-      title: '单价',
+      title: 'Unit Price',
       dataIndex: 'unitPrice',
       key: 'unitPrice',
     },
     {
-      title: '金额',
+      title: 'Amount',
       dataIndex: 'amount',
       key: 'amount',
     },
@@ -56,7 +56,7 @@ const DeliveryNoteDetail = ({ uuid, visible, record, onClose }: any) => {
   const items: TabsProps['items'] = [
     {
       key: '1',
-      label: `商品信息(${size(entry?.items)})`,
+      label: `Items(${size(entry?.items)})`,
       children: (
         <ProTable
           columns={deliveryNoteItemColumns}
@@ -73,11 +73,11 @@ const DeliveryNoteDetail = ({ uuid, visible, record, onClose }: any) => {
 
   return (
     <Drawer width={'60%'} title={entry?.uuid} onClose={onClose} open={visible} style={{ backgroundColor: '#f7f8fa' }}>
-      <ProCard title="基本信息" style={{ marginTop: '10px' }}>
+      <ProCard title="Basic Info" style={{ marginTop: '10px' }}>
         <ProDescriptions column={3} size="small">
-          <ProDescriptions.Item label="客户名称">{entry?.customerName}</ProDescriptions.Item>
-          <ProDescriptions.Item label="状态">{entry.status}</ProDescriptions.Item>
-          <ProDescriptions.Item label="仓库名称">{entry.warehouseName}</ProDescriptions.Item>
+          <ProDescriptions.Item label="Customer Name">{entry?.customerName}</ProDescriptions.Item>
+          <ProDescriptions.Item label="Status">{entry.status}</ProDescriptions.Item>
+          <ProDescriptions.Item label="Warehouse Name">{entry.warehouseName}</ProDescriptions.Item>
         </ProDescriptions>
       </ProCard>
 

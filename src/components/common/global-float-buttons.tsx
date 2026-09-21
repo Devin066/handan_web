@@ -3,28 +3,28 @@ import { FloatButton } from 'antd';
 import React from 'react';
 
 /**
- * 全局浮动按钮组件
- * 包含：GitHub、帮助文档、返回顶部
+ * Global float button component
+ * includes: GitHub, Help, Back to Top
  */
 const GlobalFloatButtons: React.FC = () => {
   return (
     <FloatButton.Group shape="circle" style={{ right: 24, bottom: 24 }}>
-      {/* GitHub 按钮 */}
+      {/* GitHub button */}
       <FloatButton
         icon={<GithubOutlined />}
-        tooltip="GitHub 项目"
+        tooltip="GitHub Project"
         onClick={() => window.open('https://github.com/zven21/handan', '_blank')}
       />
 
-      {/* 帮助文档按钮 */}
+      {/* Help docs button */}
       <FloatButton
         icon={<QuestionCircleOutlined />}
-        tooltip="帮助文档"
+        tooltip="Help"
         onClick={() => window.open('https://github.com/zven21/handan/blob/master/README.md', '_blank')}
       />
 
-      {/* 返回顶部按钮 */}
-      <FloatButton.BackTop tooltip="返回顶部" visibilityHeight={300} />
+      {/* Back-to-top button */}
+      <FloatButton.BackTop tooltip="Back to Top" visibilityHeight={300} />
     </FloatButton.Group>
   );
 };

@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/router';
-import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { Popconfirm, Button } from 'antd';
 
@@ -9,6 +8,9 @@ import { useMessageContext } from '@/components/common/message-context';
 import client from '@/gql/apollo';
 import { useCompleteDeliveryNoteMutation, DeliveryNotesDocument } from '@/gql';
 import { onError } from '@/utils';
+import { deliveryNoteStatusEnum } from '@/utils/enum';
+import DataTable from '@/components/shared/data-table';
+import { codeColumn, qtyColumn, statusColumn } from '@/components/shared/columns';
 
 import DeliveryNoteDetail from './detail';
 
@@ -21,7 +23,7 @@ const DeliveryNoteList: React.FC = () => {
 
   const [completeDeliveryNote] = useCompleteDeliveryNoteMutation({
     onCompleted: () => {
-      messageApi?.success('出库凭证完成成功');
+      messageApi?.success('Delivery note completed successfully');
       handleReloadTable();
     },
     onError,
@@ -48,41 +50,25 @@ const DeliveryNoteList: React.FC = () => {
   };
 
   const columns: ProColumns<any>[] = [
+    codeColumn('No.', 'code', handleDetail),
     {
-      title: '单号',
-      dataIndex: 'code',
-      width: 200,
-      search: false,
-      render: (text, record) => (
-        <Button type="link" onClick={() => handleDetail(record)}>
-          {text}
-        </Button>
-      ),
-    },
-    {
-      title: '仓库名称',
+      title: 'Warehouse Name',
       key: 'warehouseUuid',
       dataIndex: ['warehouse', 'name'],
     },
     {
-      title: '客户名称',
+      title: 'Customer Name',
       dataIndex: 'customerName',
     },
+    qtyColumn('Total Qty', 'totalQty'),
+    statusColumn('Status', 'status', deliveryNoteStatusEnum, { width: 170 }),
     {
-      title: '总数量',
-      dataIndex: 'totalQty',
-    },
-    {
-      title: '状态',
-      dataIndex: 'status',
-    },
-    {
-      title: '创建时间',
+      title: 'Created At',
       dataIndex: 'insertedAt',
       valueType: 'dateTime',
     },
     {
-      title: '操作',
+      title: 'Actions',
       width: 180,
       key: 'option',
       valueType: 'option',
@@ -91,13 +77,13 @@ const DeliveryNoteList: React.FC = () => {
           {record.status === 'to_deliver' && (
             <Popconfirm
               key="link2"
-              title="确定完成吗？"
+              title="Confirm completion?"
               onConfirm={() => handleCompleteDeliveryNote(record)}
-              okText="是"
-              cancelText="否"
+              okText="Yes"
+              cancelText="No"
             >
               <Button size="small" type="link">
-                出库
+                Stock Out
               </Button>
             </Popconfirm>
           )}
@@ -108,7 +94,9 @@ const DeliveryNoteList: React.FC = () => {
 
   return (
     <>
-      <ProTable
+      <DataTable
+        entityName="delivery notes"
+        emptyHint="Delivery notes are created from a sales order, then stocked out here."
         actionRef={actionRef}
         columns={columns}
         request={async (params, sorter, filter) => {
@@ -125,17 +113,6 @@ const DeliveryNoteList: React.FC = () => {
             success: true,
           };
         }}
-        rowKey="uuid"
-        pagination={{
-          showQuickJumper: true,
-        }}
-        search={false}
-        // search={{
-        //   span: 6,
-        //   layout: 'vertical',
-        //   defaultCollapsed: true,
-        // }}
-        dateFormatter="string"
       />
 
       <DeliveryNoteDetail

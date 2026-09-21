@@ -2,20 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Fira Sans for UI, Fira Code for figures. Loaded with display=swap so text is
+ * never invisible while the font downloads.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Fira+Sans:wght@400;500;600;700&display=swap');
+
+/*
+ * Surface tokens, mirroring src/components/common/theme.tsx so plain CSS and
+ * Ant Design agree. Ant Design owns component styling; these cover the page
+ * chrome around it.
+ *
+ * Note: this app does not implement a dark theme. It previously flipped these
+ * variables under prefers-color-scheme: dark, which turned the page background
+ * near-black while every Ant Design surface stayed light — unreadable for anyone
+ * whose OS is set to dark. Until the components are made dark-aware, the app
+ * renders light regardless of system preference, which is at least coherent.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+
+  --background: #f1f5f9;
+  --foreground: #0f172a;
+  --surface: #ffffff;
+  --border: #e2e8f0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
-  color: var(--foreground);
+  padding: 0;
+  margin: 0;
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--foreground);
+  font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/*
+ * Quantities, money and codes line up in columns only with tabular figures;
+ * proportional digits make totals visually ragged and hard to scan.
+ */
+.tabular-figures,
+.ant-statistic-content-value,
+.ant-table-cell-numeric {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+/* Keyboard focus must stay visible; Ant Design's default ring is easy to lose. */
+:focus-visible {
+  outline: 2px solid #1e40af;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

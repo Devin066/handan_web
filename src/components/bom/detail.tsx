@@ -27,17 +27,17 @@ const BomDetail = ({ uuid, visible, record, onClose }: any) => {
 
   const bomItemColumns = [
     {
-      title: '名称',
+      title: 'Name',
       dataIndex: 'itemName',
       key: 'itemName',
     },
     {
-      title: '数量',
+      title: 'Qty',
       dataIndex: 'qty',
       key: 'qty',
     },
     {
-      title: '单位',
+      title: 'UOM',
       dataIndex: 'uomName',
       key: 'uomName',
     },
@@ -45,12 +45,12 @@ const BomDetail = ({ uuid, visible, record, onClose }: any) => {
 
   const bomProcessColumns = [
     {
-      title: '工序名称',
+      title: 'Process Name',
       dataIndex: 'processName',
       key: 'processName',
     },
     {
-      title: '顺序',
+      title: 'Position',
       dataIndex: 'position',
       key: 'position',
     },
@@ -59,7 +59,7 @@ const BomDetail = ({ uuid, visible, record, onClose }: any) => {
   const items: TabsProps['items'] = [
     {
       key: '1',
-      label: `BOM 信息(${size(entry?.bomItems)})`,
+      label: `BOM Items(${size(entry?.bomItems)})`,
       children: (
         <ProTable
           columns={bomItemColumns}
@@ -74,7 +74,7 @@ const BomDetail = ({ uuid, visible, record, onClose }: any) => {
     },
     {
       key: '2',
-      label: `工序信息(${size(entry?.bomProcesses)})`,
+      label: `Processes(${size(entry?.bomProcesses)})`,
       children: (
         <ProTable
           columns={bomProcessColumns}
@@ -91,10 +91,10 @@ const BomDetail = ({ uuid, visible, record, onClose }: any) => {
 
   return (
     <Drawer width={'60%'} title={entry?.uuid} onClose={onClose} open={visible} style={{ backgroundColor: '#f7f8fa' }}>
-      <ProCard title="基本信息" style={{ marginTop: '10px' }}>
+      <ProCard title="Basic Info" style={{ marginTop: '10px' }}>
         <ProDescriptions column={3} size="small">
-          <ProDescriptions.Item label="BOM名称">{entry?.name}</ProDescriptions.Item>
-          <ProDescriptions.Item label="商品名称">{entry?.itemName}</ProDescriptions.Item>
+          <ProDescriptions.Item label="BOM Name">{entry?.name}</ProDescriptions.Item>
+          <ProDescriptions.Item label="Item Name">{entry?.itemName}</ProDescriptions.Item>
         </ProDescriptions>
       </ProCard>
 

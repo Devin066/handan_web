@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react';
 import { Button, Popconfirm } from 'antd';
-import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 
 // locale
@@ -13,6 +12,9 @@ import {
   useScheduleWorkOrderMutation,
 } from '@/gql';
 import { onError } from '@/utils';
+import { workOrderStatusEnum } from '@/utils/enum';
+import DataTable from '@/components/shared/data-table';
+import { codeColumn, progressColumn, qtyColumn, statusColumn } from '@/components/shared/columns';
 
 import WorkOrderNew from './new';
 import WorkOrderDetail from './detail';
@@ -26,7 +28,7 @@ const WorkOrderList: React.FC = () => {
 
   const [storeFinishItem] = useStoreFinishItemMutation({
     onCompleted: () => {
-      messageApi?.success('入库成功');
+      messageApi?.success('Stocked in successfully');
       handleReloadTable();
     },
     onError,
@@ -34,7 +36,7 @@ const WorkOrderList: React.FC = () => {
 
   const [createWorkOrder] = useCreateWorkOrderMutation({
     onCompleted: () => {
-      messageApi?.success('创建工单成功');
+      messageApi?.success('Work order created successfully');
       handleReloadTable();
     },
     onError,
@@ -42,7 +44,7 @@ const WorkOrderList: React.FC = () => {
 
   const [scheduleWorkOrder] = useScheduleWorkOrderMutation({
     onCompleted: () => {
-      messageApi?.success('排产成功');
+      messageApi?.success('Scheduled successfully');
       handleReloadTable();
     },
     onError,
@@ -76,56 +78,35 @@ const WorkOrderList: React.FC = () => {
   };
 
   const columns: ProColumns<any>[] = [
+    codeColumn('No.', 'code', handleDetail),
     {
-      title: '单号',
-      key: 'code',
-      width: 200,
-      dataIndex: 'code',
-      render: (text, record) => (
-        <Button type="link" onClick={() => handleDetail(record)}>
-          {text}
-        </Button>
-      ),
-    },
-    {
-      title: '产品名称',
+      title: 'Product Name',
       key: 'itemName',
       dataIndex: 'itemName',
     },
+    statusColumn('Status', 'status', workOrderStatusEnum, { width: 150 }),
+    qtyColumn('Planned', 'plannedQty', 'uomName'),
+    progressColumn('Produced', 'producedQty', 'plannedQty'),
+    progressColumn('Stored', 'storedQty', 'plannedQty'),
     {
-      title: '状态',
-      key: 'status',
-      dataIndex: 'status',
-    },
-    {
-      title: '计划生产数量',
-      dataIndex: 'plannedQty',
-    },
-    {
-      title: '已生产数量',
-      dataIndex: 'producedQty',
-    },
-    {
-      title: '已入库数量',
-      dataIndex: 'storedQty',
-    },
-    {
-      title: '开始时间',
+      title: 'Start Time',
       dataIndex: 'startTime',
       valueType: 'date',
+      width: 120,
     },
     {
-      title: '结束时间',
+      title: 'End Time',
       dataIndex: 'endTime',
       valueType: 'date',
+      width: 120,
     },
     {
-      title: '创建时间',
+      title: 'Created At',
       valueType: 'dateTime',
       dataIndex: 'insertedAt',
     },
     {
-      title: '操作',
+      title: 'Actions',
       width: 180,
       key: 'option',
       valueType: 'option',
@@ -134,13 +115,13 @@ const WorkOrderList: React.FC = () => {
           {record.status === 'draft' && (
             <Popconfirm
               key="link2"
-              title="确定排产吗？"
+              title="Confirm scheduling?"
               onConfirm={() => handleScheduleWorkOrder(record)}
-              okText="是"
-              cancelText="否"
+              okText="Yes"
+              cancelText="No"
             >
               <Button size="small" type="link">
-                开始排产
+                Start Scheduling
               </Button>
             </Popconfirm>
           )}
@@ -148,7 +129,7 @@ const WorkOrderList: React.FC = () => {
         <>
           {record.status === 'scheduling' && (
             <Button size="small" type="link" onClick={() => handleDetail(record)}>
-              查看物料需求
+              View Material Requirements
             </Button>
           )}
         </>,
@@ -163,7 +144,9 @@ const WorkOrderList: React.FC = () => {
 
   return (
     <>
-      <ProTable
+      <DataTable
+        entityName="work orders"
+        emptyHint="Create a work order from a BOM to start production."
         actionRef={actionRef}
         columns={columns}
         request={async (params, sorter, filter) => {
@@ -180,16 +163,6 @@ const WorkOrderList: React.FC = () => {
             success: true,
           };
         }}
-        rowKey="uuid"
-        pagination={{
-          showQuickJumper: true,
-        }}
-        search={false}
-        // search={{
-        //   layout: 'vertical',
-        //   defaultCollapsed: true,
-        // }}
-        dateFormatter="string"
         toolBarRender={() => [<WorkOrderNew key="work-order-new" onCreate={(values: any) => handleCreate(values)} />]}
       />
       <WorkOrderDetail

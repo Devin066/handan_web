@@ -1,10 +1,12 @@
 import { useRef } from 'react';
 import { useRouter } from 'next/router';
-import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 
 // locale
 import client from '@/gql/apollo';
+import { paymentEntryTypeEnum } from '@/utils/enum';
+import DataTable from '@/components/shared/data-table';
+import { codeColumn, moneyColumn, statusColumn } from '@/components/shared/columns';
 import { PaymentEntriesDocument } from '@/gql';
 
 const PaymentEntryList: React.FC = () => {
@@ -16,40 +18,31 @@ const PaymentEntryList: React.FC = () => {
   };
 
   const columns: ProColumns<any>[] = [
+    codeColumn('No.'),
+    statusColumn('Type', 'type', paymentEntryTypeEnum, { width: 140 }),
     {
-      title: '单号',
-      key: 'code',
-      dataIndex: 'code',
-    },
-    {
-      title: '类型',
-      dataIndex: 'type',
-    },
-    {
-      title: '合作伙伴',
+      title: 'Partners',
       dataIndex: 'partyName',
     },
+    moneyColumn('Amount', 'totalAmount'),
     {
-      title: '金额',
-      valueType: 'money',
-      dataIndex: 'totalAmount',
-    },
-    {
-      title: '支付方式',
+      title: 'Payment Methods',
       dataIndex: ['paymentMethod', 'name'],
     },
     {
-      title: '创建时间',
+      title: 'Created At',
       valueType: 'dateTime',
       dataIndex: 'insertedAt',
     },
   ];
 
   return (
-    <ProTable
+    <DataTable
+      entityName="payment entries"
+      emptyHint="Record a payment against an outstanding invoice."
       actionRef={actionRef}
       columns={columns}
-      request={async (params, sorter, filter) => {
+      request={async (params: any, sorter: any, filter: any) => {
         const { data } = await client.query({
           query: PaymentEntriesDocument,
           variables: {
@@ -63,16 +56,6 @@ const PaymentEntryList: React.FC = () => {
           success: true,
         };
       }}
-      rowKey="uuid"
-      pagination={{
-        showQuickJumper: true,
-      }}
-      search={false}
-      // search={{
-      //   layout: 'vertical',
-      //   defaultCollapsed: true,
-      // }}
-      dateFormatter="string"
     />
   );
 };

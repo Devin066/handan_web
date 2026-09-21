@@ -37,7 +37,7 @@ const PurchaseOrderNew = (props: any) => {
       .filter((item: any) => item.orderedQty > 0);
 
     if (size(updatedLineItems) == 0) {
-      messageApi?.error('请添加或核实商品项');
+      messageApi?.error('Please add or verify the item lines');
       return false;
     }
 
@@ -78,7 +78,7 @@ const PurchaseOrderNew = (props: any) => {
           setModalVisible(true);
         }}
       >
-        新增采购订单
+        New Purchase Order
       </Button>
 
       <ModalForm
@@ -88,7 +88,7 @@ const PurchaseOrderNew = (props: any) => {
         }}
         width={'70%'}
         onOpenChange={setModalVisible}
-        title={<Space>新增采购订单</Space>}
+        title={<Space>New Purchase Order</Space>}
         submitTimeout={2000}
         autoFocusFirstInput
         open={modalVisible}
@@ -97,15 +97,15 @@ const PurchaseOrderNew = (props: any) => {
           render: (props, doms) => {
             return [
               <div key="lineItemTotal" style={{ marginRight: '10px' }}>
-                商品金额： <span style={{ fontSize: '20px', color: '#ab956d' }}>¥ {amount.lineItemTotal}</span>{' '}
+                Item Amount: <span style={{ fontSize: '20px', color: '#ab956d' }}>$ {amount.lineItemTotal}</span>{' '}
               </div>,
               <Divider key="divider1" type="vertical" />,
               <div key="total" style={{ marginRight: '10px' }}>
-                应付金额： <span style={{ fontSize: '20px', color: '#ab956d' }}>¥ {amount.total}</span>{' '}
+                Amount Payable: <span style={{ fontSize: '20px', color: '#ab956d' }}>$ {amount.total}</span>{' '}
               </div>,
               <Divider key="divider4" type="vertical" />,
               <Button type="primary" key="submit" onClick={() => props.form?.submit()}>
-                提交
+                Submit
               </Button>,
             ];
           },
@@ -115,27 +115,32 @@ const PurchaseOrderNew = (props: any) => {
           <ProFormSelect
             width="sm"
             name="supplierUuid"
-            label="供应商"
+            label="Supplier"
             fieldProps={{
               onSelect: (value, opt) => handleSelctSupplier(value, opt),
             }}
             request={async (e) => fetchSuppliers(e)}
-            rules={[{ required: true, message: '请选择供应商' }]}
-            placeholder="请选择供应商"
+            rules={[{ required: true, message: 'Select supplier' }]}
+            placeholder="Select supplier"
           />
 
-          <ProFormText width="sm" name="supplierAddress" label="供应商地址" placeholder="请输入供应商地址" />
+          <ProFormText
+            width="sm"
+            name="supplierAddress"
+            label="Supplier Address"
+            placeholder="Enter supplier address"
+          />
 
           <ProFormSelect
             width="sm"
             name="warehouseUuid"
-            label="库房"
+            label="Warehouse"
             request={async (e) => fetchWarehouses(e)}
-            placeholder="请选择库房"
-            rules={[{ required: true, message: '请选择库存' }]}
+            placeholder="Select warehouse"
+            rules={[{ required: true, message: 'Select warehouse' }]}
           />
 
-          <ProFormDatePicker name="endTime" label="交货日期" />
+          <ProFormDatePicker name="endTime" label="Delivery Date" />
         </ProForm.Group>
 
         <OrderItemForm onCallback={(values: any) => handleAdjustAmount(values)} />

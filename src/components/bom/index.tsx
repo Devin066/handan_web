@@ -20,7 +20,7 @@ const BOMList: React.FC = () => {
 
   const [createBOM] = useCreateBomMutation({
     onCompleted: () => {
-      messageApi?.success('创建成功');
+      messageApi?.success('Created successfully');
       handleReloadTable();
     },
     onError,
@@ -43,7 +43,7 @@ const BOMList: React.FC = () => {
 
   const columns: ProColumns<any>[] = [
     {
-      title: '名称',
+      title: 'Name',
       search: false,
       width: 200,
       dataIndex: 'name',
@@ -54,7 +54,7 @@ const BOMList: React.FC = () => {
       ),
     },
     {
-      title: '创建时间',
+      title: 'Created At',
       dataIndex: 'insertedAt',
       valueType: 'dateTime',
     },

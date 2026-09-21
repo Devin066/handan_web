@@ -32,13 +32,13 @@ const PaymentMethodList: React.FC = () => {
 
   const columns: ProColumns<any>[] = [
     {
-      title: '名称',
+      title: 'Name',
       key: 'name',
       width: 200,
       dataIndex: 'name',
     },
     {
-      title: '创建时间',
+      title: 'Created At',
       valueType: 'dateTime',
       dataIndex: 'insertedAt',
     },

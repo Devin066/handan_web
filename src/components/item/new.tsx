@@ -103,14 +103,14 @@ const ItemNew = (props: any) => {
 
   const columns: ProColumns<any>[] = [
     {
-      title: '仓库',
+      title: 'Warehouse',
       dataIndex: 'name',
       valueType: 'select',
       align: 'center',
       readonly: true,
     },
     {
-      title: '数量',
+      title: 'Qty',
       dataIndex: 'qty',
       valueType: 'digit',
       fieldProps: {
@@ -118,12 +118,12 @@ const ItemNew = (props: any) => {
       },
       formItemProps: () => {
         return {
-          rules: [{ required: true, message: '此项为必填项' }],
+          rules: [{ required: true, message: 'This field is required' }],
         };
       },
     },
     {
-      title: '操作',
+      title: 'Actions',
       valueType: 'option',
       render: (text, record, _, action) => [
         <a
@@ -133,7 +133,7 @@ const ItemNew = (props: any) => {
             action?.startEditable?.(record.uuid);
           }}
         >
-          编辑
+          Edit
         </a>,
       ],
     },
@@ -147,7 +147,7 @@ const ItemNew = (props: any) => {
           setModalVisible(true);
         }}
       >
-        新增商品
+        New Item
       </Button>
 
       <ModalForm
@@ -157,7 +157,7 @@ const ItemNew = (props: any) => {
         }}
         width={'70%'}
         onOpenChange={setModalVisible}
-        title={<Space>新增商品</Space>}
+        title={<Space>New Item</Space>}
         submitTimeout={2000}
         autoFocusFirstInput
         open={modalVisible}
@@ -167,31 +167,31 @@ const ItemNew = (props: any) => {
           <ProFormText
             width="sm"
             name="name"
-            label="名称"
-            placeholder="请输入名称"
-            rules={[{ required: true, message: '请输入名称' }]}
+            label="Name"
+            placeholder="Enter name"
+            rules={[{ required: true, message: 'Enter name' }]}
           />
 
-          <ProFormText width="sm" name="spec" label="规格" placeholder="没有可以不填" />
+          <ProFormText width="sm" name="spec" label="Spec" placeholder="optional" />
 
           <ProFormDigit
             width="sm"
             name="sellingPrice"
-            label="销售价"
+            label="Sale Price"
             fieldProps={{
               precision: 2,
-              addonAfter: '元',
+              addonAfter: 'USD',
             }}
-            placeholder="请输入销售价"
-            rules={[{ required: true, message: '请输入销售价' }]}
+            placeholder="Enter sale price"
+            rules={[{ required: true, message: 'Enter sale price' }]}
           />
 
           <ProFormSelect
             width="sm"
             name="uomUuid"
-            label="单位"
+            label="UOM"
             options={uoms}
-            placeholder="请选择单位"
+            placeholder="Select unit"
             fieldProps={{
               showSearch: true,
               filterOption: true,

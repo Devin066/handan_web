@@ -15,7 +15,7 @@ const WorkstationList: React.FC = () => {
 
   const [createWorkstation] = useCreateWorkstationMutation({
     onCompleted: () => {
-      messageApi?.success('工作站创建成功');
+      messageApi?.success('Workstation created successfully');
       handleReloadTable();
     },
     onError,
@@ -31,13 +31,13 @@ const WorkstationList: React.FC = () => {
 
   const columns: ProColumns<any>[] = [
     {
-      title: '名称',
+      title: 'Name',
       key: 'name',
       width: 200,
       dataIndex: 'name',
     },
     {
-      title: '创建时间',
+      title: 'Created At',
       dataIndex: 'insertedAt',
       valueType: 'dateTime',
     },

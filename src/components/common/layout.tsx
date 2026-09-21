@@ -7,6 +7,7 @@ import type { FC, ReactNode } from 'react';
 import useAuthUserStore from '@/stores/persisted/useAuthUser';
 
 import menuProps from './_menu';
+import { tokens } from './theme';
 import AvatarDropdown from './avatar-dropdown';
 import GlobalFloatButtons from './global-float-buttons';
 import HeaderActions from './header-actions';
@@ -81,22 +82,25 @@ const GlobalLayout: FC<LayoutProps> = ({ children }) => {
           title: 'Handan',
           layout: 'mix',
           onMenuHeaderClick: handleLogoClick,
+          // Chrome stays quiet so the data carries the visual weight. The
+          // previous warm-beige palette and blurred, rounded panels fought the
+          // tables for attention and cost a blur pass on every scroll.
           token: {
-            colorTextMenuTitle: '#6b5b4d',
-            colorTextMenu: '#7a6e62',
-            colorTextMenuSelected: '#8a7c6f',
-            colorTextMenuActive: '#8a7c6f',
-            colorBgMenuItemSelected: 'rgba(230, 225, 215, 0.5)',
-            colorBgMenuItemHover: 'rgba(240, 238, 233, 0.4)',
-            colorBgCollapsedButton: 'rgba(255, 255, 255, 0.8)',
-            colorTextCollapsedButtonHover: '#8a7c6f',
-            colorTextCollapsedButton: '#b3a99e',
+            colorTextMenuTitle: tokens.text,
+            colorTextMenu: tokens.textSecondary,
+            colorTextMenuSelected: tokens.primary,
+            colorTextMenuActive: tokens.primary,
+            colorBgMenuItemSelected: '#EFF6FF',
+            colorBgMenuItemHover: tokens.surfaceMuted,
+            colorBgCollapsedButton: tokens.surface,
+            colorTextCollapsedButtonHover: tokens.primary,
+            colorTextCollapsedButton: tokens.textTertiary,
             sider: {
-              colorMenuBackground: 'rgba(255, 255, 255, 0.6)',
-              colorBgMenuItemCollapsedElevated: 'rgba(255, 255, 255, 0.7)',
+              colorMenuBackground: tokens.surface,
+              colorBgMenuItemCollapsedElevated: tokens.surface,
             },
             header: {
-              colorBgHeader: 'rgba(255, 255, 255, 0.85)',
+              colorBgHeader: tokens.surface,
             },
             pageContainer: {
               paddingBlockPageContainerContent: 0,
@@ -105,17 +109,13 @@ const GlobalLayout: FC<LayoutProps> = ({ children }) => {
           },
           header: {
             style: {
-              boxShadow: '0 2px 10px rgba(140, 130, 115, 0.08)',
-              backdropFilter: 'blur(8px)',
-              borderRadius: '0 0 16px 16px',
-              borderBottom: '1px solid rgba(220, 215, 205, 0.3)',
+              borderBottom: `1px solid ${tokens.border}`,
+              boxShadow: 'none',
             },
           },
           siderMenuProps: {
             style: {
-              borderRight: '1px solid rgba(220, 215, 205, 0.3)',
-              backdropFilter: 'blur(6px)',
-              borderRadius: '0 16px 16px 0',
+              borderRight: `1px solid ${tokens.border}`,
             },
           },
           location: {
@@ -125,7 +125,7 @@ const GlobalLayout: FC<LayoutProps> = ({ children }) => {
           avatarProps: {
             title: currentUser?.email,
             size: 'small',
-            style: { backgroundColor: '#1890ff' },
+            style: { backgroundColor: tokens.primary },
             children: currentUser?.email?.charAt(0)?.toUpperCase(),
             render: (_: any, avatarChildren: any) => {
               return <AvatarDropdown signOut={logout}>{avatarChildren}</AvatarDropdown>;
@@ -150,26 +150,16 @@ const GlobalLayout: FC<LayoutProps> = ({ children }) => {
           extra={layoutConfig.extra}
           header={{
             style: {
-              backgroundColor: 'rgba(255, 255, 255, 0.7)',
-              padding: '16px 24px',
-              borderRadius: 8,
-              boxShadow: '0 2px 8px rgba(140, 130, 115, 0.05)',
-              border: '1px solid rgba(220, 215, 205, 0.3)',
-              backdropFilter: 'blur(4px)',
+              padding: '12px 20px 0',
+              backgroundColor: 'transparent',
             },
           }}
         >
-          <div
-            style={{
-              margin: '8px 4px',
-            }}
-          >
-            {children}
-          </div>
+          <div style={{ padding: '12px 20px 24px' }}>{children}</div>
         </PageContainer>
       </ProLayout>
 
-      {/* 全局浮动按钮 */}
+      {/* Global float buttons */}
       <GlobalFloatButtons />
     </div>
   );

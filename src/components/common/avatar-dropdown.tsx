@@ -12,7 +12,7 @@ const AvatarDropdown: React.FC<AvatarDropdownProps> = (props) => {
   const router = useRouter();
 
   const loginOut = async () => {
-    message.success('退出成功');
+    message.success('Signed out successfully');
     if (typeof window !== 'undefined') {
       localStorage.removeItem('accessToken');
     }
@@ -37,14 +37,14 @@ const AvatarDropdown: React.FC<AvatarDropdownProps> = (props) => {
   const menuItems = [
     {
       key: 'settings',
-      label: '系统设置',
+      label: 'Settings',
     },
     {
       type: 'divider' as const,
     },
     {
       key: 'logout',
-      label: '退出登录',
+      label: 'Sign Out',
       danger: true,
     },
   ];

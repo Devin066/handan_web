@@ -21,7 +21,7 @@ const PaymentEntryNew = (props: any) => {
 
   const [createPaymentEntry] = useCreatePaymentEntryMutation({
     onCompleted: () => {
-      messageApi?.success('创建成功');
+      messageApi?.success('Created successfully');
       onClose && onClose();
     },
     onError,
@@ -151,7 +151,7 @@ const PaymentEntryNew = (props: any) => {
 
   const columns: ProColumns<any>[] = [
     {
-      title: '单号',
+      title: 'No.',
       dataIndex: 'lineUuid',
       valueType: 'select',
       align: 'center',
@@ -161,7 +161,7 @@ const PaymentEntryNew = (props: any) => {
           showSearch: true,
           style: { width: '100%' },
           defaultActiveFirstOption: false,
-          placeholder: '请输入内容搜索',
+          placeholder: 'Search',
           suffixIcon: null,
           onSearch: (value: any) => {
             if (party.type === 'customer') {
@@ -189,12 +189,12 @@ const PaymentEntryNew = (props: any) => {
       },
       formItemProps: () => {
         return {
-          rules: [{ required: true, message: '此项为必填项' }],
+          rules: [{ required: true, message: 'This field is required' }],
         };
       },
     },
     {
-      title: '金额',
+      title: 'Amount',
       dataIndex: 'amount',
       valueType: 'digit',
       fieldProps: {
@@ -203,7 +203,7 @@ const PaymentEntryNew = (props: any) => {
       readonly: true,
     },
     {
-      title: '操作',
+      title: 'Actions',
       valueType: 'option',
       render: (text, record, _, action) => [
         <a
@@ -213,7 +213,7 @@ const PaymentEntryNew = (props: any) => {
             action?.startEditable?.(record.uuid);
           }}
         >
-          编辑
+          Edit
         </a>,
       ],
     },
@@ -222,7 +222,7 @@ const PaymentEntryNew = (props: any) => {
   return (
     <>
       <ModalForm
-        title={<Space>新增支付记录</Space>}
+        title={<Space>New Payment Entry</Space>}
         form={form}
         modalProps={{
           destroyOnClose: true,
@@ -237,11 +237,11 @@ const PaymentEntryNew = (props: any) => {
           render: (props, doms) => {
             return [
               <div key="lineItemTotal" style={{ marginRight: '10px' }}>
-                金额： <span style={{ fontSize: '20px', color: '#ab956d' }}>¥ {amount.lineItemTotal}</span>
+                Amount: <span style={{ fontSize: '20px', color: '#ab956d' }}>$ {amount.lineItemTotal}</span>
               </div>,
               <Divider key="divider4" type="vertical" />,
               <Button type="primary" key="submit" onClick={() => props.form?.submit()}>
-                提交
+                Submit
               </Button>,
             ];
           },
@@ -255,13 +255,13 @@ const PaymentEntryNew = (props: any) => {
             <ProFormSelect
               width="sm"
               name="partyUuid"
-              label="客户"
+              label="Customer"
               fieldProps={{
                 onSelect: (value, opt) => handleSelctParty(value, opt),
               }}
               request={async (e) => fetchCustomers(e)}
-              rules={[{ required: true, message: '请选择客户' }]}
-              placeholder="请选择客户"
+              rules={[{ required: true, message: 'Select customer' }]}
+              placeholder="Select customer"
             />
           )}
 
@@ -269,23 +269,23 @@ const PaymentEntryNew = (props: any) => {
             <ProFormSelect
               width="sm"
               name="partyUuid"
-              label="供应商"
+              label="Supplier"
               fieldProps={{
                 onSelect: (value, opt) => handleSelctParty(value, opt),
               }}
               request={async (e) => fetchSuppliers(e)}
-              rules={[{ required: true, message: '请选择客户' }]}
-              placeholder="请选择客户"
+              rules={[{ required: true, message: 'Select customer' }]}
+              placeholder="Select customer"
             />
           )}
 
           <ProFormSelect
             width="sm"
             name="paymentMethodUuid"
-            label="支付方式"
+            label="Payment Methods"
             request={async (e) => fetchPaymentMethods(e)}
-            rules={[{ required: true, message: '请选择支付方式' }]}
-            placeholder="请选择支付方式"
+            rules={[{ required: true, message: 'Select payment method' }]}
+            placeholder="Select payment method"
           />
         </ProForm.Group>
 

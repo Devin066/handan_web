@@ -32,7 +32,7 @@ const StoredItem = (props: any) => {
           setModalVisible(true);
         }}
       >
-        成品入库
+        Stock In Finished Goods
       </Button>
 
       <ModalForm
@@ -43,7 +43,7 @@ const StoredItem = (props: any) => {
         }}
         width={'70%'}
         onOpenChange={setModalVisible}
-        title={<Space>成品入库</Space>}
+        title={<Space>Stock In Finished Goods</Space>}
         submitTimeout={2000}
         autoFocusFirstInput
         open={modalVisible}
@@ -53,13 +53,13 @@ const StoredItem = (props: any) => {
           <ProFormDigit
             width="sm"
             name="storedQty"
-            label="入库数量"
+            label="Received Qty"
             fieldProps={{
               precision: 0,
               max: record.producedQty - record.storedQty,
             }}
-            placeholder="请输入入库数量"
-            rules={[{ required: true, message: '请输入入库数量' }]}
+            placeholder="Enter received qty"
+            rules={[{ required: true, message: 'Enter received qty' }]}
           />
         </ProForm.Group>
       </ModalForm>

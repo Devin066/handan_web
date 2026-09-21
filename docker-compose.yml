@@ -1,0 +1,55 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-handan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-handan}
+      POSTGRES_DB: ${POSTGRES_DB:-handan}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      # Backups land here; see scripts/backup-db.sh.
+      - ./backups:/backups
+    # Not published to the host by default: on a VPS that would expose Postgres
+    # to the internet. Uncomment for local inspection only.
+    # ports:
+    #   - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-handan} -d ${POSTGRES_DB:-handan}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Applies migrations, then exits. The app waits for it to finish.
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrator
+    restart: 'no'
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-handan}:${POSTGRES_PASSWORD:-handan}@db:5432/${POSTGRES_DB:-handan}?schema=public"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-handan}:${POSTGRES_PASSWORD:-handan}@db:5432/${POSTGRES_DB:-handan}?schema=public"
+      JWT_SECRET: "${JWT_SECRET:?set JWT_SECRET in .env - generate one with openssl rand -base64 48}"
+      NODE_ENV: production
+    ports:
+      - '${APP_PORT:-3000}:3000'
+
+volumes:
+  db_data:

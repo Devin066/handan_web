@@ -46,7 +46,7 @@ const OrderItemForm = (props: any) => {
 
   const columns: ProColumns<any>[] = [
     {
-      title: '商品名称',
+      title: 'Item Name',
       dataIndex: 'name',
       valueType: 'select',
       align: 'center',
@@ -55,7 +55,7 @@ const OrderItemForm = (props: any) => {
           showSearch: true,
           style: { width: '100%' },
           defaultActiveFirstOption: false,
-          placeholder: '请输入内容搜索',
+          placeholder: 'Search',
           suffixIcon: null,
           onSearch: (value: any) => {
             fetch({ variables: {} });
@@ -82,13 +82,13 @@ const OrderItemForm = (props: any) => {
       },
       formItemProps: () => {
         return {
-          rules: [{ required: true, message: '此项为必填项' }],
+          rules: [{ required: true, message: 'This field is required' }],
         };
       },
       width: '30%',
     },
     {
-      title: '单位',
+      title: 'UOM',
       dataIndex: 'uomName',
       valueType: 'select',
       align: 'center',
@@ -112,7 +112,7 @@ const OrderItemForm = (props: any) => {
                   },
                 });
               } else {
-                message.error('请选择商品和单位');
+                message.error('Please select an item and a unit');
                 return false;
               }
             }
@@ -125,40 +125,40 @@ const OrderItemForm = (props: any) => {
       },
       formItemProps: () => {
         return {
-          rules: [{ required: true, message: '此项为必填项' }],
+          rules: [{ required: true, message: 'This field is required' }],
         };
       },
       width: '15%',
     },
     {
-      title: '销售价',
+      title: 'Sale Price',
       dataIndex: 'unitPrice',
       formItemProps: () => {
         return {
-          rules: [{ required: true, message: '此项为必填项' }],
+          rules: [{ required: true, message: 'This field is required' }],
         };
       },
       valueType: 'digit',
       // width: '15%',
     },
     {
-      title: '数量',
+      title: 'Qty',
       dataIndex: 'orderedQty',
       valueType: 'digit',
       formItemProps: () => {
         return {
-          rules: [{ required: true, message: '此项为必填项' }],
+          rules: [{ required: true, message: 'This field is required' }],
         };
       },
       // width: '15%',
     },
     {
-      title: '金额',
+      title: 'Amount',
       dataIndex: 'amount',
       readonly: true,
     },
     {
-      title: '操作',
+      title: 'Actions',
       valueType: 'option',
       render: (text, record, _, action) => [
         <a
@@ -168,7 +168,7 @@ const OrderItemForm = (props: any) => {
             action?.startEditable?.(record.uuid);
           }}
         >
-          编辑
+          Edit
         </a>,
         <a
           style={{ color: '#ff4d4f' }}
@@ -177,7 +177,7 @@ const OrderItemForm = (props: any) => {
             setDataSource(dataSource.filter((item: any) => item.uuid !== record.uuid));
           }}
         >
-          删除
+          Delete
         </a>,
       ],
     },

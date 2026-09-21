@@ -60,12 +60,12 @@ const BOMNew = (props: any) => {
     });
 
     if (size(updatedBomItems) == 0) {
-      messageApi?.error('请添加或核实商品项');
+      messageApi?.error('Please add or verify the item lines');
       return false;
     }
 
     if (size(updatedBomProcesses) == 0) {
-      messageApi?.error('请添加或核实工序项');
+      messageApi?.error('Please add or verify the process lines');
       return false;
     }
 
@@ -86,7 +86,7 @@ const BOMNew = (props: any) => {
 
   const itemColumns: ProColumns<any>[] = [
     {
-      title: '工序名称',
+      title: 'Process Name',
       dataIndex: 'name',
       valueType: 'select',
       align: 'center',
@@ -95,7 +95,7 @@ const BOMNew = (props: any) => {
           showSearch: true,
           style: { width: '100%' },
           defaultActiveFirstOption: false,
-          placeholder: '请输入内容搜索',
+          placeholder: 'Search',
           suffixIcon: null,
           onSearch: (value: any) => {
             fetchItems2({ variables: {} });
@@ -119,24 +119,24 @@ const BOMNew = (props: any) => {
       },
       formItemProps: () => {
         return {
-          rules: [{ required: true, message: '此项为必填项' }],
+          rules: [{ required: true, message: 'This field is required' }],
         };
       },
     },
     {
-      title: '数量',
+      title: 'Qty',
       dataIndex: 'qty',
       valueType: 'digit',
       align: 'center',
       formItemProps: () => {
         return {
-          rules: [{ required: true, message: '此项为必填项' }],
+          rules: [{ required: true, message: 'This field is required' }],
         };
       },
       width: '15%',
     },
     {
-      title: '操作',
+      title: 'Actions',
       valueType: 'option',
       render: (text, record, _, action) => [
         <a
@@ -146,7 +146,7 @@ const BOMNew = (props: any) => {
             action?.startEditable?.(record.uuid);
           }}
         >
-          编辑
+          Edit
         </a>,
       ],
     },
@@ -154,7 +154,7 @@ const BOMNew = (props: any) => {
 
   const processColumns: ProColumns<any>[] = [
     {
-      title: '工序名称',
+      title: 'Process Name',
       dataIndex: 'name',
       valueType: 'select',
       align: 'center',
@@ -163,7 +163,7 @@ const BOMNew = (props: any) => {
           showSearch: true,
           style: { width: '100%' },
           defaultActiveFirstOption: false,
-          placeholder: '请输入内容搜索',
+          placeholder: 'Search',
           suffixIcon: null,
           onSearch: (value: any) => {
             fetchProcesses({ variables: {} });
@@ -187,24 +187,24 @@ const BOMNew = (props: any) => {
       },
       formItemProps: () => {
         return {
-          rules: [{ required: true, message: '此项为必填项' }],
+          rules: [{ required: true, message: 'This field is required' }],
         };
       },
     },
     {
-      title: '顺序',
+      title: 'Position',
       dataIndex: 'position',
       valueType: 'digit',
       align: 'center',
       formItemProps: () => {
         return {
-          rules: [{ required: true, message: '此项为必填项' }],
+          rules: [{ required: true, message: 'This field is required' }],
         };
       },
       width: '15%',
     },
     {
-      title: '操作',
+      title: 'Actions',
       valueType: 'option',
       render: (text, record, _, action) => [
         <a
@@ -214,7 +214,7 @@ const BOMNew = (props: any) => {
             action?.startEditable?.(record.uuid);
           }}
         >
-          编辑
+          Edit
         </a>,
       ],
     },
@@ -236,7 +236,7 @@ const BOMNew = (props: any) => {
           setModalVisible(true);
         }}
       >
-        新增BOM
+        New BOM
       </Button>
 
       <ModalForm
@@ -246,7 +246,7 @@ const BOMNew = (props: any) => {
         }}
         width={'70%'}
         onOpenChange={setModalVisible}
-        title={<Space>新增BOM</Space>}
+        title={<Space>New BOM</Space>}
         submitTimeout={2000}
         autoFocusFirstInput
         open={modalVisible}
@@ -256,25 +256,25 @@ const BOMNew = (props: any) => {
           <ProFormSelect
             width="sm"
             name="itemUuid"
-            label="选择商品"
+            label="Select Item"
             fieldProps={{
               onSelect: (value, opt) => handleSelctItem(value, opt),
             }}
             request={async (e) => fetchItems(e)}
-            rules={[{ required: true, message: '请选择商品' }]}
-            placeholder="请选择商品"
+            rules={[{ required: true, message: 'Select item' }]}
+            placeholder="Select item"
           />
 
           <ProFormText
             width="sm"
             name="name"
-            label="BOM名称"
-            placeholder="请输入BOM名称"
-            rules={[{ required: true, message: '请输入BOM名称' }]}
+            label="BOM Name"
+            placeholder="Enter BOM name"
+            rules={[{ required: true, message: 'Enter BOM name' }]}
           />
         </ProForm.Group>
 
-        <ProCard title="BOM商品" extra="BOM商品" headerBordered>
+        <ProCard title="BOM Items" extra="BOM Items" headerBordered>
           <EditableProTable
             key="bomItems"
             rowKey="uuid"
@@ -291,7 +291,7 @@ const BOMNew = (props: any) => {
             onChange={(values) => handleAdjustBomItems(values)}
           />
         </ProCard>
-        <ProCard title="BOM工序" extra="BOM工序" headerBordered>
+        <ProCard title="BOM Processes" extra="BOM Processes" headerBordered>
           <EditableProTable
             key="bomProcesses"
             rowKey="uuid"

@@ -18,7 +18,7 @@ const ItemList: React.FC = () => {
 
   const [createItem] = useCreateItemMutation({
     onCompleted: () => {
-      messageApi?.success('新增成功');
+      messageApi?.success('Created successfully');
       handleReloadTable();
     },
     onError,
@@ -36,26 +36,26 @@ const ItemList: React.FC = () => {
 
   const columns: ProColumns<any>[] = [
     {
-      title: '名称',
+      title: 'Name',
       key: 'name',
       dataIndex: 'name',
     },
     {
-      title: '规格',
+      title: 'Spec',
       key: 'spec',
       dataIndex: 'spec',
     },
     {
-      title: '售价',
+      title: 'Price',
       valueType: 'money',
       dataIndex: 'sellingPrice',
     },
     {
-      title: '单位',
+      title: 'UOM',
       dataIndex: 'defaultStockUomName',
     },
     {
-      title: '创建时间',
+      title: 'Created At',
       search: false,
       dataIndex: 'insertedAt',
       valueType: 'dateTime',

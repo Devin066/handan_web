@@ -14,7 +14,7 @@ const SupplierList: React.FC = () => {
 
   const [createSupplier] = useCreateSupplierMutation({
     onCompleted: () => {
-      messageApi?.success('供应商创建成功');
+      messageApi?.success('Supplier created successfully');
       handleReloadTable();
     },
     onError,
@@ -32,18 +32,18 @@ const SupplierList: React.FC = () => {
 
   const columns: ProColumns<any>[] = [
     {
-      title: '名称',
+      title: 'Name',
       key: 'name',
       dataIndex: 'name',
     },
     {
-      title: '地址',
+      title: 'Address',
       key: 'address',
       search: false,
       dataIndex: 'address',
     },
     {
-      title: '创建时间',
+      title: 'Created At',
       dataIndex: 'insertedAt',
       search: false,
       valueType: 'dateTime',

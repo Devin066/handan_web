@@ -20,7 +20,7 @@ const PaymentMethodNew = (props: any) => {
           setModalVisible(true);
         }}
       >
-        新增支付方式
+        New Payment Method
       </Button>
 
       <ModalForm
@@ -30,7 +30,7 @@ const PaymentMethodNew = (props: any) => {
         }}
         width={'70%'}
         onOpenChange={setModalVisible}
-        title={<Space>新增支付方式</Space>}
+        title={<Space>New Payment Method</Space>}
         submitTimeout={2000}
         autoFocusFirstInput
         open={modalVisible}
@@ -40,9 +40,9 @@ const PaymentMethodNew = (props: any) => {
           <ProFormText
             width="sm"
             name="name"
-            label="名称"
-            placeholder="请输入名称"
-            rules={[{ required: true, message: '请输入名称' }]}
+            label="Name"
+            placeholder="Enter name"
+            rules={[{ required: true, message: 'Enter name' }]}
           />
         </ProForm.Group>
       </ModalForm>

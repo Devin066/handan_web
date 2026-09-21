@@ -20,7 +20,7 @@ const ProcessNew = (props: any) => {
           setModalVisible(true);
         }}
       >
-        新增流程
+        New Process
       </Button>
 
       <ModalForm
@@ -30,7 +30,7 @@ const ProcessNew = (props: any) => {
         }}
         width={'70%'}
         onOpenChange={setModalVisible}
-        title={<Space>新增流程</Space>}
+        title={<Space>New Process</Space>}
         submitTimeout={2000}
         autoFocusFirstInput
         open={modalVisible}
@@ -40,9 +40,9 @@ const ProcessNew = (props: any) => {
           <ProFormText
             width="sm"
             name="name"
-            label="名称"
-            placeholder="请输入名称"
-            rules={[{ required: true, message: '请输入名称' }]}
+            label="Name"
+            placeholder="Enter name"
+            rules={[{ required: true, message: 'Enter name' }]}
           />
         </ProForm.Group>
       </ModalForm>

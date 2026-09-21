@@ -14,17 +14,19 @@ export default function Home() {
           <Title level={1} className="text-5xl font-bold mb-4">
             Handan
           </Title>
-          <Paragraph className="text-xl text-gray-600 mb-8">面向中小企业的开源 ERP (MES) 解决方案</Paragraph>
+          <Paragraph className="text-xl text-gray-600 mb-8">
+            Open-source ERP (MES) for small and medium businesses
+          </Paragraph>
           <Space size="large">
             <Button type="primary" size="large" onClick={() => router.push('/login')} icon={<RocketOutlined />}>
-              开始体验
+              Get Started
             </Button>
             <Button
               size="large"
               icon={<GithubOutlined />}
               onClick={() => window.open('https://github.com/zven21/handan', '_blank')}
             >
-              查看源码
+              View Source
             </Button>
           </Space>
         </div>
@@ -35,27 +37,27 @@ export default function Home() {
             <div>
               <Title level={3}>
                 <ThunderboltOutlined className="mr-2" />
-                项目简介
+                About the Project
               </Title>
               <Paragraph className="text-base text-gray-700">
-                Handan 是 <Text strong>Nianxiaoyou</Text>{' '}
-                的开源版本，专为中小型制造企业打造的轻量级、易用的数字化管理系统。
+                Handan is the open-source edition of <Text strong>Nianxiaoyou</Text>, a lightweight and easy-to-use
+                management system built for small and medium manufacturers.
               </Paragraph>
               <Paragraph className="text-base text-gray-700">
-                我们深知中小企业在数字化转型中面临的挑战：市面上的 ERP
-                系统要么功能过于复杂，学习成本高；要么价格昂贵，难以承受。 Handan 致力于提供一个
-                <Text strong>简洁、实用、开源</Text>的解决方案，帮助企业以最低的成本实现业务流程的数字化管理。
+                We know the challenges SMBs face in going digital: ERP systems are either too complex to learn or too
+                expensive to afford. Handan aims to provide a <Text strong>simple, practical, open-source</Text>{' '}
+                solution that lets companies digitize their business processes at the lowest possible cost.
               </Paragraph>
             </div>
 
             <div>
               <Title level={3}>
                 <HeartOutlined className="mr-2" />
-                持续更新
+                Actively Maintained
               </Title>
               <Paragraph className="text-base text-gray-700">
-                作为开源项目，Handan 会持续更新迭代，不断完善功能，修复问题。 我们欢迎社区贡献，一起打造更好的开源 ERP
-                系统。
+                As an open-source project, Handan is continuously updated with new features and fixes. Community
+                contributions are welcome &mdash; let&apos;s build a better open-source ERP together.
               </Paragraph>
             </div>
           </Space>
@@ -64,37 +66,37 @@ export default function Home() {
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <Card className="shadow hover:shadow-lg transition-shadow">
-            <Title level={4}>📦 库存管理</Title>
-            <Paragraph>实时库存追踪、出入库管理、库存记录查询</Paragraph>
+            <Title level={4}>📦 Stock</Title>
+            <Paragraph>Real-time stock tracking, inbound/outbound management, stock ledger queries</Paragraph>
           </Card>
           <Card className="shadow hover:shadow-lg transition-shadow">
-            <Title level={4}>🛒 销售管理</Title>
-            <Paragraph>销售订单、客户管理、销售统计分析</Paragraph>
+            <Title level={4}>🛒 Selling</Title>
+            <Paragraph>Sales orders, customer management, sales analytics</Paragraph>
           </Card>
           <Card className="shadow hover:shadow-lg transition-shadow">
-            <Title level={4}>🏭 采购管理</Title>
-            <Paragraph>采购订单、供应商管理、采购成本追踪</Paragraph>
+            <Title level={4}>🏭 Purchasing</Title>
+            <Paragraph>Purchase orders, supplier management, purchase cost tracking</Paragraph>
           </Card>
           <Card className="shadow hover:shadow-lg transition-shadow">
-            <Title level={4}>⚙️ 生产管理</Title>
-            <Paragraph>生产工单、BOM 管理、生产任务调度</Paragraph>
+            <Title level={4}>⚙️ Production</Title>
+            <Paragraph>Work orders, BOM management, production task scheduling</Paragraph>
           </Card>
           <Card className="shadow hover:shadow-lg transition-shadow">
-            <Title level={4}>💰 财务管理</Title>
-            <Paragraph>收付款记录、交易凭证、支付方式管理</Paragraph>
+            <Title level={4}>💰 Finance</Title>
+            <Paragraph>Payment records, transaction vouchers, payment method management</Paragraph>
           </Card>
           <Card className="shadow hover:shadow-lg transition-shadow">
-            <Title level={4}>🔧 产品管理</Title>
-            <Paragraph>产品档案、计量单位、仓库配置</Paragraph>
+            <Title level={4}>🔧 Products</Title>
+            <Paragraph>Item records, units of measure, warehouse setup</Paragraph>
           </Card>
         </div>
 
         {/* Tech Stack */}
         <Card className="shadow-lg">
-          <Title level={3}>技术栈</Title>
+          <Title level={3}>Tech Stack</Title>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Title level={5}>后端技术</Title>
+              <Title level={5}>Backend</Title>
               <ul className="list-disc list-inside text-gray-700">
                 <li>Elixir + Phoenix</li>
                 <li>Commanded (CQRS)</li>
@@ -103,7 +105,7 @@ export default function Home() {
               </ul>
             </div>
             <div>
-              <Title level={5}>前端技术</Title>
+              <Title level={5}>Frontend</Title>
               <ul className="list-disc list-inside text-gray-700">
                 <li>Next.js + React</li>
                 <li>TypeScript</li>
@@ -117,7 +119,7 @@ export default function Home() {
         {/* Footer */}
         <div className="text-center py-8 text-gray-600">
           <Paragraph>
-            开源协议: MIT License |{' '}
+            License: MIT License |{' '}
             <a
               href="https://github.com/zven21/handan"
               target="_blank"

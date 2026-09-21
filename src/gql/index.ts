@@ -81,11 +81,6 @@ export type CreateBomRequest = {
   name?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type CreateCompanyRequest = {
-  description?: InputMaybe<Scalars['String']['input']>;
-  name?: InputMaybe<Scalars['String']['input']>;
-};
-
 export type CreateCustomerRequest = {
   address: Scalars['String']['input'];
   name: Scalars['String']['input'];
@@ -454,50 +449,26 @@ export type ReportJobCardRequest = {
 /** the root of mutaion. */
 export type RootMutationType = {
   __typename?: 'RootMutationType';
-  /** complete delivery note */
   completeDeliveryNote?: Maybe<DeliveryNote>;
-  /** complete receipt note */
   completeReceiptNote?: Maybe<ReceiptNote>;
-  /** create bom */
   createBom?: Maybe<Bom>;
-  createCompany?: Maybe<Company>;
-  /** create customer */
   createCustomer?: Maybe<Customer>;
-  /** create delivery note */
   createDeliveryNote?: Maybe<DeliveryNote>;
-  /** create item */
   createItem?: Maybe<Item>;
-  /** create payment entry */
   createPaymentEntry?: Maybe<PaymentEntry>;
-  /** create payment method */
   createPaymentMethod?: Maybe<PaymentMethod>;
-  /** create process */
   createProcess?: Maybe<Process>;
-  /** create purchase invoice */
   createPurchaseInvoice?: Maybe<PurchaseInvoice>;
-  /** create purchase order */
   createPurchaseOrder?: Maybe<PurchaseOrder>;
-  /** create receipt note */
   createReceiptNote?: Maybe<ReceiptNote>;
-  /** create sales invoice */
   createSalesInvoice?: Maybe<SalesInvoice>;
-  /** create sales order */
   createSalesOrder?: Maybe<SalesOrder>;
-  /** create supplier */
   createSupplier?: Maybe<Supplier>;
-  /** create work order */
   createWorkOrder?: Maybe<WorkOrder>;
-  /** create :workstation */
   createWorkstation?: Maybe<Workstation>;
-  /** login */
   login?: Maybe<User>;
-  /** register */
-  register?: Maybe<User>;
-  /** report job card */
   reportJobCard?: Maybe<WorkOrder>;
-  /** schedule work order */
   scheduleWorkOrder?: Maybe<WorkOrder>;
-  /** store finish item */
   storeFinishItem?: Maybe<WorkOrder>;
 };
 
@@ -517,12 +488,6 @@ export type RootMutationTypeCompleteReceiptNoteArgs = {
 /** the root of mutaion. */
 export type RootMutationTypeCreateBomArgs = {
   request: CreateBomRequest;
-};
-
-
-/** the root of mutaion. */
-export type RootMutationTypeCreateCompanyArgs = {
-  request: CreateCompanyRequest;
 };
 
 
@@ -636,86 +601,46 @@ export type RootMutationTypeStoreFinishItemArgs = {
 /** the root of query. */
 export type RootQueryType = {
   __typename?: 'RootQueryType';
-  /** get bom */
   bom?: Maybe<Bom>;
-  /** list boms */
   boms?: Maybe<Array<Maybe<Bom>>>;
-  /** get current company */
   company?: Maybe<Company>;
   currentUser?: Maybe<User>;
-  /** get customer */
   customer?: Maybe<Customer>;
-  /** list customers */
   customers?: Maybe<Array<Maybe<Customer>>>;
-  /** get delivery note */
   deliveryNote?: Maybe<DeliveryNote>;
-  /** delivery notes */
   deliveryNotes?: Maybe<Array<Maybe<DeliveryNote>>>;
-  /** list inventory entries */
   inventoryEntries?: Maybe<Array<Maybe<InventoryEntry>>>;
-  /** get item by uuid */
   item?: Maybe<Item>;
-  /** list items */
   items?: Maybe<Array<Maybe<Item>>>;
-  /** list staff */
   listStaff?: Maybe<Array<Maybe<Staff>>>;
-  /** list payment entries */
   paymentEntries?: Maybe<Array<Maybe<PaymentEntry>>>;
-  /** get payment entry */
   paymentEntry?: Maybe<PaymentEntry>;
-  /** get payment method */
   paymentMethod?: Maybe<PaymentMethod>;
-  /** list payment methods */
   paymentMethods?: Maybe<Array<Maybe<PaymentMethod>>>;
-  /** get process */
   process?: Maybe<Process>;
-  /** list processes */
   processes?: Maybe<Array<Maybe<Process>>>;
-  /** get purchase invoice */
   purchaseInvoice?: Maybe<PurchaseInvoice>;
-  /** list purchase invoices */
   purchaseInvoices?: Maybe<Array<Maybe<PurchaseInvoice>>>;
-  /** get purchase order */
   purchaseOrder?: Maybe<PurchaseOrder>;
-  /** list purchase orders */
   purchaseOrders?: Maybe<Array<Maybe<PurchaseOrder>>>;
-  /** get receipt note */
   receiptNote?: Maybe<ReceiptNote>;
-  /** list receipt notes */
   receiptNotes?: Maybe<Array<Maybe<ReceiptNote>>>;
-  /** get sales invoice */
   salesInvoice?: Maybe<SalesInvoice>;
-  /** sales invoices */
   salesInvoices?: Maybe<Array<Maybe<SalesInvoice>>>;
-  /** get sales order */
   salesOrder?: Maybe<SalesOrder>;
-  /** list sales orders */
   salesOrders?: Maybe<Array<Maybe<SalesOrder>>>;
-  /** list stock items */
   stockItems?: Maybe<Array<Maybe<StockItem>>>;
-  /** get supplier */
   supplier?: Maybe<Supplier>;
-  /** list suppliers */
   suppliers?: Maybe<Array<Maybe<Supplier>>>;
-  /** unpaid purchase invoices by supplier */
   unpaidPurchaseInvoicesBySupplier?: Maybe<Array<Maybe<PurchaseInvoice>>>;
-  /** unpaid sales invoices by customer */
   unpaidSalesInvoicesByCustomer?: Maybe<Array<Maybe<SalesInvoice>>>;
-  /** list uoms */
   uoms?: Maybe<Array<Maybe<Uom>>>;
-  /** list warehouses */
   warehouses?: Maybe<Array<Maybe<Warehouse>>>;
-  /** get work order */
   workOrder?: Maybe<WorkOrder>;
-  /** get work order item */
   workOrderItem?: Maybe<WorkOrderItem>;
-  /** list work order items */
   workOrderItems?: Maybe<Array<Maybe<WorkOrderItem>>>;
-  /** list work orders */
   workOrders?: Maybe<Array<Maybe<WorkOrder>>>;
-  /** get workstation */
   workstation?: Maybe<Workstation>;
-  /** list workstations */
   workstations?: Maybe<Array<Maybe<Workstation>>>;
 };
 
