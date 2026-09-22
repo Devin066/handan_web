@@ -11,11 +11,11 @@ import { onError } from '@apollo/client/link/error';
 // //   }
 // // `;
 
-// Defaults to this app's own /api/graphql route. Set NEXT_PUBLIC_HANDAN_API only
+// Defaults to this app's own /api/graphql route. Set NEXT_PUBLIC_API_URL only
 // when pointing at a backend on another origin.
 const httpLink = new HttpLink({
-  uri: process.env.NEXT_PUBLIC_HANDAN_API
-    ? `${process.env.NEXT_PUBLIC_HANDAN_API}/api/graphql`
+  uri: process.env.NEXT_PUBLIC_API_URL
+    ? `${process.env.NEXT_PUBLIC_API_URL}/api/graphql`
     : '/api/graphql',
   fetch
 });
@@ -130,7 +130,7 @@ export const headerData = () => {
 };
 
 
-export const handanApolloNodeClient = new ApolloClient({
+export const apolloNodeClient = new ApolloClient({
   link: from([httpLink]),
   cache: new InMemoryCache()
 });

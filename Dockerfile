@@ -20,7 +20,7 @@ RUN pnpm exec prisma generate
 # client bundle here, and empty means "use this app's own /api/graphql".
 ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
 ENV JWT_SECRET="build-only"
-ENV NEXT_PUBLIC_HANDAN_API=""
+ENV NEXT_PUBLIC_API_URL=""
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm build
 

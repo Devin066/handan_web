@@ -1,6 +1,6 @@
 # Deployment
 
-Handan Web is a single Next.js application: it serves the UI **and** the GraphQL
+This is a single Next.js application: it serves the UI **and** the GraphQL
 API (at `/api/graphql`) from one process. There is no separate backend service to
 deploy.
 
@@ -15,24 +15,22 @@ deploy.
 ```bash
 nvm use                 # Node 22, per .nvmrc
 pnpm install
-cp .env.example .env    # then edit DATABASE_URL and JWT_SECRET
-pnpm db:migrate         # create the schema
-pnpm db:seed            # demo company + data
+cp .env.example .env    # set JWT_SECRET; the DATABASE_URL default matches the container
+pnpm db:init            # start PostgreSQL in Docker, migrate, seed
 pnpm dev
 ```
 
-Open http://localhost:3000 and sign in with `admin@handan.dev` / `password123`.
+Open http://localhost:3000 and sign in with `admin@example.com` / `password123`.
 
 The interactive GraphQL explorer is at http://localhost:3000/api/graphql — useful
 for trying queries without going through the UI.
 
-Postgres, if you don't already have one:
+PostgreSQL runs in Docker for development (`docker-compose.dev.yml`), capped at
+512 MB and 1 CPU and bound to `127.0.0.1`. `pnpm db:up` / `db:down` control it;
+`pnpm db:destroy` removes it and its data volume.
 
-```bash
-brew install postgresql@16
-brew services start postgresql@16
-createdb handan
-```
+This is development only. In production the database is either the `db` service
+in `docker-compose.yml` or a managed instance — see below.
 
 ### Useful commands
 
@@ -42,6 +40,8 @@ createdb handan
 | `pnpm build` / `pnpm start` | Production build and serve |
 | `pnpm smoke` | End-to-end API check against a seeded DB (47 assertions) |
 | `pnpm check:queries` | Runs all 40 frontend queries against the API (read-only) |
+| `pnpm db:init` | Start the database, migrate and seed in one step |
+| `pnpm db:up` / `db:down` / `db:destroy` | Control the development database container |
 | `pnpm db:migrate` | Create/apply a migration from schema changes |
 | `pnpm db:deploy` | Apply existing migrations (production) |
 | `pnpm db:studio` | Browse data in a GUI |
@@ -69,8 +69,8 @@ comfortable.
 
 ```bash
 # On the server, as a non-root user with docker installed
-git clone <your-repo> /srv/handan
-cd /srv/handan
+git clone <your-repo> /srv/erp
+cd /srv/erp
 
 cp .env.example .env
 # Edit .env and set at minimum:
@@ -81,9 +81,9 @@ cp .env.example .env
 `docker-compose.yml` reads these from `.env`:
 
 ```
-POSTGRES_USER=handan
+POSTGRES_USER=erp
 POSTGRES_PASSWORD=<strong password>
-POSTGRES_DB=handan
+POSTGRES_DB=erp
 JWT_SECRET=<openssl rand -base64 48>
 APP_PORT=3000
 ```
@@ -110,7 +110,7 @@ docker compose run --rm migrate pnpm db:seed
 ### Updating
 
 ```bash
-cd /srv/handan
+cd /srv/erp
 git pull
 docker compose up -d --build
 ```
@@ -147,7 +147,7 @@ A single VPS has no redundancy, and ERP data is the kind you cannot recreate.
 ```bash
 crontab -e
 # 02:00 daily
-0 2 * * * cd /srv/handan && ./scripts/backup-db.sh >> /var/log/handan-backup.log 2>&1
+0 2 * * * cd /srv/erp && ./scripts/backup-db.sh >> /var/log/db-backup.log 2>&1
 ```
 
 `scripts/backup-db.sh` writes a gzipped dump into `./backups` and prunes anything
@@ -174,7 +174,7 @@ Works, with caveats:
   Pro plan ($20/mo), not a technical limit but a licensing one.
 
 Environment variables to set: `DATABASE_URL`, `JWT_SECRET`. Leave
-`NEXT_PUBLIC_HANDAN_API` unset so the frontend talks to its own `/api/graphql`.
+`NEXT_PUBLIC_API_URL` unset so the frontend talks to its own `/api/graphql`.
 
 Run `pnpm db:deploy` against the production database as part of your release.
 
@@ -186,7 +186,7 @@ Run `pnpm db:deploy` against the production database as part of your release.
 | --- | --- | --- |
 | `DATABASE_URL` | yes | Postgres connection string. Use a **pooled** URL on serverless. |
 | `JWT_SECRET` | yes | Signs access tokens. Rotating it logs everyone out. |
-| `NEXT_PUBLIC_HANDAN_API` | no | Leave empty. Only set it if the API is on another origin. Inlined into the client bundle at build time. |
+| `NEXT_PUBLIC_API_URL` | no | Leave empty. Only set it if the API is on another origin. Inlined into the client bundle at build time. |
 | `APP_PORT` | no | Host port for docker compose (default 3000). |
 | `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | compose only | Credentials for the bundled Postgres. |
 

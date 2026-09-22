@@ -19,6 +19,71 @@ export const WORK_ORDER_STATUS = {
   completed: 'completed',
 } as const;
 
+/**
+ * Production queue states (PRD 11).
+ *
+ * A job card enters as `pending`, reaches an operator either by assignment or by
+ * being accepted off the floating queue, and ends at `validated` — the state a
+ * supervisor confirms before finished goods move (BR-04). Work reported after the
+ * fact is written straight to `completed`.
+ */
+export const JOB_CARD_STATUS = {
+  pending: 'pending',
+  assigned: 'assigned',
+  accepted: 'accepted',
+  inProgress: 'in_progress',
+  paused: 'paused',
+  completed: 'completed',
+  validated: 'validated',
+  cancelled: 'cancelled',
+} as const;
+
+/** Job cards still owed work — what the production queue screens list. */
+export const OPEN_JOB_CARD_STATUSES = [
+  JOB_CARD_STATUS.pending,
+  JOB_CARD_STATUS.assigned,
+  JOB_CARD_STATUS.accepted,
+  JOB_CARD_STATUS.inProgress,
+  JOB_CARD_STATUS.paused,
+] as const;
+
+/**
+ * Where an order came from (PRD 8, BR-05). An order keeps its original channel
+ * for the life of the record, so this list only ever grows.
+ */
+export const SALES_CHANNEL = {
+  direct: 'direct',
+  shopee: 'shopee',
+  tiktok: 'tiktok',
+  page: 'business_page',
+  website: 'website',
+} as const;
+
+/** Make-to-order vs make-to-stock (PRD 2). */
+export const FULFILLMENT_MODEL = {
+  makeToOrder: 'make_to_order',
+  makeToStock: 'make_to_stock',
+} as const;
+
+/** What the master record is for (PRD 6) — raw material master vs finished goods. */
+export const ITEM_TYPE = {
+  rawMaterial: 'raw_material',
+  finishedGood: 'finished_good',
+  consumable: 'consumable',
+} as const;
+
+/**
+ * Roles (PRD 20, BR-08). Ordered least to most privileged; access checks compare
+ * position in this list rather than testing each role by name.
+ */
+export const ROLE = {
+  employee: 'employee',
+  hr: 'hr',
+  finance: 'finance',
+  manager: 'manager',
+  owner: 'owner',
+} as const;
+
 const d = (v: Prisma.Decimal | number | null | undefined) => new Prisma.Decimal(v ?? 0);
 
 /** Goods movement progress on an order line or header. */
@@ -86,3 +151,14 @@ export function purchaseOrderStatus(receipt: string, billing: string) {
 
 /** Invoices that still owe money — what the payment screens list. */
 export const UNSETTLED_INVOICE_STATUSES = ['unpaid', 'partly_paid'] as const;
+
+
+/** Production progress rolled up to the order header (PRD 8). */
+export function orderProductionStatus(produced: Prisma.Decimal | number, total: Prisma.Decimal | number) {
+  const done = d(produced);
+  const all = d(total);
+
+  if (done.lte(0)) return 'not_started';
+  if (done.gte(all)) return 'produced';
+  return 'in_production';
+}

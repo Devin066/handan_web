@@ -5,6 +5,7 @@ import { message } from 'antd';
 // locale
 import { sleep } from '@/utils';
 import useAuthUserStore from '@/stores/persisted/useAuthUser';
+import brand from '@/config/brand';
 
 const Login = () => {
   const router = useRouter();
@@ -16,7 +17,7 @@ const Login = () => {
   };
 
   const initialValues = {
-    email: 'admin@handan.com',
+    email: '',
     password: '',
   };
 
@@ -31,13 +32,13 @@ const Login = () => {
   return (
     <div className="flex justify-center items-center min-h-screen">
       {contextHolder}
-      <LoginForm title="Handan" onFinish={onFinish} initialValues={initialValues}>
+      <LoginForm title={brand.name} onFinish={onFinish} initialValues={initialValues}>
         <ProFormText
           name="email"
           fieldProps={{
             size: 'large',
           }}
-          placeholder={'admin@handan.com'}
+          placeholder={'you@example.com'}
           rules={[
             {
               required: true,

@@ -1,29 +1,30 @@
-# Handan Web
+# Handlathe
 
-> Open Source ERP (MES) Frontend Solution for SMEs - Open Source Version of Nianxiaoyou
-
-<div align="center">
-	<img src="./docs/live-demo.jpg"/>
-</div>
-
-<div align="center">
-	<a href="https://handan-web.vercel.app">Live Demo</a>
-</div>
+> Manufacturing resource planning (ERP/MES) for small and medium businesses.
 
 ## 📖 Overview
 
-Handan Web is the open-source version of [Nianxiaoyou](https://www.nianxiaoyou.com), a lightweight and user-friendly digital management frontend system designed specifically for small and medium-sized manufacturing enterprises.
+Handlathe is a lightweight ERP/MES for small and medium manufacturers — sales,
+purchasing, production, stock and finance in one application, covering
+order-to-cash and procure-to-pay end to end.
 
-We understand the challenges SMEs face in digital transformation: ERP systems on the market are either overly complex with high learning curves, or prohibitively expensive. Handan is committed to providing a **simple, practical, and open-source** solution to help businesses achieve digital management of their business processes at the lowest cost.
+It is a single Next.js application: the UI **and** the GraphQL API that backs it
+ship together, with PostgreSQL for storage. There is no separate backend service
+to deploy.
+
+> **White-labelling.** Only the product name is branded. The package, database,
+> environment variables and demo data are all deliberately brand-free, so the same
+> build serves a different company by setting `NEXT_PUBLIC_APP_NAME` at build time
+> — see [`src/config/brand.ts`](src/config/brand.ts).
 
 ### Core Features
 
-- ✅ **Lightweight Architecture**: Based on Next.js + GraphQL, fast response, easy to deploy
-- ✅ **Modern UI**: Using Ant Design design system for excellent user experience
-- ✅ **Modular Design**: Independent business modules, easy to extend and maintain
-- ✅ **Open Source & Free**: MIT license, completely open source, continuously updated
-- ✅ **GraphQL API**: Efficient data querying, reducing network requests
-- ✅ **TypeScript**: Type-safe, improving development efficiency and code quality
+- ✅ **Single deployable**: UI and API in one Next.js app, one build, one deploy
+- ✅ **Auditable stock**: every movement written to a ledger that explains on-hand
+- ✅ **Multi-tenant**: data scoped per company, enforced centrally and tested
+- ✅ **Typed end to end**: GraphQL schema generates the frontend's hooks
+- ✅ **Modular**: independent business modules, easy to extend
+- ✅ **TypeScript**: type-safe from resolver to component
 
 ## 🚀 Feature Modules
 
@@ -65,9 +66,9 @@ We understand the challenges SMEs face in digital transformation: ERP systems on
 #### 7. System Settings
 - ✅ Member Management (user permissions)
 
-### Planned Features (Already Available in Nianxiaoyou)
+### Planned Features
 
-The following features are already implemented in Nianxiaoyou but not yet completed in Handan Web:
+Not yet implemented:
 
 #### Enhanced Sales Management
 - [ ] Sales Dashboard (sales performance, customer status visualization)
@@ -148,19 +149,47 @@ The following features are already implemented in Nianxiaoyou but not yet comple
 ```bash
 nvm use
 pnpm install
-cp .env.example .env     # set DATABASE_URL and JWT_SECRET
-pnpm db:migrate          # create the schema
-pnpm db:seed             # demo company + sample data
+cp .env.example .env     # set JWT_SECRET; DATABASE_URL default matches the container
+pnpm db:init             # start PostgreSQL, apply migrations, load demo data
 pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) and sign in:
 
 ```
-admin@handan.dev / password123
+admin@example.com / password123
 ```
 
-Need a database? `brew install postgresql@16 && brew services start postgresql@16 && createdb handan`
+### Database
+
+PostgreSQL runs in Docker, so it stays isolated from the rest of your machine and
+can be removed completely in one command.
+
+| Command | What it does |
+| --- | --- |
+| `pnpm db:up` | Start PostgreSQL |
+| `pnpm db:down` | Stop it, keeping the data |
+| `pnpm db:destroy` | Stop it **and delete the data volume** |
+| `pnpm db:psql` | Open a psql shell inside the container |
+| `pnpm db:logs` | Tail the database log |
+| `pnpm db:stats` | Current CPU and memory use |
+
+It is capped at **512 MB memory and 1 CPU**, with Postgres tuned to match
+(`shared_buffers=128MB`, `max_connections=50`). Typical idle use is around 80 MB.
+Raise the limits in [`docker-compose.dev.yml`](docker-compose.dev.yml) if you
+start working with real data volumes.
+
+The port is bound to `127.0.0.1`, so the database is never reachable from the
+network.
+
+**Removing it entirely** — this deletes the data:
+
+```bash
+pnpm db:destroy && docker rmi postgres:16-alpine
+```
+
+That leaves nothing behind: the container, its named volume (`erp-dev-pgdata`)
+and the image are all namespaced under `erp-dev`.
 
 ### Backend
 
@@ -176,7 +205,7 @@ See [`src/server/README.md`](src/server/README.md) for how the backend is laid o
 migration audit and its findings, and [`DEPLOYMENT.md`](DEPLOYMENT.md) for running
 it on a VPS or Vercel.
 
-> `NEXT_PUBLIC_HANDAN_API` only needs a value if you are pointing the frontend at a
+> `NEXT_PUBLIC_API_URL` only needs a value if you are pointing the frontend at a
 > GraphQL API on a different origin (for example the original Elixir backend).
 > Leave it empty otherwise.
 
@@ -208,7 +237,7 @@ Brings up PostgreSQL and the app together, applying migrations on start.
 ## 📁 Project Structure
 
 ```
-handan_web/
+handlathe/
 ├── src/
 │   ├── components/            # React components
 │   │   ├── common/           # Common components (layout, menu, etc.)
@@ -240,8 +269,7 @@ handan_web/
 
 ## 🔗 Related Projects
 
-- **Original Backend**: [Handan](https://github.com/zven21/handan) - Elixir + Phoenix + GraphQL + CQRS/ES. This repo now ships its own TypeScript/Prisma backend instead, serving the same GraphQL schema; the Elixir project remains the reference for business rules.
-- **Enterprise Edition**: [Nianxiaoyou](https://www.nianxiaoyou.com) - More complete enterprise version
+- **Upstream project**: [Handan](https://github.com/zven21/handan) — Elixir + Phoenix + GraphQL + CQRS/ES. This repository's frontend originates from Handan Web; the backend here is an original TypeScript/Prisma implementation serving the same GraphQL contract. The Elixir project remains a useful reference for business rules. See [NOTICE](NOTICE).
 
 ## 🤝 Contributing
 
@@ -264,14 +292,14 @@ Contributions are welcome! We look forward to your participation in building a b
 
 ## 📄 License
 
-Handan Web is licensed under the [MIT License](http://opensource.org/licenses/MIT).
+Licensed under the [MIT License](LICENSE).
 
-## 📞 Contact
-
-- GitHub Issues: [Submit Issue](https://github.com/zven21/handan_web/issues)
-- Project Homepage: [GitHub](https://github.com/zven21/handan)
+Copyright (c) 2026 Handlathe. Portions copyright (c) zven21 and the Handan
+contributors — see [NOTICE](NOTICE) for what was inherited and what is original
+to this project.
 
 ---
 
-**Note**: As an open-source project, Handan will be continuously updated and improved, with ongoing feature enhancements and bug fixes. We welcome community contributions to build a better open-source ERP system together.
+**Note**: Handlathe is under active development. See [AUDIT.md](AUDIT.md) for the
+state of the backend migration, its findings and known limitations.
 

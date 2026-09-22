@@ -1,7 +1,6 @@
 import {
   BellOutlined,
   ThunderboltOutlined,
-  GithubOutlined,
   QuestionCircleOutlined,
   ShoppingCartOutlined,
   AppstoreAddOutlined,
@@ -10,9 +9,9 @@ import {
 import { Badge, Popover, List } from 'antd';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
+import brand from '@/config/brand';
 
-const GITHUB_URL = 'https://github.com/zven21/handan';
-const HELP_URL = 'https://github.com/zven21/handan/blob/master/README.md';
+const HELP_URL = brand.helpUrl;
 
 // Notification data (work in progress)
 const mockNotifications: any[] = [];
@@ -48,7 +47,7 @@ interface HeaderActionsProps {
 
 /**
  * Header action buttons component
- * includes: notifications, Quick Actions, GitHub, Help
+ * includes: notifications, Quick Actions, Help
  */
 const HeaderActions: React.FC<HeaderActionsProps> = ({ isMobile = false }) => {
   const router = useRouter();
@@ -151,18 +150,6 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ isMobile = false }) => {
       >
         <ThunderboltOutlined style={{ fontSize: 16, cursor: 'pointer' }} />
       </Popover>
-
-      <a
-        key="github"
-        href={GITHUB_URL}
-        className="text-sm"
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{ display: 'flex', alignItems: 'center', gap: 4 }}
-      >
-        <GithubOutlined />
-        GitHub
-      </a>
 
       <a
         key="help"

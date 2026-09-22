@@ -1,0 +1,68 @@
+# Local development database.
+#
+#   pnpm db:up      start it
+#   pnpm db:down    stop it (data kept)
+#   pnpm db:destroy stop it and delete the data volume
+#
+# This file is for development only — it runs Postgres and nothing else. The
+# full application stack lives in docker-compose.yml.
+#
+# Everything is namespaced under the project name `erp-dev`, so removing it later
+# is one command and leaves nothing else behind.
+name: erp-dev
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: erp-dev-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-erp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-erp}
+      POSTGRES_DB: ${POSTGRES_DB:-erp}
+      # The image only initialises a data directory on first run; these make that
+      # first run deterministic rather than inheriting the host's locale.
+      POSTGRES_INITDB_ARGS: '--encoding=UTF8 --locale=C'
+
+    ports:
+      # Bound to loopback so the database is never reachable from the network,
+      # even on an untrusted wifi.
+      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+    # Sized for development, not production. Postgres 16 idles around 30-50 MB;
+    # the headroom is for shared_buffers plus a few concurrent connections.
+    # Raise these if you start loading real volumes of data.
+    mem_limit: 512m
+    mem_reservation: 128m
+    cpus: 1.0
+    shm_size: 128m
+
+    command:
+      - postgres
+      # Defaults assume a dedicated server. These suit a database sharing a
+      # laptop with an editor, a dev server and a browser.
+      - '-c'
+      - 'shared_buffers=128MB'
+      - '-c'
+      - 'max_connections=50'
+      - '-c'
+      - 'work_mem=8MB'
+      - '-c'
+      - 'maintenance_work_mem=64MB'
+      - '-c'
+      - 'effective_cache_size=256MB'
+
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-erp} -d ${POSTGRES_DB:-erp}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  pgdata:
+    name: erp-dev-pgdata

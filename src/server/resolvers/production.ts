@@ -5,7 +5,7 @@ import { requireCompany } from '../context';
 import { nextCode } from '../domain/codes';
 import { applyStockMove } from '../domain/stock';
 import { expandBom, refreshWorkOrder } from '../domain/production';
-import { WORK_ORDER_STATUS } from '../domain/status';
+import { JOB_CARD_STATUS, WORK_ORDER_STATUS } from '../domain/status';
 
 type Id = { request: { uuid?: string } };
 
@@ -236,6 +236,9 @@ export const productionResolvers = {
             workOrderUuid: step.workOrderUuid,
             workOrderItemUuid: step.uuid,
             operatorStaffUuid: request.operatorStaffUuid,
+            // A reported job card is work that already happened, not a queued
+            // task, so it skips the queue states the column now defaults to.
+            status: JOB_CARD_STATUS.completed,
             producedQty,
             defectiveQty,
             startTime: request.startTime ? new Date(request.startTime) : null,

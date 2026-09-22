@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcryptjs';
 import { PrismaClient, Prisma } from '../src/generated/prisma/client';
+import { FULFILLMENT_MODEL, ROLE } from '../src/server/domain/status';
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL as string }),
@@ -12,6 +13,16 @@ async function main() {
 
   // Wipe in dependency order so re-seeding is idempotent.
   await prisma.$transaction([
+    prisma.auditLog.deleteMany(),
+    prisma.notification.deleteMany(),
+    prisma.customerInteraction.deleteMany(),
+    prisma.followUpRule.deleteMany(),
+    prisma.payrollEntry.deleteMany(),
+    prisma.payrollPeriod.deleteMany(),
+    prisma.attendanceRecord.deleteMany(),
+    prisma.expense.deleteMany(),
+    prisma.expenseCategory.deleteMany(),
+    prisma.appSetting.deleteMany(),
     prisma.jobCard.deleteMany(),
     prisma.workOrderMaterialRequest.deleteMany(),
     prisma.workOrderItem.deleteMany(),
@@ -48,15 +59,16 @@ async function main() {
   ]);
 
   const company = await prisma.company.create({
-    data: { name: 'Handan Demo Manufacturing', description: 'Seeded demo company' },
+    data: { name: 'Demo Manufacturing Co.', description: 'Seeded demo company' },
   });
   const companyUuid = company.uuid;
 
   const user = await prisma.user.create({
     data: {
-      email: 'admin@handan.dev',
+      email: 'admin@example.com',
       passwordHash: await bcrypt.hash('password123', 10),
       nickname: 'Admin',
+      role: ROLE.owner,
       companyUuid,
     },
   });
@@ -64,8 +76,8 @@ async function main() {
   await prisma.staff.createMany({
     data: [
       { companyUuid, userUuid: user.uuid, email: user.email, name: 'Admin' },
-      { companyUuid, email: 'operator@handan.dev', name: 'Lin Operator' },
-      { companyUuid, email: 'foreman@handan.dev', name: 'Chen Foreman' },
+      { companyUuid, email: 'operator@example.com', name: 'Lin Operator' },
+      { companyUuid, email: 'foreman@example.com', name: 'Chen Foreman' },
     ],
   });
 
@@ -252,6 +264,41 @@ async function main() {
     data: { totalQty, totalAmount },
   });
 
+  // The PRD leaves the queue model (Option A vs B) and the follow-up interval to
+  // the client. Both are settings rather than code, so switching them later is a
+  // row update, not a migration.
+  await prisma.appSetting.createMany({
+    data: [
+      { companyUuid, key: 'production.queue_mode', value: 'manager_assigned' },
+      { companyUuid, key: 'inventory.low_stock_alerts', value: true },
+      { companyUuid, key: 'production.require_supervisor_validation', value: true },
+      { companyUuid, key: 'sales.default_fulfillment_model', value: FULFILLMENT_MODEL.makeToOrder },
+    ],
+  });
+
+  await prisma.followUpRule.create({
+    data: {
+      companyUuid,
+      name: 'Messenger follow-up after no response',
+      channel: 'messenger',
+      trigger: 'no_response',
+      // Three days, the interval discussed during discovery.
+      noResponseHours: 72,
+      messageTemplate: 'Hi! Just following up on your inquiry — are you still interested?',
+    },
+  });
+
+  await prisma.expenseCategory.createMany({
+    data: [
+      { companyUuid, name: 'Raw Materials', kind: 'cost_of_goods' },
+      { companyUuid, name: 'Salaries', kind: 'payroll' },
+      { companyUuid, name: 'Rent', kind: 'operating' },
+      { companyUuid, name: 'Utilities', kind: 'operating' },
+      { companyUuid, name: 'Supplier Purchases', kind: 'cost_of_goods' },
+      { companyUuid, name: 'Miscellaneous', kind: 'operating' },
+    ],
+  });
+
   await prisma.counter.createMany({
     data: [
       { companyUuid, name: 'salesOrder', value: 1 },
@@ -263,7 +310,7 @@ async function main() {
 Seed complete.
 
   Company : ${company.name}
-  Login   : admin@handan.dev
+  Login   : admin@example.com
   Password: password123
 `);
 }

@@ -3,9 +3,9 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-handan}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-handan}
-      POSTGRES_DB: ${POSTGRES_DB:-handan}
+      POSTGRES_USER: ${POSTGRES_USER:-erp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-erp}
+      POSTGRES_DB: ${POSTGRES_DB:-erp}
     volumes:
       - db_data:/var/lib/postgresql/data
       # Backups land here; see scripts/backup-db.sh.
@@ -15,7 +15,7 @@ services:
     # ports:
     #   - "127.0.0.1:5432:5432"
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-handan} -d ${POSTGRES_DB:-handan}']
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-erp} -d ${POSTGRES_DB:-erp}']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -31,7 +31,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: "postgresql://${POSTGRES_USER:-handan}:${POSTGRES_PASSWORD:-handan}@db:5432/${POSTGRES_DB:-handan}?schema=public"
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-erp}:${POSTGRES_PASSWORD:-erp}@db:5432/${POSTGRES_DB:-erp}?schema=public"
 
   app:
     build:
@@ -45,7 +45,7 @@ services:
       migrate:
         condition: service_completed_successfully
     environment:
-      DATABASE_URL: "postgresql://${POSTGRES_USER:-handan}:${POSTGRES_PASSWORD:-handan}@db:5432/${POSTGRES_DB:-handan}?schema=public"
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-erp}:${POSTGRES_PASSWORD:-erp}@db:5432/${POSTGRES_DB:-erp}?schema=public"
       JWT_SECRET: "${JWT_SECRET:?set JWT_SECRET in .env - generate one with openssl rand -base64 48}"
       NODE_ENV: production
     ports:

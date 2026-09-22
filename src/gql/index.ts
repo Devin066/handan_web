@@ -37,7 +37,7 @@ export type BomItem = {
   insertedAt?: Maybe<Scalars['DateTime']['output']>;
   item?: Maybe<Item>;
   itemName?: Maybe<Scalars['String']['output']>;
-  qty?: Maybe<Scalars['Int']['output']>;
+  qty?: Maybe<Scalars['Decimal']['output']>;
   stockUom?: Maybe<StockUom>;
   stockUomUuid?: Maybe<Scalars['ID']['output']>;
   uomName?: Maybe<Scalars['String']['output']>;
@@ -47,7 +47,7 @@ export type BomItem = {
 
 export type BomItemArg = {
   itemUuid?: InputMaybe<Scalars['ID']['input']>;
-  qty?: InputMaybe<Scalars['Int']['input']>;
+  qty?: InputMaybe<Scalars['Decimal']['input']>;
 };
 
 export type BomProcess = {
@@ -1189,7 +1189,7 @@ export type BomQueryVariables = Exact<{
 }>;
 
 
-export type BomQuery = { __typename?: 'RootQueryType', bom?: { __typename?: 'Bom', uuid?: string | null, name?: string | null, itemName?: string | null, bomItems?: Array<{ __typename?: 'BomItem', uuid?: string | null, itemName?: string | null, uomName?: string | null, qty?: number | null } | null> | null, bomProcesses?: Array<{ __typename?: 'BomProcess', uuid?: string | null, position?: number | null, processName?: string | null } | null> | null } | null };
+export type BomQuery = { __typename?: 'RootQueryType', bom?: { __typename?: 'Bom', uuid?: string | null, name?: string | null, itemName?: string | null, bomItems?: Array<{ __typename?: 'BomItem', uuid?: string | null, itemName?: string | null, uomName?: string | null, qty?: any | null } | null> | null, bomProcesses?: Array<{ __typename?: 'BomProcess', uuid?: string | null, position?: number | null, processName?: string | null } | null> | null } | null };
 
 export type BomsQueryVariables = Exact<{ [key: string]: never; }>;
 

@@ -54,7 +54,7 @@ function neededFragments(doc) {
 
 const { data: login } = await gql(
   `mutation($request: LoginRequest!){ login(request:$request){ accessToken } }`,
-  { request: { email: 'admin@handan.dev', password: 'password123' } }
+  { request: { email: 'admin@example.com', password: 'password123' } }
 );
 token = login.login.accessToken;
 

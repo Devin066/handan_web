@@ -1,5 +1,5 @@
 {
-  "name": "handan_web",
+  "name": "erp-web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -19,7 +19,14 @@
     "audit:tenancy": "pnpm db:seed && tsx scripts/audit/tenancy-test.ts",
     "create-company": "tsx scripts/create-company.ts",
     "check:env": "node scripts/check-env.mjs",
-    "smoke:only": "node scripts/smoke-test.mjs"
+    "smoke:only": "node scripts/smoke-test.mjs",
+    "db:up": "docker compose -f docker-compose.dev.yml up -d",
+    "db:down": "docker compose -f docker-compose.dev.yml down",
+    "db:destroy": "docker compose -f docker-compose.dev.yml down -v",
+    "db:logs": "docker compose -f docker-compose.dev.yml logs -f postgres",
+    "db:psql": "docker compose -f docker-compose.dev.yml exec postgres psql -U erp -d erp",
+    "db:stats": "docker stats --no-stream erp-dev-postgres",
+    "db:init": "docker compose -f docker-compose.dev.yml up -d --wait && pnpm db:deploy && pnpm db:seed"
   },
   "dependencies": {
     "@ant-design/cssinjs": "^1.22.1",

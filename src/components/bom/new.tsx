@@ -128,6 +128,9 @@ const BOMNew = (props: any) => {
       dataIndex: 'qty',
       valueType: 'digit',
       align: 'center',
+      // Components are not always whole units — a part may take a fraction of a
+      // sheet or a length off a bar, so the BOM accepts fractional quantities.
+      fieldProps: { precision: 4, step: 0.1, min: 0 },
       formItemProps: () => {
         return {
           rules: [{ required: true, message: 'This field is required' }],

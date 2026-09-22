@@ -75,14 +75,14 @@ async function main() {
   console.log('\n== auth ==');
   const { login } = await gql(
     `mutation($request: LoginRequest!) { login(request: $request) { uuid email accessToken } }`,
-    { request: { email: 'admin@handan.dev', password: 'password123' } },
+    { request: { email: 'admin@example.com', password: 'password123' } },
   );
   token = login.accessToken;
-  check('login email', login.email, 'admin@handan.dev');
+  check('login email', login.email, 'admin@example.com');
 
   const { currentUser, company } = await gql(`{ currentUser { email } company { name } }`);
-  check('currentUser', currentUser.email, 'admin@handan.dev');
-  check('company', company.name, 'Handan Demo Manufacturing');
+  check('currentUser', currentUser.email, 'admin@example.com');
+  check('company', company.name, 'Demo Manufacturing Co.');
 
   await expectError(
     'unauthenticated query',
@@ -388,7 +388,7 @@ async function main() {
     { request: { uuid: workOrder.items[0].uuid } },
   );
   check('job card recorded', workOrderItem.jobCards.length, 1);
-  check('job card operator', workOrderItem.jobCards[0].operatorStaff.email, 'operator@handan.dev');
+  check('job card operator', workOrderItem.jobCards[0].operatorStaff.email, 'operator@example.com');
 
   await expectError(
     'storing more than produced',

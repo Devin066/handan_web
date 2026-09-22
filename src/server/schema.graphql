@@ -145,7 +145,7 @@ type BomItem {
   uuid: ID
   itemName: String
   uomName: String
-  qty: Int
+  qty: Decimal
   stockUomUuid: ID
   stockUom: StockUom
   item: Item
@@ -465,7 +465,7 @@ input CreateItemRequest {
   openingStocks: [OpeningStockArg]
 }
 
-input BomItemArg { itemUuid: ID, qty: Int }
+input BomItemArg { itemUuid: ID, qty: Decimal }
 input BomProcessArg { processUuid: ID, position: Int }
 input CreateBomRequest {
   name: String

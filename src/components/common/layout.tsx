@@ -8,6 +8,7 @@ import useAuthUserStore from '@/stores/persisted/useAuthUser';
 
 import menuProps from './_menu';
 import { tokens } from './theme';
+import brand from '@/config/brand';
 import AvatarDropdown from './avatar-dropdown';
 import GlobalFloatButtons from './global-float-buttons';
 import HeaderActions from './header-actions';
@@ -79,7 +80,7 @@ const GlobalLayout: FC<LayoutProps> = ({ children }) => {
           siderWidth: 180,
           ...menuProps,
           logo: '/logo.png',
-          title: 'Handan',
+          title: brand.name,
           layout: 'mix',
           onMenuHeaderClick: handleLogoClick,
           // Chrome stays quiet so the data carries the visual weight. The

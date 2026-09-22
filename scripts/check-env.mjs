@@ -26,6 +26,7 @@ const used = new Set();
 for (const file of [...walk(path.join(ROOT, 'src')), ...walk(path.join(ROOT, 'scripts')),
                     ...walk(path.join(ROOT, 'prisma')), path.join(ROOT, 'prisma.config.ts'),
                     path.join(ROOT, 'next.config.ts'), path.join(ROOT, 'docker-compose.yml'),
+                    path.join(ROOT, 'docker-compose.dev.yml'),
                     path.join(ROOT, 'Dockerfile')]) {
   if (!fs.existsSync(file)) continue;
   const text = fs.readFileSync(file, 'utf8');

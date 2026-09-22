@@ -1,133 +1,108 @@
-import { Button, Card, Space, Typography } from 'antd';
+import { Button, Card, Col, Row, Space, Typography } from 'antd';
 import { useRouter } from 'next/router';
-import { GithubOutlined, RocketOutlined, ThunderboltOutlined, HeartOutlined } from '@ant-design/icons';
+import {
+  ApartmentOutlined,
+  DollarOutlined,
+  InboxOutlined,
+  LoginOutlined,
+  ShopOutlined,
+  ShoppingCartOutlined,
+  ToolOutlined,
+} from '@ant-design/icons';
+
+import brand from '@/config/brand';
+import { tokens } from '@/components/common/theme';
 
 const { Title, Paragraph, Text } = Typography;
 
+const modules = [
+  {
+    icon: <ShoppingCartOutlined />,
+    title: 'Selling',
+    body: 'Sales orders, customers, delivery notes and invoicing through to payment.',
+  },
+  {
+    icon: <ShopOutlined />,
+    title: 'Purchasing',
+    body: 'Purchase orders, suppliers, goods receipt and supplier invoices.',
+  },
+  {
+    icon: <ToolOutlined />,
+    title: 'Production',
+    body: 'Work orders expanded from a BOM, process routing and job card reporting.',
+  },
+  {
+    icon: <InboxOutlined />,
+    title: 'Stock',
+    body: 'On-hand by warehouse, backed by a full movement ledger you can audit.',
+  },
+  {
+    icon: <DollarOutlined />,
+    title: 'Finance',
+    body: 'Payment entries allocated across outstanding invoices, oldest first.',
+  },
+  {
+    icon: <ApartmentOutlined />,
+    title: 'Setup',
+    body: 'Items, units of measure, warehouses, processes and workstations.',
+  },
+];
+
+/**
+ * Public entry page. Deliberately short: the product is an internal operational
+ * tool, so the job here is to identify the system and get the user to sign in.
+ */
 export default function Home() {
   const router = useRouter();
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center py-12">
-          <Title level={1} className="text-5xl font-bold mb-4">
-            Handan
+    <div style={{ minHeight: '100vh', background: tokens.background }}>
+      <div style={{ maxWidth: 1040, margin: '0 auto', padding: '64px 24px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 48 }}>
+          <Title level={1} style={{ fontSize: 44, marginBottom: 8, color: tokens.text }}>
+            {brand.name}
           </Title>
-          <Paragraph className="text-xl text-gray-600 mb-8">
-            Open-source ERP (MES) for small and medium businesses
+          <Paragraph style={{ fontSize: 17, color: tokens.textSecondary, marginBottom: 28 }}>
+            Manufacturing resource planning for small and medium businesses
           </Paragraph>
-          <Space size="large">
-            <Button type="primary" size="large" onClick={() => router.push('/login')} icon={<RocketOutlined />}>
-              Get Started
-            </Button>
-            <Button
-              size="large"
-              icon={<GithubOutlined />}
-              onClick={() => window.open('https://github.com/zven21/handan', '_blank')}
-            >
-              View Source
+          <Space size="middle">
+            <Button type="primary" size="large" icon={<LoginOutlined />} onClick={() => router.push('/login')}>
+              Sign in
             </Button>
           </Space>
         </div>
 
-        {/* Project Introduction */}
-        <Card className="mb-8 shadow-lg">
-          <Space direction="vertical" size="large" className="w-full">
-            <div>
-              <Title level={3}>
-                <ThunderboltOutlined className="mr-2" />
-                About the Project
-              </Title>
-              <Paragraph className="text-base text-gray-700">
-                Handan is the open-source edition of <Text strong>Nianxiaoyou</Text>, a lightweight and easy-to-use
-                management system built for small and medium manufacturers.
-              </Paragraph>
-              <Paragraph className="text-base text-gray-700">
-                We know the challenges SMBs face in going digital: ERP systems are either too complex to learn or too
-                expensive to afford. Handan aims to provide a <Text strong>simple, practical, open-source</Text>{' '}
-                solution that lets companies digitize their business processes at the lowest possible cost.
-              </Paragraph>
-            </div>
+        <Row gutter={[16, 16]}>
+          {modules.map((module) => (
+            <Col xs={24} sm={12} lg={8} key={module.title}>
+              <Card size="small" style={{ height: '100%', borderColor: tokens.border }}>
+                <Space align="start" size={12}>
+                  <span style={{ color: tokens.primary, fontSize: 20, lineHeight: 1 }}>{module.icon}</span>
+                  <div>
+                    <Title level={5} style={{ marginTop: 0, marginBottom: 4 }}>
+                      {module.title}
+                    </Title>
+                    <Paragraph style={{ marginBottom: 0, color: tokens.textSecondary, fontSize: 13 }}>
+                      {module.body}
+                    </Paragraph>
+                  </div>
+                </Space>
+              </Card>
+            </Col>
+          ))}
+        </Row>
 
-            <div>
-              <Title level={3}>
-                <HeartOutlined className="mr-2" />
-                Actively Maintained
-              </Title>
-              <Paragraph className="text-base text-gray-700">
-                As an open-source project, Handan is continuously updated with new features and fixes. Community
-                contributions are welcome &mdash; let&apos;s build a better open-source ERP together.
-              </Paragraph>
-            </div>
-          </Space>
-        </Card>
-
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <Card className="shadow hover:shadow-lg transition-shadow">
-            <Title level={4}>📦 Stock</Title>
-            <Paragraph>Real-time stock tracking, inbound/outbound management, stock ledger queries</Paragraph>
-          </Card>
-          <Card className="shadow hover:shadow-lg transition-shadow">
-            <Title level={4}>🛒 Selling</Title>
-            <Paragraph>Sales orders, customer management, sales analytics</Paragraph>
-          </Card>
-          <Card className="shadow hover:shadow-lg transition-shadow">
-            <Title level={4}>🏭 Purchasing</Title>
-            <Paragraph>Purchase orders, supplier management, purchase cost tracking</Paragraph>
-          </Card>
-          <Card className="shadow hover:shadow-lg transition-shadow">
-            <Title level={4}>⚙️ Production</Title>
-            <Paragraph>Work orders, BOM management, production task scheduling</Paragraph>
-          </Card>
-          <Card className="shadow hover:shadow-lg transition-shadow">
-            <Title level={4}>💰 Finance</Title>
-            <Paragraph>Payment records, transaction vouchers, payment method management</Paragraph>
-          </Card>
-          <Card className="shadow hover:shadow-lg transition-shadow">
-            <Title level={4}>🔧 Products</Title>
-            <Paragraph>Item records, units of measure, warehouse setup</Paragraph>
-          </Card>
-        </div>
-
-        {/* Tech Stack */}
-        <Card className="shadow-lg">
-          <Title level={3}>Tech Stack</Title>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Title level={5}>Backend</Title>
-              <ul className="list-disc list-inside text-gray-700">
-                <li>Elixir + Phoenix</li>
-                <li>Commanded (CQRS)</li>
-                <li>Absinthe (GraphQL)</li>
-                <li>PostgreSQL + EventStore</li>
-              </ul>
-            </div>
-            <div>
-              <Title level={5}>Frontend</Title>
-              <ul className="list-disc list-inside text-gray-700">
-                <li>Next.js + React</li>
-                <li>TypeScript</li>
-                <li>Apollo Client (GraphQL)</li>
-                <li>Ant Design</li>
-              </ul>
-            </div>
-          </div>
-        </Card>
-
-        {/* Footer */}
-        <div className="text-center py-8 text-gray-600">
-          <Paragraph>
-            License: MIT License |{' '}
-            <a
-              href="https://github.com/zven21/handan"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:underline"
-            >
-              GitHub
-            </a>
+        <div style={{ textAlign: 'center', marginTop: 48, color: tokens.textTertiary, fontSize: 13 }}>
+          <Paragraph style={{ color: tokens.textTertiary, marginBottom: 4 }}>
+            Next.js · TypeScript · GraphQL · Prisma · PostgreSQL
+          </Paragraph>
+          {/*
+            Credit is kept as plain text, not an outbound link. The MIT terms are
+            satisfied by LICENSE and NOTICE shipping with the source; they do not
+            require a clickable link in the running UI.
+          */}
+          <Paragraph style={{ color: tokens.textTertiary, marginBottom: 0 }}>
+            Built on the MIT-licensed Handan project. <Text type="secondary">See NOTICE for attribution.</Text>
           </Paragraph>
         </div>
       </div>
