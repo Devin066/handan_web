@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useRef, useState } from 'react';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { Popconfirm, Button, Space } from 'antd';
@@ -183,7 +184,12 @@ const SalesOrderList: React.FC = () => {
             success: true,
           };
         }}
-        toolBarRender={() => [<SalesOrderNew key="sales-order-new" onCreate={(values: any) => handleCreate(values)} />]}
+        toolBarRender={() => [
+          <Link key="delivery-notes" href="/stock/delivery-notes">
+            <Button size="small">Delivery notes</Button>
+          </Link>,
+          <SalesOrderNew key="sales-order-new" onCreate={(values: any) => handleCreate(values)} />,
+        ]}
       />
 
       <WorkOrderPrompt salesOrderUuid={workOrdersFor} onClose={() => setWorkOrdersFor(undefined)} />

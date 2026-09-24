@@ -42,10 +42,7 @@ const menuProps = {
         name: 'Production',
         module: 'production',
         icon: <RocketOutlined />,
-        routes: [
-          { path: '/production/work-orders', name: 'Work Orders' },
-          { path: '/production/workstations', name: 'Workstations' },
-        ],
+        routes: [{ path: '/production/work-orders', name: 'Work Orders' }],
       },
       {
         path: '/stock',
@@ -54,7 +51,6 @@ const menuProps = {
         icon: <BookOutlined />,
         routes: [
           { path: '/stock/receipt-notes', name: 'Goods Receipts' },
-          { path: '/stock/delivery-notes', name: 'Delivery Notes' },
           { path: '/stock/inventory-entries', name: 'Inventory Ledger' },
           { path: '/setup/items', name: 'Material Master' },
           { path: '/production/boms', name: 'Bills of Materials' },
@@ -69,7 +65,6 @@ const menuProps = {
           { path: '/finance/sales-invoices', name: 'Sales Invoices' },
           { path: '/finance/purchase-invoices', name: 'Purchase Invoices' },
           { path: '/finance/accounting-ledger', name: 'Accounting Ledger' },
-          { path: '/finance/payment-entries', name: 'Payment Entries' },
         ],
       },
       {

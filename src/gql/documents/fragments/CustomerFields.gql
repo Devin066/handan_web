@@ -1,6 +1,7 @@
 fragment CustomerFields on Customer {
   uuid
   name
+  buildSpecs
   customerType
   firstName
   middleName

@@ -232,6 +232,13 @@ const CustomerNew = (props: any) => {
                       />
                       <ProFormTextArea
                         width="md"
+                        name="buildSpecs"
+                        label="Build specifications"
+                        placeholder="Bike model, preferred finish, fitment notes"
+                        fieldProps={{ rows: 2 }}
+                      />
+                      <ProFormTextArea
+                        width="md"
                         name="notes"
                         label="Notes"
                         placeholder="Anything worth remembering"

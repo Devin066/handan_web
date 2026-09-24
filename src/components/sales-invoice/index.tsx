@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { Badge, Button, Typography } from 'antd';
@@ -140,6 +141,9 @@ const SalesInvoiceList: React.FC = () => {
           </div>
         }
         toolBarRender={() => [
+          <Link key="payments" href="/finance/payment-entries">
+            <Button size="small">Payment history</Button>
+          </Link>,
           <Button key="new" type="primary" size="small" onClick={() => setCreating(true)}>
             New invoice
           </Button>,

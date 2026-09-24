@@ -1,0 +1,3 @@
+query CustomerLedger($request: IdRequest!) {
+  customerLedger(request: $request)
+}

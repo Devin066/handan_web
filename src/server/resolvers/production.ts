@@ -250,6 +250,7 @@ export const productionResolvers = {
           operatorStaffUuid?: string;
           producedQty?: number;
           defectiveQty?: number;
+          machineHours?: number;
           startTime?: string;
           endTime?: string;
         };
@@ -257,6 +258,8 @@ export const productionResolvers = {
       ctx: Context,
     ) => {
       const companyUuid = requireCompany(ctx);
+      const machineHours = new Prisma.Decimal(request.machineHours ?? 0);
+      if (machineHours.lt(0)) throw new GraphQLError('Machine hours cannot be negative.');
 
       if (!request.workOrderUuid || !request.workOrderItemUuid) {
         throw new GraphQLError('workOrderUuid and workOrderItemUuid are required');
@@ -288,10 +291,18 @@ export const productionResolvers = {
             status: JOB_CARD_STATUS.completed,
             producedQty,
             defectiveQty,
+            machineHours,
             startTime: request.startTime ? new Date(request.startTime) : null,
             endTime: request.endTime ? new Date(request.endTime) : null,
           },
         });
+
+        if (machineHours.gt(0)) {
+          await tx.workOrder.update({
+            where: { uuid: workOrder.uuid },
+            data: { machineHours: { increment: machineHours } },
+          });
+        }
 
         await tx.workOrderItem.update({
           where: { uuid: step.uuid },
@@ -465,6 +476,17 @@ export const productionResolvers = {
   },
 
   WorkOrder: {
+    laborHours: async (parent: { uuid: string }, _: unknown, ctx: Context) => {
+      const cards = await ctx.db.jobCard.findMany({
+        where: { workOrderUuid: parent.uuid },
+        select: { startTime: true, endTime: true },
+      });
+      const hours = cards.reduce(
+        (sum, c) => (c.startTime && c.endTime ? sum + Math.max(0, +c.endTime - +c.startTime) / 3_600_000 : sum),
+        0,
+      );
+      return Math.round(hours * 100) / 100;
+    },
     assignedStaffName: async (parent: { assignedStaffUuid: string | null }, _: unknown, ctx: Context) => {
       if (!parent.assignedStaffUuid) return null;
       const staff = await ctx.loaders.staff.load(parent.assignedStaffUuid);
@@ -510,6 +532,11 @@ export const productionResolvers = {
   },
 
   JobCard: {
+    /** Labour time from the reported start and end. */
+    laborHours: (parent: { startTime: Date | null; endTime: Date | null }) =>
+      parent.startTime && parent.endTime
+        ? Math.max(0, Math.round(((+parent.endTime - +parent.startTime) / 3_600_000) * 100) / 100)
+        : 0,
     operatorStaff: (parent: { operatorStaffUuid: string | null }, _: unknown, ctx: Context) =>
       parent.operatorStaffUuid ? ctx.loaders.staff.load(parent.operatorStaffUuid) : null,
     workOrder: (parent: { workOrderUuid: string }, _: unknown, ctx: Context) =>

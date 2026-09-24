@@ -151,6 +151,7 @@ export type CreateCustomerRequest = {
   address?: InputMaybe<Scalars['String']['input']>;
   alternatePhone?: InputMaybe<Scalars['String']['input']>;
   barangay?: InputMaybe<Scalars['String']['input']>;
+  buildSpecs?: InputMaybe<Scalars['String']['input']>;
   city?: InputMaybe<Scalars['String']['input']>;
   companyName?: InputMaybe<Scalars['String']['input']>;
   contactName?: InputMaybe<Scalars['String']['input']>;
@@ -305,6 +306,8 @@ export type Customer = {
   alternatePhone?: Maybe<Scalars['String']['output']>;
   balance?: Maybe<Scalars['Decimal']['output']>;
   barangay?: Maybe<Scalars['String']['output']>;
+  /** Standing build specifications: bike model, finish, fitment. */
+  buildSpecs?: Maybe<Scalars['String']['output']>;
   city?: Maybe<Scalars['String']['output']>;
   companyName?: Maybe<Scalars['String']['output']>;
   contactName?: Maybe<Scalars['String']['output']>;
@@ -456,6 +459,8 @@ export type JobCard = {
   defectiveQty?: Maybe<Scalars['Decimal']['output']>;
   endTime?: Maybe<Scalars['DateTime']['output']>;
   insertedAt?: Maybe<Scalars['DateTime']['output']>;
+  laborHours?: Maybe<Scalars['Float']['output']>;
+  machineHours?: Maybe<Scalars['Decimal']['output']>;
   operatorStaff?: Maybe<Staff>;
   operatorStaffUuid?: Maybe<Scalars['ID']['output']>;
   producedQty?: Maybe<Scalars['Decimal']['output']>;
@@ -762,6 +767,7 @@ export type RecordInvoicePaymentRequest = {
 export type ReportJobCardRequest = {
   defectiveQty?: InputMaybe<Scalars['Decimal']['input']>;
   endTime?: InputMaybe<Scalars['DateTime']['input']>;
+  machineHours?: InputMaybe<Scalars['Float']['input']>;
   operatorStaffUuid?: InputMaybe<Scalars['ID']['input']>;
   producedQty?: InputMaybe<Scalars['Decimal']['input']>;
   startTime?: InputMaybe<Scalars['DateTime']['input']>;
@@ -1032,6 +1038,8 @@ export type RootQueryType = {
   configuration?: Maybe<Configuration>;
   currentUser?: Maybe<User>;
   customer?: Maybe<Customer>;
+  /** Orders, invoices and payments for one customer, with running balance. */
+  customerLedger?: Maybe<Scalars['JSON']['output']>;
   customers?: Maybe<Array<Maybe<Customer>>>;
   /** Executive dashboard widgets (SRS 3). */
   dashboard?: Maybe<Scalars['JSON']['output']>;
@@ -1070,6 +1078,8 @@ export type RootQueryType = {
   staffPerformance?: Maybe<Array<Maybe<JobCard>>>;
   stockItems?: Maybe<Array<Maybe<StockItem>>>;
   supplier?: Maybe<Supplier>;
+  /** Purchase orders, receipts, invoices and payments for one supplier. */
+  supplierLedger?: Maybe<Scalars['JSON']['output']>;
   /** Last known prices from one supplier (uuid = supplier). */
   supplierPrices?: Maybe<Array<Maybe<SupplierPrice>>>;
   suppliers?: Maybe<Array<Maybe<Supplier>>>;
@@ -1097,6 +1107,11 @@ export type RootQueryTypeBomArgs = {
 
 
 export type RootQueryTypeCustomerArgs = {
+  request: IdRequest;
+};
+
+
+export type RootQueryTypeCustomerLedgerArgs = {
   request: IdRequest;
 };
 
@@ -1167,6 +1182,11 @@ export type RootQueryTypeStaffPerformanceArgs = {
 
 
 export type RootQueryTypeSupplierArgs = {
+  request: IdRequest;
+};
+
+
+export type RootQueryTypeSupplierLedgerArgs = {
   request: IdRequest;
 };
 
@@ -1501,6 +1521,10 @@ export type WorkOrder = {
   itemName?: Maybe<Scalars['String']['output']>;
   itemUuid?: Maybe<Scalars['ID']['output']>;
   items?: Maybe<Array<Maybe<WorkOrderItem>>>;
+  /** Labour hours from reported start and end times. */
+  laborHours?: Maybe<Scalars['Float']['output']>;
+  /** Lathe / CNC hours reported on this work order. */
+  machineHours?: Maybe<Scalars['Decimal']['output']>;
   materialRequests?: Maybe<Array<Maybe<WorkOrderMaterialRequest>>>;
   pieceRate?: Maybe<Scalars['Decimal']['output']>;
   plannedQty?: Maybe<Scalars['Decimal']['output']>;
@@ -1589,7 +1613,7 @@ export type BomFieldsFragment = { __typename?: 'Bom', uuid?: string | null, code
 
 export type BenefitsFieldsFragment = { __typename?: 'Benefits', overtimeMultiplier?: number | null, defaultPieceRate?: number | null, sssRate?: number | null, philhealthRate?: number | null, pagibigRate?: number | null, withholdingTaxRate?: number | null, standardHoursPerDay?: number | null };
 
-export type CustomerFieldsFragment = { __typename?: 'Customer', uuid?: string | null, name?: string | null, customerType?: string | null, firstName?: string | null, middleName?: string | null, lastName?: string | null, suffix?: string | null, companyName?: string | null, contactName?: string | null, phone?: string | null, alternatePhone?: string | null, landline?: string | null, email?: string | null, messengerId?: string | null, facebook?: string | null, viber?: string | null, whatsapp?: string | null, telegram?: string | null, instagram?: string | null, tiktok?: string | null, marketplaceAccount?: string | null, address?: string | null, barangay?: string | null, city?: string | null, province?: string | null, region?: string | null, postalCode?: string | null, sourcePlatform?: string | null, primaryChannel?: string | null, followUpStatus?: string | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null };
+export type CustomerFieldsFragment = { __typename?: 'Customer', uuid?: string | null, name?: string | null, buildSpecs?: string | null, customerType?: string | null, firstName?: string | null, middleName?: string | null, lastName?: string | null, suffix?: string | null, companyName?: string | null, contactName?: string | null, phone?: string | null, alternatePhone?: string | null, landline?: string | null, email?: string | null, messengerId?: string | null, facebook?: string | null, viber?: string | null, whatsapp?: string | null, telegram?: string | null, instagram?: string | null, tiktok?: string | null, marketplaceAccount?: string | null, address?: string | null, barangay?: string | null, city?: string | null, province?: string | null, region?: string | null, postalCode?: string | null, sourcePlatform?: string | null, primaryChannel?: string | null, followUpStatus?: string | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null };
 
 export type DeliveryNoteFieldsFragment = { __typename?: 'DeliveryNote', uuid?: string | null, code?: string | null, status?: string | null, customerName?: string | null, totalAmount?: any | null, totalQty?: any | null, salesOrderUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null };
 
@@ -1635,7 +1659,7 @@ export type UomFieldsFragment = { __typename?: 'Uom', uuid?: string | null, name
 
 export type WarehouseFieldsFragment = { __typename?: 'Warehouse', uuid?: string | null, name?: string | null, address?: string | null, insertedAt?: any | null, updatedAt?: any | null };
 
-export type WorkOrderFieldsFragment = { __typename?: 'WorkOrder', uuid?: string | null, code?: string | null, title?: string | null, startTime?: any | null, endTime?: any | null, type?: string | null, status?: string | null, plannedQty?: any | null, storedQty?: any | null, producedQty?: any | null, scrapedQty?: any | null, itemUuid?: string | null, itemName?: string | null, uomName?: string | null, supplierName?: string | null, supplierUuid?: string | null, salesOrderUuid?: string | null, salesOrderCode?: string | null, dueDate?: any | null, assignedStaffUuid?: string | null, assignedStaffName?: string | null, pieceRate?: any | null, stockUomUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null };
+export type WorkOrderFieldsFragment = { __typename?: 'WorkOrder', uuid?: string | null, code?: string | null, title?: string | null, startTime?: any | null, endTime?: any | null, type?: string | null, status?: string | null, plannedQty?: any | null, storedQty?: any | null, producedQty?: any | null, scrapedQty?: any | null, itemUuid?: string | null, itemName?: string | null, uomName?: string | null, supplierName?: string | null, supplierUuid?: string | null, salesOrderUuid?: string | null, salesOrderCode?: string | null, dueDate?: any | null, assignedStaffUuid?: string | null, assignedStaffName?: string | null, pieceRate?: any | null, machineHours?: any | null, laborHours?: number | null, stockUomUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null };
 
 export type WorkOrderItemFieldsFragment = { __typename?: 'WorkOrderItem', uuid?: string | null, workOrderUuid?: string | null, itemName?: string | null, processName?: string | null, position?: number | null, requiredQty?: any | null, defectiveQty?: any | null, producedQty?: any | null, insertedAt?: any | null, updatedAt?: any | null };
 
@@ -1674,7 +1698,7 @@ export type CreateCustomerMutationVariables = Exact<{
 }>;
 
 
-export type CreateCustomerMutation = { __typename?: 'RootMutationType', createCustomer?: { __typename?: 'Customer', uuid?: string | null, name?: string | null, customerType?: string | null, firstName?: string | null, middleName?: string | null, lastName?: string | null, suffix?: string | null, companyName?: string | null, contactName?: string | null, phone?: string | null, alternatePhone?: string | null, landline?: string | null, email?: string | null, messengerId?: string | null, facebook?: string | null, viber?: string | null, whatsapp?: string | null, telegram?: string | null, instagram?: string | null, tiktok?: string | null, marketplaceAccount?: string | null, address?: string | null, barangay?: string | null, city?: string | null, province?: string | null, region?: string | null, postalCode?: string | null, sourcePlatform?: string | null, primaryChannel?: string | null, followUpStatus?: string | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null };
+export type CreateCustomerMutation = { __typename?: 'RootMutationType', createCustomer?: { __typename?: 'Customer', uuid?: string | null, name?: string | null, buildSpecs?: string | null, customerType?: string | null, firstName?: string | null, middleName?: string | null, lastName?: string | null, suffix?: string | null, companyName?: string | null, contactName?: string | null, phone?: string | null, alternatePhone?: string | null, landline?: string | null, email?: string | null, messengerId?: string | null, facebook?: string | null, viber?: string | null, whatsapp?: string | null, telegram?: string | null, instagram?: string | null, tiktok?: string | null, marketplaceAccount?: string | null, address?: string | null, barangay?: string | null, city?: string | null, province?: string | null, region?: string | null, postalCode?: string | null, sourcePlatform?: string | null, primaryChannel?: string | null, followUpStatus?: string | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null };
 
 export type CreateDeliveryNoteMutationVariables = Exact<{
   request: CreateDeliveryNoteRequest;
@@ -1916,12 +1940,19 @@ export type CustomerQueryVariables = Exact<{
 }>;
 
 
-export type CustomerQuery = { __typename?: 'RootQueryType', customer?: { __typename?: 'Customer', uuid?: string | null, name?: string | null, customerType?: string | null, firstName?: string | null, middleName?: string | null, lastName?: string | null, suffix?: string | null, companyName?: string | null, contactName?: string | null, phone?: string | null, alternatePhone?: string | null, landline?: string | null, email?: string | null, messengerId?: string | null, facebook?: string | null, viber?: string | null, whatsapp?: string | null, telegram?: string | null, instagram?: string | null, tiktok?: string | null, marketplaceAccount?: string | null, address?: string | null, barangay?: string | null, city?: string | null, province?: string | null, region?: string | null, postalCode?: string | null, sourcePlatform?: string | null, primaryChannel?: string | null, followUpStatus?: string | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null };
+export type CustomerQuery = { __typename?: 'RootQueryType', customer?: { __typename?: 'Customer', uuid?: string | null, name?: string | null, buildSpecs?: string | null, customerType?: string | null, firstName?: string | null, middleName?: string | null, lastName?: string | null, suffix?: string | null, companyName?: string | null, contactName?: string | null, phone?: string | null, alternatePhone?: string | null, landline?: string | null, email?: string | null, messengerId?: string | null, facebook?: string | null, viber?: string | null, whatsapp?: string | null, telegram?: string | null, instagram?: string | null, tiktok?: string | null, marketplaceAccount?: string | null, address?: string | null, barangay?: string | null, city?: string | null, province?: string | null, region?: string | null, postalCode?: string | null, sourcePlatform?: string | null, primaryChannel?: string | null, followUpStatus?: string | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null };
+
+export type CustomerLedgerQueryVariables = Exact<{
+  request: IdRequest;
+}>;
+
+
+export type CustomerLedgerQuery = { __typename?: 'RootQueryType', customerLedger?: any | null };
 
 export type CustomersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type CustomersQuery = { __typename?: 'RootQueryType', customers?: Array<{ __typename?: 'Customer', uuid?: string | null, name?: string | null, customerType?: string | null, firstName?: string | null, middleName?: string | null, lastName?: string | null, suffix?: string | null, companyName?: string | null, contactName?: string | null, phone?: string | null, alternatePhone?: string | null, landline?: string | null, email?: string | null, messengerId?: string | null, facebook?: string | null, viber?: string | null, whatsapp?: string | null, telegram?: string | null, instagram?: string | null, tiktok?: string | null, marketplaceAccount?: string | null, address?: string | null, barangay?: string | null, city?: string | null, province?: string | null, region?: string | null, postalCode?: string | null, sourcePlatform?: string | null, primaryChannel?: string | null, followUpStatus?: string | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null };
+export type CustomersQuery = { __typename?: 'RootQueryType', customers?: Array<{ __typename?: 'Customer', uuid?: string | null, name?: string | null, buildSpecs?: string | null, customerType?: string | null, firstName?: string | null, middleName?: string | null, lastName?: string | null, suffix?: string | null, companyName?: string | null, contactName?: string | null, phone?: string | null, alternatePhone?: string | null, landline?: string | null, email?: string | null, messengerId?: string | null, facebook?: string | null, viber?: string | null, whatsapp?: string | null, telegram?: string | null, instagram?: string | null, tiktok?: string | null, marketplaceAccount?: string | null, address?: string | null, barangay?: string | null, city?: string | null, province?: string | null, region?: string | null, postalCode?: string | null, sourcePlatform?: string | null, primaryChannel?: string | null, followUpStatus?: string | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null };
 
 export type DashboardQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2130,6 +2161,13 @@ export type SupplierQueryVariables = Exact<{
 
 export type SupplierQuery = { __typename?: 'RootQueryType', supplier?: { __typename?: 'Supplier', uuid?: string | null, name?: string | null, address?: string | null, tin?: string | null, contactFirstName?: string | null, contactLastName?: string | null, contactPosition?: string | null, contactName?: string | null, phone?: string | null, landline?: string | null, email?: string | null, notes?: string | null, insertedAt?: any | null } | null };
 
+export type SupplierLedgerQueryVariables = Exact<{
+  request: IdRequest;
+}>;
+
+
+export type SupplierLedgerQuery = { __typename?: 'RootQueryType', supplierLedger?: any | null };
+
 export type SupplierPricesQueryVariables = Exact<{
   request: IdRequest;
 }>;
@@ -2171,7 +2209,7 @@ export type WorkOrderQueryVariables = Exact<{
 }>;
 
 
-export type WorkOrderQuery = { __typename?: 'RootQueryType', workOrder?: { __typename?: 'WorkOrder', uuid?: string | null, code?: string | null, title?: string | null, startTime?: any | null, endTime?: any | null, type?: string | null, status?: string | null, plannedQty?: any | null, storedQty?: any | null, producedQty?: any | null, scrapedQty?: any | null, itemUuid?: string | null, itemName?: string | null, uomName?: string | null, supplierName?: string | null, supplierUuid?: string | null, salesOrderUuid?: string | null, salesOrderCode?: string | null, dueDate?: any | null, assignedStaffUuid?: string | null, assignedStaffName?: string | null, pieceRate?: any | null, stockUomUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null, items?: Array<{ __typename?: 'WorkOrderItem', uuid?: string | null, workOrderUuid?: string | null, itemName?: string | null, processName?: string | null, position?: number | null, requiredQty?: any | null, defectiveQty?: any | null, producedQty?: any | null, insertedAt?: any | null, updatedAt?: any | null, jobCards?: Array<{ __typename?: 'JobCard', uuid?: string | null, startTime?: any | null, endTime?: any | null, status?: string | null, defectiveQty?: any | null, producedQty?: any | null, workOrderItemUuid?: string | null, workOrderUuid?: string | null, operatorStaff?: { __typename?: 'Staff', email?: string | null } | null } | null> | null } | null> | null, materialRequests?: Array<{ __typename?: 'WorkOrderMaterialRequest', uuid?: string | null, itemName?: string | null, actualQty?: any | null, remainingQty?: any | null, receivedQty?: any | null, uomName?: string | null, stockUomUuid?: string | null, bomUuid?: string | null, warehouseUuid?: string | null, itemUuid?: string | null, workOrderUuid?: string | null, warehouse?: { __typename?: 'Warehouse', name?: string | null } | null } | null> | null } | null };
+export type WorkOrderQuery = { __typename?: 'RootQueryType', workOrder?: { __typename?: 'WorkOrder', uuid?: string | null, code?: string | null, title?: string | null, startTime?: any | null, endTime?: any | null, type?: string | null, status?: string | null, plannedQty?: any | null, storedQty?: any | null, producedQty?: any | null, scrapedQty?: any | null, itemUuid?: string | null, itemName?: string | null, uomName?: string | null, supplierName?: string | null, supplierUuid?: string | null, salesOrderUuid?: string | null, salesOrderCode?: string | null, dueDate?: any | null, assignedStaffUuid?: string | null, assignedStaffName?: string | null, pieceRate?: any | null, machineHours?: any | null, laborHours?: number | null, stockUomUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null, items?: Array<{ __typename?: 'WorkOrderItem', uuid?: string | null, workOrderUuid?: string | null, itemName?: string | null, processName?: string | null, position?: number | null, requiredQty?: any | null, defectiveQty?: any | null, producedQty?: any | null, insertedAt?: any | null, updatedAt?: any | null, jobCards?: Array<{ __typename?: 'JobCard', uuid?: string | null, startTime?: any | null, endTime?: any | null, status?: string | null, defectiveQty?: any | null, producedQty?: any | null, workOrderItemUuid?: string | null, workOrderUuid?: string | null, operatorStaff?: { __typename?: 'Staff', email?: string | null } | null } | null> | null } | null> | null, materialRequests?: Array<{ __typename?: 'WorkOrderMaterialRequest', uuid?: string | null, itemName?: string | null, actualQty?: any | null, remainingQty?: any | null, receivedQty?: any | null, uomName?: string | null, stockUomUuid?: string | null, bomUuid?: string | null, warehouseUuid?: string | null, itemUuid?: string | null, workOrderUuid?: string | null, warehouse?: { __typename?: 'Warehouse', name?: string | null } | null } | null> | null } | null };
 
 export type WorkOrderItemQueryVariables = Exact<{
   request: IdRequest;
@@ -2188,7 +2226,7 @@ export type WorkOrderItemsQuery = { __typename?: 'RootQueryType', workOrderItems
 export type WorkOrdersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type WorkOrdersQuery = { __typename?: 'RootQueryType', workOrders?: Array<{ __typename?: 'WorkOrder', uuid?: string | null, code?: string | null, title?: string | null, startTime?: any | null, endTime?: any | null, type?: string | null, status?: string | null, plannedQty?: any | null, storedQty?: any | null, producedQty?: any | null, scrapedQty?: any | null, itemUuid?: string | null, itemName?: string | null, uomName?: string | null, supplierName?: string | null, supplierUuid?: string | null, salesOrderUuid?: string | null, salesOrderCode?: string | null, dueDate?: any | null, assignedStaffUuid?: string | null, assignedStaffName?: string | null, pieceRate?: any | null, stockUomUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null };
+export type WorkOrdersQuery = { __typename?: 'RootQueryType', workOrders?: Array<{ __typename?: 'WorkOrder', uuid?: string | null, code?: string | null, title?: string | null, startTime?: any | null, endTime?: any | null, type?: string | null, status?: string | null, plannedQty?: any | null, storedQty?: any | null, producedQty?: any | null, scrapedQty?: any | null, itemUuid?: string | null, itemName?: string | null, uomName?: string | null, supplierName?: string | null, supplierUuid?: string | null, salesOrderUuid?: string | null, salesOrderCode?: string | null, dueDate?: any | null, assignedStaffUuid?: string | null, assignedStaffName?: string | null, pieceRate?: any | null, machineHours?: any | null, laborHours?: number | null, stockUomUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null };
 
 export type WorkstationQueryVariables = Exact<{
   request: IdRequest;
@@ -2226,6 +2264,7 @@ export const CustomerFieldsFragmentDoc = gql`
     fragment CustomerFields on Customer {
   uuid
   name
+  buildSpecs
   customerType
   firstName
   middleName
@@ -2633,6 +2672,8 @@ export const WorkOrderFieldsFragmentDoc = gql`
   assignedStaffUuid
   assignedStaffName
   pieceRate
+  machineHours
+  laborHours
   stockUomUuid
   insertedAt
   updatedAt
@@ -4142,6 +4183,44 @@ export type CustomerQueryHookResult = ReturnType<typeof useCustomerQuery>;
 export type CustomerLazyQueryHookResult = ReturnType<typeof useCustomerLazyQuery>;
 export type CustomerSuspenseQueryHookResult = ReturnType<typeof useCustomerSuspenseQuery>;
 export type CustomerQueryResult = Apollo.QueryResult<CustomerQuery, CustomerQueryVariables>;
+export const CustomerLedgerDocument = gql`
+    query CustomerLedger($request: IdRequest!) {
+  customerLedger(request: $request)
+}
+    `;
+
+/**
+ * __useCustomerLedgerQuery__
+ *
+ * To run a query within a React component, call `useCustomerLedgerQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCustomerLedgerQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCustomerLedgerQuery({
+ *   variables: {
+ *      request: // value for 'request'
+ *   },
+ * });
+ */
+export function useCustomerLedgerQuery(baseOptions: Apollo.QueryHookOptions<CustomerLedgerQuery, CustomerLedgerQueryVariables> & ({ variables: CustomerLedgerQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<CustomerLedgerQuery, CustomerLedgerQueryVariables>(CustomerLedgerDocument, options);
+      }
+export function useCustomerLedgerLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CustomerLedgerQuery, CustomerLedgerQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<CustomerLedgerQuery, CustomerLedgerQueryVariables>(CustomerLedgerDocument, options);
+        }
+export function useCustomerLedgerSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<CustomerLedgerQuery, CustomerLedgerQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<CustomerLedgerQuery, CustomerLedgerQueryVariables>(CustomerLedgerDocument, options);
+        }
+export type CustomerLedgerQueryHookResult = ReturnType<typeof useCustomerLedgerQuery>;
+export type CustomerLedgerLazyQueryHookResult = ReturnType<typeof useCustomerLedgerLazyQuery>;
+export type CustomerLedgerSuspenseQueryHookResult = ReturnType<typeof useCustomerLedgerSuspenseQuery>;
+export type CustomerLedgerQueryResult = Apollo.QueryResult<CustomerLedgerQuery, CustomerLedgerQueryVariables>;
 export const CustomersDocument = gql`
     query Customers {
   customers {
@@ -5719,6 +5798,44 @@ export type SupplierQueryHookResult = ReturnType<typeof useSupplierQuery>;
 export type SupplierLazyQueryHookResult = ReturnType<typeof useSupplierLazyQuery>;
 export type SupplierSuspenseQueryHookResult = ReturnType<typeof useSupplierSuspenseQuery>;
 export type SupplierQueryResult = Apollo.QueryResult<SupplierQuery, SupplierQueryVariables>;
+export const SupplierLedgerDocument = gql`
+    query SupplierLedger($request: IdRequest!) {
+  supplierLedger(request: $request)
+}
+    `;
+
+/**
+ * __useSupplierLedgerQuery__
+ *
+ * To run a query within a React component, call `useSupplierLedgerQuery` and pass it any options that fit your needs.
+ * When your component renders, `useSupplierLedgerQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useSupplierLedgerQuery({
+ *   variables: {
+ *      request: // value for 'request'
+ *   },
+ * });
+ */
+export function useSupplierLedgerQuery(baseOptions: Apollo.QueryHookOptions<SupplierLedgerQuery, SupplierLedgerQueryVariables> & ({ variables: SupplierLedgerQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<SupplierLedgerQuery, SupplierLedgerQueryVariables>(SupplierLedgerDocument, options);
+      }
+export function useSupplierLedgerLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<SupplierLedgerQuery, SupplierLedgerQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<SupplierLedgerQuery, SupplierLedgerQueryVariables>(SupplierLedgerDocument, options);
+        }
+export function useSupplierLedgerSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<SupplierLedgerQuery, SupplierLedgerQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<SupplierLedgerQuery, SupplierLedgerQueryVariables>(SupplierLedgerDocument, options);
+        }
+export type SupplierLedgerQueryHookResult = ReturnType<typeof useSupplierLedgerQuery>;
+export type SupplierLedgerLazyQueryHookResult = ReturnType<typeof useSupplierLedgerLazyQuery>;
+export type SupplierLedgerSuspenseQueryHookResult = ReturnType<typeof useSupplierLedgerSuspenseQuery>;
+export type SupplierLedgerQueryResult = Apollo.QueryResult<SupplierLedgerQuery, SupplierLedgerQueryVariables>;
 export const SupplierPricesDocument = gql`
     query SupplierPrices($request: IdRequest!) {
   supplierPrices(request: $request) {

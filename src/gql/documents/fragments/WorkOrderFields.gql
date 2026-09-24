@@ -21,6 +21,8 @@ fragment WorkOrderFields on WorkOrder {
   assignedStaffUuid
   assignedStaffName
   pieceRate
+  machineHours
+  laborHours
   stockUomUuid
   insertedAt
   updatedAt

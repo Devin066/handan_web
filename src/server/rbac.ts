@@ -81,6 +81,8 @@ const GUARDED: Record<string, Module> = {
   accountBalances: 'finance',
 
   createCustomer: 'partners',
+  customerLedger: 'partners',
+  supplierLedger: 'partners',
   createSupplier: 'partners',
 
   attendance: 'hr',

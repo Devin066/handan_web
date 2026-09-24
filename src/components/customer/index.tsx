@@ -1,7 +1,8 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+import PartyLedger from '@/components/shared/party-ledger';
 import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
-import { Typography } from 'antd';
+import { Button, Typography } from 'antd';
 
 // locale
 import { useMessageContext } from '@/components/common/message-context';
@@ -25,6 +26,7 @@ const CustomerList: React.FC = () => {
   });
 
   const actionRef = useRef<ActionType | null>(null);
+  const [ledgerFor, setLedgerFor] = useState<any>(null);
 
   const handleReloadTable = () => {
     actionRef.current?.reload();
@@ -111,39 +113,52 @@ const CustomerList: React.FC = () => {
       search: false,
       valueType: 'dateTime',
     },
+    {
+      title: 'Actions',
+      valueType: 'option',
+      width: 140,
+      render: (_, record) => [
+        <Button key="ledger" size="small" type="link" onClick={() => setLedgerFor(record)}>
+          Sales ledger
+        </Button>,
+      ],
+    },
   ];
 
   return (
-    <ProTable
-      actionRef={actionRef}
-      columns={columns}
-      request={async (params, sorter, filter) => {
-        const { data } = await client.query({
-          query: CustomersDocument,
-          variables: {
-            request: {},
-          },
-        });
+    <>
+      <ProTable
+        actionRef={actionRef}
+        columns={columns}
+        request={async (params, sorter, filter) => {
+          const { data } = await client.query({
+            query: CustomersDocument,
+            variables: {
+              request: {},
+            },
+          });
 
-        return {
-          data: data.customers,
-          total: data.customers.length,
-          success: true,
-        };
-      }}
-      rowKey="uuid"
-      pagination={{
-        showQuickJumper: true,
-      }}
-      search={false}
-      // search={{
-      //   span: 6,
-      //   layout: 'vertical',
-      //   defaultCollapsed: true,
-      // }}
-      dateFormatter="string"
-      toolBarRender={() => [<CustomerNew key="customer-new" onCreate={(values: any) => handleCreate(values)} />]}
-    />
+          return {
+            data: data.customers,
+            total: data.customers.length,
+            success: true,
+          };
+        }}
+        rowKey="uuid"
+        pagination={{
+          showQuickJumper: true,
+        }}
+        search={false}
+        // search={{
+        //   span: 6,
+        //   layout: 'vertical',
+        //   defaultCollapsed: true,
+        // }}
+        dateFormatter="string"
+        toolBarRender={() => [<CustomerNew key="customer-new" onCreate={(values: any) => handleCreate(values)} />]}
+      />
+      <PartyLedger party={ledgerFor} kind="customer" onClose={() => setLedgerFor(null)} />
+    </>
   );
 };
 

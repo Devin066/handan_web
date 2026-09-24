@@ -65,7 +65,7 @@ export const dashboardResolvers = {
           orderBy: [{ expectedDate: 'asc' }, { insertedAt: 'asc' }],
         }),
         ctx.db.purchaseRequest.findMany({
-          where: { companyUuid, status: { in: ['pending', 'approved', 'partly_ordered'] } },
+          where: { companyUuid, status: { in: ['pending', 'approved'] } },
           include: { items: true },
           orderBy: { insertedAt: 'asc' },
         }),
@@ -129,8 +129,10 @@ export const dashboardResolvers = {
           requestedBy: pr.requestedBy,
           requiredDate: pr.requiredDate,
           openLines: pr.items.filter((i) => new Prisma.Decimal(i.requestedQty).gt(i.orderedQty)).length,
+          onPurchaseOrder: pr.items.some((i) => new Prisma.Decimal(i.orderedQty).gt(0)),
         }))
-        .filter((pr) => pr.openLines > 0);
+        // Hierarchy doc: open PRs are the ones not linked to any PO yet.
+        .filter((pr) => !pr.onPurchaseOrder);
 
       const ordersWithRisk = salesOrders.map((so) => ({
         uuid: so.uuid,

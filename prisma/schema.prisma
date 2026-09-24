@@ -104,20 +104,20 @@ model Item {
   insertedAt          DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
-  stockUoms          StockUom[]
-  stockItems         StockItem[]
-  boms               Bom[]
-  bomItems           BomItem[]
-  inventoryEntries   InventoryEntry[]
-  salesOrderItems    SalesOrderItem[]
-  deliveryNoteItems  DeliveryNoteItem[]
-  purchaseOrderItems PurchaseOrderItem[]
-  receiptNoteItems   ReceiptNoteItem[]
-  workOrders         WorkOrder[]
-  materialRequests   WorkOrderMaterialRequest[]
-  supplierPrices     SupplierPrice[]
+  stockUoms            StockUom[]
+  stockItems           StockItem[]
+  boms                 Bom[]
+  bomItems             BomItem[]
+  inventoryEntries     InventoryEntry[]
+  salesOrderItems      SalesOrderItem[]
+  deliveryNoteItems    DeliveryNoteItem[]
+  purchaseOrderItems   PurchaseOrderItem[]
+  receiptNoteItems     ReceiptNoteItem[]
+  workOrders           WorkOrder[]
+  materialRequests     WorkOrderMaterialRequest[]
+  supplierPrices       SupplierPrice[]
   purchaseRequestItems PurchaseRequestItem[]
-  defaultSupplier    Supplier?                  @relation(fields: [defaultSupplierUuid], references: [uuid])
+  defaultSupplier      Supplier?                  @relation(fields: [defaultSupplierUuid], references: [uuid])
 
   @@unique([companyUuid, sku])
   @@index([companyUuid])
@@ -282,6 +282,8 @@ model Customer {
   followUpStatus    String    @default("none")
   lastInteractionAt DateTime?
   nextFollowUpAt    DateTime?
+  /// Standing build preferences (SRS 4.7): bike model, finish, fitment notes.
+  buildSpecs        String?
   notes             String?
   companyUuid       String
   insertedAt        DateTime  @default(now())
@@ -297,12 +299,12 @@ model Customer {
 }
 
 model Supplier {
-  uuid        String   @id @default(uuid())
+  uuid    String  @id @default(uuid())
   /// Registered business name, shown on purchase orders and invoices.
-  name        String
-  address     String?
+  name    String
+  address String?
   /// Tax identification number, printed on supplier invoices.
-  tin         String?
+  tin     String?
 
   // Point of contact at the supplier. contactName is derived from the parts so
   // lists can show one string that never disagrees with them.
@@ -538,14 +540,14 @@ model SalesInvoice {
   customerReference String?
 
   /// vat_exclusive, vat_inclusive, vat_exempt or zero_rated.
-  vatMode        String  @default("vat_exclusive")
+  vatMode           String    @default("vat_exclusive")
   /// Sum of line gross amounts (qty x unit price), before discounts.
-  subtotal       Decimal @default(0) @db.Decimal(18, 4)
-  discountAmount Decimal @default(0) @db.Decimal(18, 4)
+  subtotal          Decimal   @default(0) @db.Decimal(18, 4)
+  discountAmount    Decimal   @default(0) @db.Decimal(18, 4)
   /// Amount VAT is charged on (net of VAT and discount).
-  vatableAmount  Decimal @default(0) @db.Decimal(18, 4)
-  vatAmount      Decimal @default(0) @db.Decimal(18, 4)
-  notes          String?
+  vatableAmount     Decimal   @default(0) @db.Decimal(18, 4)
+  vatAmount         Decimal   @default(0) @db.Decimal(18, 4)
+  notes             String?
   /// Official Receipt number, filled in once finance confirms payment.
   orNumber          String?
   paymentMethodUuid String?
@@ -581,23 +583,23 @@ model SalesInvoiceItem {
 }
 
 model PurchaseOrder {
-  uuid            String   @id @default(uuid())
+  uuid            String    @id @default(uuid())
   code            String
-  status          String   @default("to_receive_and_bill")
-  receiptStatus   String   @default("not_received")
-  billingStatus   String   @default("not_billed")
+  status          String    @default("to_receive_and_bill")
+  receiptStatus   String    @default("not_received")
+  billingStatus   String    @default("not_billed")
   supplierUuid    String
   supplierName    String
   supplierAddress String?
   warehouseUuid   String
-  totalAmount     Decimal  @default(0) @db.Decimal(18, 4)
-  paidAmount      Decimal  @default(0) @db.Decimal(18, 4)
-  totalQty        Decimal  @default(0) @db.Decimal(18, 4)
-  receivedQty     Decimal  @default(0) @db.Decimal(18, 4)
+  totalAmount     Decimal   @default(0) @db.Decimal(18, 4)
+  paidAmount      Decimal   @default(0) @db.Decimal(18, 4)
+  totalQty        Decimal   @default(0) @db.Decimal(18, 4)
+  receivedQty     Decimal   @default(0) @db.Decimal(18, 4)
   expectedDate    DateTime?
   companyUuid     String
-  insertedAt      DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  insertedAt      DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   supplier         Supplier            @relation(fields: [supplierUuid], references: [uuid])
   warehouse        Warehouse           @relation(fields: [warehouseUuid], references: [uuid])
@@ -609,22 +611,22 @@ model PurchaseOrder {
 }
 
 model PurchaseOrderItem {
-  uuid              String   @id @default(uuid())
-  purchaseOrderUuid String
-  itemUuid          String
-  itemName          String
-  uomName           String?
-  stockUomUuid      String?
-  unitPrice         Decimal  @default(0) @db.Decimal(18, 4)
-  orderedQty        Decimal  @default(0) @db.Decimal(18, 4)
-  receivedQty       Decimal  @default(0) @db.Decimal(18, 4)
+  uuid                    String   @id @default(uuid())
+  purchaseOrderUuid       String
+  itemUuid                String
+  itemName                String
+  uomName                 String?
+  stockUomUuid            String?
+  unitPrice               Decimal  @default(0) @db.Decimal(18, 4)
+  orderedQty              Decimal  @default(0) @db.Decimal(18, 4)
+  receivedQty             Decimal  @default(0) @db.Decimal(18, 4)
   purchaseRequestItemUuid String?
-  insertedAt        DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  insertedAt              DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 
-  purchaseOrder    PurchaseOrder     @relation(fields: [purchaseOrderUuid], references: [uuid], onDelete: Cascade)
-  item             Item              @relation(fields: [itemUuid], references: [uuid])
-  receiptNoteItems ReceiptNoteItem[]
+  purchaseOrder       PurchaseOrder        @relation(fields: [purchaseOrderUuid], references: [uuid], onDelete: Cascade)
+  item                Item                 @relation(fields: [itemUuid], references: [uuid])
+  receiptNoteItems    ReceiptNoteItem[]
   purchaseRequestItem PurchaseRequestItem? @relation(fields: [purchaseRequestItemUuid], references: [uuid])
 
   @@index([purchaseOrderUuid])
@@ -673,11 +675,11 @@ model ReceiptNoteItem {
 }
 
 model PurchaseInvoice {
-  uuid              String   @id @default(uuid())
+  uuid              String    @id @default(uuid())
   code              String
-  status            String   @default("unpaid")
-  amount            Decimal  @default(0) @db.Decimal(18, 4)
-  paidAmount        Decimal  @default(0) @db.Decimal(18, 4)
+  status            String    @default("unpaid")
+  amount            Decimal   @default(0) @db.Decimal(18, 4)
+  paidAmount        Decimal   @default(0) @db.Decimal(18, 4)
   supplierUuid      String
   supplierName      String
   purchaseOrderUuid String
@@ -686,8 +688,8 @@ model PurchaseInvoice {
   paymentMethodUuid String?
   paidAt            DateTime?
   companyUuid       String
-  insertedAt        DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  insertedAt        DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   supplier      Supplier      @relation(fields: [supplierUuid], references: [uuid])
   purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderUuid], references: [uuid], onDelete: Cascade)
@@ -696,35 +698,35 @@ model PurchaseInvoice {
 }
 
 model WorkOrder {
-  uuid           String    @id @default(uuid())
-  code           String
-  title          String?
-  type           String    @default("production")
-  status         String    @default("draft")
-  startTime      DateTime?
-  endTime        DateTime?
-  plannedQty     Decimal   @default(0) @db.Decimal(18, 4)
-  storedQty      Decimal   @default(0) @db.Decimal(18, 4)
-  producedQty    Decimal   @default(0) @db.Decimal(18, 4)
-  scrapedQty     Decimal   @default(0) @db.Decimal(18, 4)
-  priority       Int       @default(0)
-  dueDate        DateTime?
-  itemUuid       String
-  itemName       String
-  uomName        String?
-  stockUomUuid   String?
-  bomUuid        String?
-  supplierUuid   String?
-  supplierName   String?
-  salesOrderUuid String?
+  uuid              String    @id @default(uuid())
+  code              String
+  title             String?
+  type              String    @default("production")
+  status            String    @default("draft")
+  startTime         DateTime?
+  endTime           DateTime?
+  plannedQty        Decimal   @default(0) @db.Decimal(18, 4)
+  storedQty         Decimal   @default(0) @db.Decimal(18, 4)
+  producedQty       Decimal   @default(0) @db.Decimal(18, 4)
+  scrapedQty        Decimal   @default(0) @db.Decimal(18, 4)
+  priority          Int       @default(0)
+  dueDate           DateTime?
+  itemUuid          String
+  itemName          String
+  uomName           String?
+  stockUomUuid      String?
+  bomUuid           String?
+  supplierUuid      String?
+  supplierName      String?
+  salesOrderUuid    String?
   assignedStaffUuid String?
   /// Paid to the operator for each good unit reported on this work order.
-  pieceRate      Decimal   @default(0) @db.Decimal(18, 4)
-  machineHours   Decimal   @default(0) @db.Decimal(10, 2)
-  warehouseUuid  String
-  companyUuid    String
-  insertedAt     DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  pieceRate         Decimal   @default(0) @db.Decimal(18, 4)
+  machineHours      Decimal   @default(0) @db.Decimal(10, 2)
+  warehouseUuid     String
+  companyUuid       String
+  insertedAt        DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   item             Item                       @relation(fields: [itemUuid], references: [uuid])
   bom              Bom?                       @relation(fields: [bomUuid], references: [uuid])
@@ -796,6 +798,8 @@ model JobCard {
   pausedSeconds       Int       @default(0)
   endTime             DateTime?
   producedQty         Decimal   @default(0) @db.Decimal(18, 4)
+  /// Lathe / CNC time spent on this report (SRS 2, WO).
+  machineHours        Decimal   @default(0) @db.Decimal(10, 2)
   defectiveQty        Decimal   @default(0) @db.Decimal(18, 4)
   rejectedQty         Decimal   @default(0) @db.Decimal(18, 4)
   rejectReason        String?
@@ -1079,17 +1083,17 @@ model AppSetting {
 /// Purchase Request (SRS 4.2): an internal ask for stock. Approved lines with
 /// quantity left to order can be pulled into a purchase order.
 model PurchaseRequest {
-  uuid          String    @id @default(uuid())
-  code          String
+  uuid         String    @id @default(uuid())
+  code         String
   /// pending, approved, partly_ordered, ordered, rejected
-  status        String    @default("pending")
-  requestedBy   String?
-  requiredDate  DateTime?
-  notes         String?
-  approvedAt    DateTime?
-  companyUuid   String
-  insertedAt    DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  status       String    @default("pending")
+  requestedBy  String?
+  requiredDate DateTime?
+  notes        String?
+  approvedAt   DateTime?
+  companyUuid  String
+  insertedAt   DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   items PurchaseRequestItem[]
 

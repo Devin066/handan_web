@@ -25,6 +25,7 @@ const ReportJobCard = (props: any) => {
       operatorStaffUuid: values.staffUuid,
       producedQty: values.producedQty,
       defectiveQty: 0,
+      machineHours: values.machineHours ?? 0,
       startTime: getUTCTime(values.startTime),
       endTime: getUTCTime(values.endTime),
     };
@@ -73,6 +74,16 @@ const ReportJobCard = (props: any) => {
             }}
             placeholder="How many were finished"
             rules={[{ required: true, message: 'Enter the quantity completed.' }]}
+          />
+
+          <ProFormDigit
+            width="sm"
+            name="machineHours"
+            label="Lathe / CNC hours"
+            min={0}
+            fieldProps={{ precision: 2 }}
+            placeholder="0"
+            tooltip="Machine time used for this step. Labour hours come from the start and end times."
           />
 
           {/* <ProFormDigit

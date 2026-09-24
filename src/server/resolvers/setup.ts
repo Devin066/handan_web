@@ -44,10 +44,112 @@ type CustomerInput = {
   sourcePlatform?: string;
   primaryChannel?: string;
   notes?: string;
+  buildSpecs?: string;
 };
 
 export const setupResolvers = {
   RootQueryType: {
+    /** Customer sales ledger (SRS 4.7): orders, invoices and payments, oldest first. */
+    customerLedger: async (_: unknown, { request }: Id, ctx: Context) => {
+      const companyUuid = requireCompany(ctx);
+      const customerUuid = request.uuid ?? '';
+      const [orders, invoices, payments] = await Promise.all([
+        ctx.db.salesOrder.findMany({ where: { companyUuid, customerUuid } }),
+        ctx.db.salesInvoice.findMany({ where: { companyUuid, customerUuid } }),
+        ctx.db.paymentEntry.findMany({ where: { companyUuid, partyType: 'customer', partyUuid: customerUuid } }),
+      ]);
+      const rows = [
+        ...orders.map((o) => ({
+          date: o.insertedAt,
+          type: 'Sales order',
+          code: o.code,
+          description: `${o.status.replace(/_/g, ' ')}`,
+          debit: 0,
+          credit: 0,
+          amount: Number(o.totalAmount),
+        })),
+        ...invoices.map((i) => ({
+          date: i.invoiceDate,
+          type: 'Invoice',
+          code: i.code,
+          description: i.orNumber
+            ? `OR ${i.orNumber}`
+            : i.status === 'paid'
+              ? 'Paid'
+              : i.status === 'partly_paid'
+                ? 'Partly paid'
+                : 'Awaiting payment',
+          debit: Number(i.amount),
+          credit: 0,
+          amount: Number(i.amount),
+        })),
+        ...payments.map((p) => ({
+          date: p.insertedAt,
+          type: 'Payment',
+          code: p.code,
+          description: p.memo ?? '',
+          debit: 0,
+          credit: Number(p.totalAmount),
+          amount: Number(p.totalAmount),
+        })),
+      ].sort((a, b) => +new Date(a.date) - +new Date(b.date));
+      let balance = 0;
+      return rows.map((r) => ({ ...r, balance: (balance += r.debit - r.credit) }));
+    },
+    /** Supplier purchase fulfilment history (SRS 4.7). */
+    supplierLedger: async (_: unknown, { request }: Id, ctx: Context) => {
+      const companyUuid = requireCompany(ctx);
+      const supplierUuid = request.uuid ?? '';
+      const [orders, receipts, invoices, payments] = await Promise.all([
+        ctx.db.purchaseOrder.findMany({ where: { companyUuid, supplierUuid } }),
+        ctx.db.receiptNote.findMany({ where: { companyUuid, supplierUuid } }),
+        ctx.db.purchaseInvoice.findMany({ where: { companyUuid, supplierUuid } }),
+        ctx.db.paymentEntry.findMany({ where: { companyUuid, partyType: 'supplier', partyUuid: supplierUuid } }),
+      ]);
+      const rows = [
+        ...orders.map((o) => ({
+          date: o.insertedAt,
+          type: 'Purchase order',
+          code: o.code,
+          description: `${Number(o.receivedQty)} of ${Number(o.totalQty)} received${
+            o.expectedDate ? `, expected ${o.expectedDate.toISOString().slice(0, 10)}` : ''
+          }`,
+          debit: 0,
+          credit: 0,
+          amount: Number(o.totalAmount),
+        })),
+        ...receipts.map((r) => ({
+          date: r.insertedAt,
+          type: 'Goods receipt',
+          code: r.code,
+          description: `${Number(r.totalQty)} received, ${r.status === 'completed' ? 'stocked in' : 'not yet stocked in'}`,
+          debit: 0,
+          credit: 0,
+          amount: Number(r.totalAmount),
+        })),
+        ...invoices.map((i) => ({
+          date: i.insertedAt,
+          type: 'Invoice',
+          code: i.code,
+          description: i.status.replace(/_/g, ' '),
+          debit: 0,
+          credit: Number(i.amount),
+          amount: Number(i.amount),
+        })),
+        ...payments.map((p) => ({
+          date: p.insertedAt,
+          type: 'Payment',
+          code: p.code,
+          description: p.memo ?? '',
+          debit: Number(p.totalAmount),
+          credit: 0,
+          amount: Number(p.totalAmount),
+        })),
+      ].sort((a, b) => +new Date(a.date) - +new Date(b.date));
+      let balance = 0;
+      // Balance is what we owe the supplier.
+      return rows.map((r) => ({ ...r, balance: (balance += r.credit - r.debit) }));
+    },
     items: async (_: unknown, __: unknown, ctx: Context) => {
       const companyUuid = requireCompany(ctx);
       return ctx.db.item.findMany({ where: { companyUuid }, orderBy: { insertedAt: 'desc' } });

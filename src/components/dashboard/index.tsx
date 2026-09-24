@@ -335,7 +335,7 @@ const Dashboard = () => {
         </Col>
       </Row>
 
-      <h2 className="dash-section">Sales</h2>
+      <h2 className="dash-section">CRM</h2>
       <Row gutter={[12, 12]}>
         <Col xs={24} lg={8}>
           <WorkList
@@ -413,11 +413,11 @@ const Dashboard = () => {
         </Col>
         <Col xs={24} lg={12}>
           <WorkList
-            title="Purchase requests not on a PO"
+            title="Open purchase requests"
             href="/purchasing/purchase-requests"
             items={d.openPurchaseRequests ?? []}
             loading={busy}
-            emptyText="Every request has been ordered."
+            emptyText="Every request is on a purchase order."
             renderMeta={(pr) => (
               <>
                 {pr.status === 'pending' ? 'Awaiting approval' : 'Approved'} · {plural(pr.openLines, 'line')} to order

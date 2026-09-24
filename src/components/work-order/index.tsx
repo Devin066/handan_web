@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { Button, Popconfirm } from 'antd';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
@@ -100,6 +101,16 @@ const WorkOrderList: React.FC = () => {
     },
     { title: 'Due', dataIndex: 'dueDate', valueType: 'date' },
     {
+      title: 'Hours',
+      dataIndex: 'machineHours',
+      width: 130,
+      render: (_: any, r: any) => (
+        <span className="tabular-figures" style={{ fontSize: 12 }}>
+          {Number(r.laborHours ?? 0)} labour · {Number(r.machineHours ?? 0)} machine
+        </span>
+      ),
+    },
+    {
       title: 'Start Time',
       dataIndex: 'startTime',
       valueType: 'date',
@@ -174,7 +185,12 @@ const WorkOrderList: React.FC = () => {
             success: true,
           };
         }}
-        toolBarRender={() => [<WorkOrderNew key="work-order-new" onCreate={(values: any) => handleCreate(values)} />]}
+        toolBarRender={() => [
+          <Link key="workstations" href="/production/workstations">
+            <Button size="small">Workstations</Button>
+          </Link>,
+          <WorkOrderNew key="work-order-new" onCreate={(values: any) => handleCreate(values)} />,
+        ]}
       />
       <WorkOrderDetail
         uuid={record?.uuid}
