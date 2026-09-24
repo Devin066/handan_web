@@ -4,7 +4,7 @@ import {
   ShoppingCartOutlined,
   ProfileOutlined,
   WalletOutlined,
-  DatabaseOutlined,
+  TeamOutlined,
   RocketOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
@@ -13,81 +13,38 @@ const menuProps = {
   route: {
     path: '/',
     routes: [
-      {
-        path: '/dashboard',
-        name: 'Dashboard',
-        icon: <DashboardOutlined />,
-      },
+      { path: '/dashboard', name: 'Dashboard', icon: <DashboardOutlined /> },
       {
         path: '/selling',
-        name: 'Selling',
+        name: 'Sales',
         icon: <ProfileOutlined />,
-        routes: [
-          {
-            path: '/selling/sales-orders',
-            name: 'Sales Orders',
-          },
-          {
-            path: '/selling/customers',
-            name: 'Customers',
-          },
-        ],
+        routes: [{ path: '/selling/sales-orders', name: 'Sales Orders' }],
       },
       {
         path: '/purchasing',
         name: 'Purchasing',
         icon: <ShoppingCartOutlined />,
-        routes: [
-          {
-            path: '/purchasing/purchase-orders',
-            name: 'Purchase Orders',
-          },
-          {
-            path: '/purchasing/suppliers',
-            name: 'Suppliers',
-          },
-        ],
+        routes: [{ path: '/purchasing/purchase-orders', name: 'Purchase Orders' }],
       },
       {
         path: '/production',
         name: 'Production',
         icon: <RocketOutlined />,
         routes: [
-          {
-            path: '/production/work-orders',
-            name: 'Work Orders',
-          },
-          {
-            path: '/production/boms',
-            name: 'BOM Management',
-          },
-          {
-            path: '/production/processes',
-            name: 'Processes',
-          },
-          {
-            name: 'Workstations',
-            path: '/production/workstations',
-          },
+          { path: '/production/work-orders', name: 'Work Orders' },
+          { path: '/production/workstations', name: 'Workstations' },
         ],
       },
       {
         path: '/stock',
-        name: 'Stock',
+        name: 'Inventory',
         icon: <BookOutlined />,
         routes: [
-          {
-            name: 'Delivery Notes',
-            path: '/stock/delivery-notes',
-          },
-          {
-            name: 'Receipt Notes',
-            path: '/stock/receipt-notes',
-          },
-          {
-            name: 'Inventory Entries',
-            path: '/stock/inventory-entries',
-          },
+          { path: '/stock/receipt-notes', name: 'Goods Receipts' },
+          { path: '/stock/delivery-notes', name: 'Delivery Notes' },
+          { path: '/stock/inventory-entries', name: 'Inventory Ledger' },
+          { path: '/setup/items', name: 'Material Master' },
+          { path: '/production/boms', name: 'Bills of Materials' },
         ],
       },
       {
@@ -95,41 +52,18 @@ const menuProps = {
         name: 'Finance',
         icon: <WalletOutlined />,
         routes: [
-          {
-            name: 'Sales Invoices',
-            path: '/finance/sales-invoices',
-          },
-          {
-            name: 'Purchase Invoices',
-            path: '/finance/purchase-invoices',
-          },
-          {
-            name: 'Payment Entries',
-            path: '/finance/payment-entries',
-          },
-          {
-            name: 'Payment Methods',
-            path: '/finance/payment-methods',
-          },
+          { path: '/finance/sales-invoices', name: 'Sales Invoices' },
+          { path: '/finance/purchase-invoices', name: 'Purchase Invoices' },
+          { path: '/finance/payment-entries', name: 'Payment Entries' },
         ],
       },
       {
-        path: '/setup',
-        name: 'Products',
-        icon: <DatabaseOutlined />,
+        path: '/partners',
+        name: 'Business Partners',
+        icon: <TeamOutlined />,
         routes: [
-          {
-            path: '/setup/items',
-            name: 'Items',
-          },
-          {
-            path: '/setup/uoms',
-            name: 'Units of Measure',
-          },
-          {
-            path: '/setup/warehouses',
-            name: 'Warehouses',
-          },
+          { path: '/selling/customers', name: 'Customers' },
+          { path: '/purchasing/suppliers', name: 'Suppliers' },
         ],
       },
       {
@@ -137,13 +71,17 @@ const menuProps = {
         name: 'Settings',
         icon: <SettingOutlined />,
         routes: [
+          { path: '/system/members', name: 'User Management' },
+          { path: '/system/configuration', name: 'Configuration' },
           {
-            name: 'Members',
-            path: '/system/members',
-          },
-          {
-            name: 'Configuration',
-            path: '/system/configuration',
+            path: '/master-data',
+            name: 'Master Data',
+            routes: [
+              { path: '/finance/payment-methods', name: 'Payment Methods' },
+              { path: '/setup/warehouses', name: 'Warehouses' },
+              { path: '/production/processes', name: 'Processes' },
+              { path: '/setup/uoms', name: 'Units of Measure' },
+            ],
           },
         ],
       },

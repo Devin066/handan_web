@@ -8,10 +8,10 @@ import brand from '@/config/brand';
 const { Title, Text } = Typography;
 
 const MODULES = [
-  { name: 'Selling', docs: 'Sales orders, invoices' },
+  { name: 'Sales', docs: 'Sales orders, invoices' },
   { name: 'Purchasing', docs: 'Purchase orders, suppliers' },
   { name: 'Production', docs: 'Work orders, BOMs, job cards' },
-  { name: 'Stock', docs: 'Receipts, deliveries, counts' },
+  { name: 'Inventory', docs: 'Goods receipts, material master, ledger' },
   { name: 'Finance', docs: 'Payments, balances' },
 ];
 

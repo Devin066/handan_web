@@ -18,7 +18,7 @@ const { Title, Paragraph, Text } = Typography;
 const modules = [
   {
     icon: <ShoppingCartOutlined />,
-    title: 'Selling',
+    title: 'Sales',
     body: 'Sales orders, customers, delivery notes and invoicing through to payment.',
   },
   {
@@ -33,8 +33,8 @@ const modules = [
   },
   {
     icon: <InboxOutlined />,
-    title: 'Stock',
-    body: 'On-hand by warehouse, backed by a full movement ledger you can audit.',
+    title: 'Inventory',
+    body: 'Goods receipts, material master, BOMs and an inventory ledger you can audit.',
   },
   {
     icon: <DollarOutlined />,
@@ -43,8 +43,8 @@ const modules = [
   },
   {
     icon: <ApartmentOutlined />,
-    title: 'Setup',
-    body: 'Items, units of measure, warehouses, processes and workstations.',
+    title: 'Settings',
+    body: 'Users, configuration, payment methods, warehouses, processes and units of measure.',
   },
 ];
 

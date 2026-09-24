@@ -224,7 +224,7 @@ async function main() {
   const order = await prisma.salesOrder.create({
     data: {
       companyUuid,
-      code: 'SO000001',
+      code: 'SO-000001',
       customerUuid: acme.uuid,
       customerName: acme.name,
       customerAddress: acme.address,

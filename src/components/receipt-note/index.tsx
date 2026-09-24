@@ -22,7 +22,7 @@ const ReceiptNoteList: React.FC = () => {
 
   const [completeReceiptNote] = useCompleteReceiptNoteMutation({
     onCompleted: () => {
-      messageApi?.success('Receipt note completed successfully');
+      messageApi?.success('Goods receipt completed');
       handleReloadTable();
     },
     onError,
@@ -94,8 +94,8 @@ const ReceiptNoteList: React.FC = () => {
   return (
     <>
       <DataTable
-        entityName="receipt notes"
-        emptyHint="Receipt notes are created from a purchase order, then stocked in here."
+        entityName="goods receipts"
+        emptyHint="Goods receipts are created from a purchase order, then stocked in here."
         actionRef={actionRef}
         columns={columns}
         request={async (params, sorter, filter) => {

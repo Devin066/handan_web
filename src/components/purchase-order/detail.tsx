@@ -116,7 +116,7 @@ const PurchaseOrderDetail = ({ uuid, visible, record, onClose }: any) => {
     },
     {
       key: '2',
-      label: `Receipt Notes(${size(entry?.receiptNotes)})`,
+      label: `Goods Receipts(${size(entry?.receiptNotes)})`,
       children: (
         <ProTable
           columns={receiptNoteColumns}

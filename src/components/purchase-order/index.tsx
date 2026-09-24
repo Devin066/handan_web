@@ -38,7 +38,7 @@ const PurchaseOrderList: React.FC = () => {
 
   const [createReceiptNote] = useCreateReceiptNoteMutation({
     onCompleted: () => {
-      messageApi?.success('Receipt note created successfully');
+      messageApi?.success('Goods receipt created');
       handleReloadTable();
     },
     onError,
@@ -131,7 +131,7 @@ const PurchaseOrderList: React.FC = () => {
               cancelText="No"
             >
               <Button size="small" type="link">
-                Add Receipt Note
+                Add Goods Receipt
               </Button>
             </Popconfirm>
           )}
