@@ -57,7 +57,7 @@ const SalesInvoiceDetail = ({ uuid, onClose }: { uuid?: string; onClose: () => v
                     label: 'Status',
                     children: <StatusBadge value={invoice.status} valueEnum={invoiceStatusEnum} />,
                   },
-                  { key: 'd', label: 'Invoice date', children: date(invoice.invoiceDate) },
+                  { key: 'd', label: 'Invoice Date', children: date(invoice.invoiceDate) },
                   {
                     key: 'terms',
                     label: 'Terms',
@@ -66,8 +66,8 @@ const SalesInvoiceDetail = ({ uuid, onClose }: { uuid?: string; onClose: () => v
                         ? PAYMENT_TERMS[invoice.paymentTerms as keyof typeof PAYMENT_TERMS].label
                         : '—',
                   },
-                  { key: 'due', label: 'Due date', children: date(invoice.dueDate) },
-                  { key: 'so', label: 'Sales order', children: invoice.salesOrderCode ?? '—' },
+                  { key: 'due', label: 'Due Date', children: date(invoice.dueDate) },
+                  { key: 'so', label: 'Sales Order', children: invoice.salesOrderCode ?? '—' },
                 ]}
               />
             </Col>
@@ -107,7 +107,7 @@ const SalesInvoiceDetail = ({ uuid, onClose }: { uuid?: string; onClose: () => v
                 ),
               },
               {
-                title: 'Unit price',
+                title: 'Unit Price',
                 dataIndex: 'unitPrice',
                 align: 'right',
                 render: (v) => <span className="tabular-figures">{formatCurrency(v)}</span>,
@@ -143,8 +143,8 @@ const SalesInvoiceDetail = ({ uuid, onClose }: { uuid?: string; onClose: () => v
                 items={[
                   { key: 'sub', label: 'Subtotal', children: formatCurrency(invoice.subtotal) },
                   { key: 'disc', label: 'Discount', children: `− ${formatCurrency(invoice.discountAmount)}` },
-                  { key: 'vm', label: 'VAT treatment', children: vatLabel },
-                  { key: 'vatable', label: 'Vatable sales', children: formatCurrency(invoice.vatableAmount) },
+                  { key: 'vm', label: 'VAT Treatment', children: vatLabel },
+                  { key: 'vatable', label: 'Vatable Sales', children: formatCurrency(invoice.vatableAmount) },
                   { key: 'vat', label: 'VAT (12%)', children: formatCurrency(invoice.vatAmount) },
                   {
                     key: 'tot',
@@ -154,7 +154,7 @@ const SalesInvoiceDetail = ({ uuid, onClose }: { uuid?: string; onClose: () => v
                   { key: 'paid', label: 'Paid', children: formatCurrency(invoice.paidAmount) },
                   {
                     key: 'bal',
-                    label: <Text strong>Balance due</Text>,
+                    label: <Text strong>Balance Due</Text>,
                     children: <Text strong>{formatCurrency(invoice.balance)}</Text>,
                   },
                 ]}

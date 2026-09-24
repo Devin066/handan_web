@@ -60,10 +60,10 @@ const ReceiptNoteList: React.FC = () => {
       title: 'Supplier Name',
       dataIndex: 'supplierName',
     },
-    { title: 'Purchase order', dataIndex: 'purchaseOrderCode' },
+    { title: 'Purchase Order', dataIndex: 'purchaseOrderCode' },
     qtyColumn('Total Qty', 'totalQty'),
     {
-      title: 'Purchase invoice',
+      title: 'Purchase Invoice',
       dataIndex: 'purchaseInvoiceCode',
       render: (_: any, r: any) => r.purchaseInvoiceCode ?? 'Raised on stock in',
     },

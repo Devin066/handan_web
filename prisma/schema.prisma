@@ -1,3 +1,8 @@
+// @@index([companyUuid, insertedAt]) recurs below because every list screen
+// reads one company's rows newest first. Leading with companyUuid still serves
+// lookups by company alone, so these replace the plain single-column indexes
+// rather than sitting beside them.
+
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -65,7 +70,7 @@ model Staff {
   attendance     AttendanceRecord[]
   payrollEntries PayrollEntry[]
 
-  @@index([companyUuid])
+  @@index([companyUuid, insertedAt])
 }
 
 model Uom {
@@ -120,7 +125,7 @@ model Item {
   defaultSupplier      Supplier?                  @relation(fields: [defaultSupplierUuid], references: [uuid])
 
   @@unique([companyUuid, sku])
-  @@index([companyUuid])
+  @@index([companyUuid, insertedAt])
   @@index([companyUuid, itemType])
 }
 
@@ -182,7 +187,7 @@ model StockItem {
   stockUom  StockUom  @relation(fields: [stockUomUuid], references: [uuid])
 
   @@unique([itemUuid, warehouseUuid, stockUomUuid])
-  @@index([companyUuid])
+  @@index([companyUuid, insertedAt])
 }
 
 model InventoryEntry {
@@ -208,7 +213,7 @@ model InventoryEntry {
   stockUom  StockUom  @relation(fields: [stockUomUuid], references: [uuid])
   createdBy User?     @relation(fields: [createdByUserUuid], references: [uuid])
 
-  @@index([companyUuid])
+  @@index([companyUuid, insertedAt])
   @@index([itemUuid])
 }
 
@@ -294,7 +299,7 @@ model Customer {
   deliveryNotes DeliveryNote[]
   interactions  CustomerInteraction[]
 
-  @@index([companyUuid])
+  @@index([companyUuid, insertedAt])
   @@index([companyUuid, nextFollowUpAt])
 }
 
@@ -326,7 +331,7 @@ model Supplier {
   receiptNotes     ReceiptNote[]
   suppliedItems    Item[]
 
-  @@index([companyUuid])
+  @@index([companyUuid, insertedAt])
 }
 
 model Process {
@@ -340,7 +345,7 @@ model Process {
 
   bomProcesses BomProcess[]
 
-  @@index([companyUuid])
+  @@index([companyUuid, insertedAt])
 }
 
 model Workstation {
@@ -359,7 +364,7 @@ model Workstation {
 
   members Staff[] @relation("WorkstationMembers")
 
-  @@index([companyUuid])
+  @@index([companyUuid, insertedAt])
 }
 
 model PaymentMethod {
@@ -399,7 +404,7 @@ model Bom {
   bomProcesses BomProcess[]
   workOrders   WorkOrder[]
 
-  @@index([companyUuid])
+  @@index([companyUuid, insertedAt])
 }
 
 model BomItem {
@@ -461,7 +466,7 @@ model SalesOrder {
   salesInvoices SalesInvoice[]
   workOrders    WorkOrder[]
 
-  @@index([companyUuid])
+  @@index([companyUuid, insertedAt])
   @@index([companyUuid, channel])
 }
 
@@ -507,7 +512,7 @@ model DeliveryNote {
   warehouse  Warehouse          @relation(fields: [warehouseUuid], references: [uuid])
   items      DeliveryNoteItem[]
 
-  @@index([companyUuid])
+  @@index([companyUuid, insertedAt])
 }
 
 model DeliveryNoteItem {
@@ -574,7 +579,7 @@ model SalesInvoice {
   salesOrder SalesOrder         @relation(fields: [salesOrderUuid], references: [uuid], onDelete: Cascade)
   items      SalesInvoiceItem[]
 
-  @@index([companyUuid])
+  @@index([companyUuid, insertedAt])
 }
 
 model SalesInvoiceItem {
@@ -624,7 +629,7 @@ model PurchaseOrder {
   receiptNotes     ReceiptNote[]
   purchaseInvoices PurchaseInvoice[]
 
-  @@index([companyUuid])
+  @@index([companyUuid, insertedAt])
 }
 
 model PurchaseOrderItem {
@@ -668,7 +673,7 @@ model ReceiptNote {
   warehouse     Warehouse         @relation(fields: [warehouseUuid], references: [uuid])
   items         ReceiptNoteItem[]
 
-  @@index([companyUuid])
+  @@index([companyUuid, insertedAt])
 }
 
 model ReceiptNoteItem {
@@ -711,7 +716,7 @@ model PurchaseInvoice {
   supplier      Supplier      @relation(fields: [supplierUuid], references: [uuid])
   purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([companyUuid])
+  @@index([companyUuid, insertedAt])
 }
 
 model WorkOrder {
@@ -763,7 +768,7 @@ model WorkOrder {
   materialRequests WorkOrderMaterialRequest[]
   jobCards         JobCard[]
 
-  @@index([companyUuid])
+  @@index([companyUuid, insertedAt])
   @@index([companyUuid, status, priority])
   @@index([companyUuid, stage])
 }
@@ -869,6 +874,7 @@ model JobCard {
   @@index([workOrderItemUuid])
   @@index([companyUuid, status])
   @@index([companyUuid, operatorStaffUuid, status])
+  @@index([companyUuid, insertedAt])
 }
 
 model PaymentEntry {
@@ -893,7 +899,7 @@ model PaymentEntry {
 
   paymentMethod PaymentMethod @relation(fields: [paymentMethodUuid], references: [uuid])
 
-  @@index([companyUuid])
+  @@index([companyUuid, insertedAt])
 }
 
 model Counter {
@@ -1115,7 +1121,7 @@ model PayrollEntry {
   staff         Staff         @relation(fields: [staffUuid], references: [uuid])
 
   @@unique([payrollPeriodUuid, staffUuid])
-  @@index([companyUuid])
+  @@index([companyUuid, insertedAt])
 }
 
 /**
@@ -1151,6 +1157,7 @@ model PurchaseRequest {
   items PurchaseRequestItem[]
 
   @@index([companyUuid, status])
+  @@index([companyUuid, insertedAt])
 }
 
 model PurchaseRequestItem {

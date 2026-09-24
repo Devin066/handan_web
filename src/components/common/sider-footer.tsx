@@ -65,7 +65,7 @@ const SiderFooter = ({ collapsed, onToggle }: { collapsed: boolean; onToggle: ()
             ),
           },
           { type: 'divider' as const },
-          { key: 'logout', icon: <LogoutOutlined />, label: 'Sign out', danger: true },
+          { key: 'logout', icon: <LogoutOutlined />, label: 'Sign Out', danger: true },
         ],
         onClick: ({ key }) => {
           if (key === 'settings') router.push('/system/configuration');

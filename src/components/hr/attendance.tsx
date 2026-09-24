@@ -88,7 +88,7 @@ const Attendance = () => {
             allowClear={false}
             onChange={(d) => d && setDay(d)}
             disabledDate={(d) => d.isAfter(dayjs(), 'day')}
-            aria-label="Attendance date"
+            aria-label="Attendance Date"
           />
           <Text type="secondary">
             <span className="tabular-figures">
@@ -139,14 +139,14 @@ const Attendance = () => {
               render: (_: any, r: any) => time(r.record?.timeOut),
             },
             {
-              title: 'Regular hrs',
+              title: 'Regular Hrs',
               align: 'right',
               render: (_: any, r: any) => (
                 <span className="tabular-figures">{formatQty(r.record?.regularHours ?? 0)}</span>
               ),
             },
             {
-              title: 'Overtime hrs',
+              title: 'Overtime Hrs',
               align: 'right',
               render: (_: any, r: any) => (
                 <span className="tabular-figures">{formatQty(r.record?.overtimeHours ?? 0)}</span>
@@ -215,7 +215,7 @@ const Attendance = () => {
             <Form.Item name="timeIn" label="Time in">
               <TimePicker format="h:mm A" use12Hours minuteStep={5} />
             </Form.Item>
-            <Form.Item name="timeOut" label="Time out">
+            <Form.Item name="timeOut" label="Time Out">
               <TimePicker format="h:mm A" use12Hours minuteStep={5} />
             </Form.Item>
           </Space>

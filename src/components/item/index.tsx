@@ -185,13 +185,13 @@ const ItemList: React.FC = () => {
             onSearch={setKeyword}
             onChange={(event) => !event.target.value && setKeyword('')}
             style={{ width: 280 }}
-            aria-label="Search items"
+            aria-label="Search Items"
           />
           <Segmented<ClassFilter>
             value={classFilter}
             onChange={setClassFilter}
             options={[
-              { label: 'All classes', value: 'all' },
+              { label: 'All Classes', value: 'all' },
               { label: 'RM', value: 'raw_material' },
               { label: 'MP', value: 'manufactured_part' },
               { label: 'FG', value: 'finished_good' },
@@ -202,8 +202,8 @@ const ItemList: React.FC = () => {
             onChange={setStockFilter}
             options={[
               { label: 'All', value: 'all' },
-              { label: 'Low or out', value: 'low' },
-              { label: 'Out of stock', value: 'out' },
+              { label: 'Low or Out', value: 'low' },
+              { label: 'Out of Stock', value: 'out' },
             ]}
           />
         </Space>

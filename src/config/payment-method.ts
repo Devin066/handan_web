@@ -5,8 +5,8 @@
 
 export const PAYMENT_METHOD_KINDS = {
   cash: { label: 'Cash', hasAccount: false, referenceByDefault: false },
-  bank_transfer: { label: 'Bank transfer / deposit', hasAccount: true, referenceByDefault: true },
-  e_wallet: { label: 'E-wallet (GCash, Maya)', hasAccount: true, referenceByDefault: true },
+  bank_transfer: { label: 'Bank Transfer / Deposit', hasAccount: true, referenceByDefault: true },
+  e_wallet: { label: 'E-Wallet (GCash, Maya)', hasAccount: true, referenceByDefault: true },
   check: { label: 'Check', hasAccount: true, referenceByDefault: true },
   card: { label: 'Card', hasAccount: false, referenceByDefault: true },
   other: { label: 'Other', hasAccount: false, referenceByDefault: false },

@@ -81,7 +81,7 @@ const MemberForm = ({ member, open, onClose, onSaved }: any) => {
       >
         <Row gutter={16}>
           <Col xs={24} sm={12}>
-            <Form.Item name="name" label="Full name" rules={[{ required: true, message: 'Enter a name.' }]}>
+            <Form.Item name="name" label="Full Name" rules={[{ required: true, message: 'Enter a name.' }]}>
               <Input autoFocus />
             </Form.Item>
           </Col>
@@ -122,7 +122,7 @@ const MemberForm = ({ member, open, onClose, onSaved }: any) => {
             </Form.Item>
           </Col>
           <Col xs={24} sm={12}>
-            <Form.Item name="employmentType" label="Employment type">
+            <Form.Item name="employmentType" label="Employment Type">
               <Select options={options(EMPLOYMENT_TYPES)} />
             </Form.Item>
           </Col>
@@ -132,7 +132,7 @@ const MemberForm = ({ member, open, onClose, onSaved }: any) => {
             </Form.Item>
           </Col>
           <Col xs={24} sm={12}>
-            <Form.Item name="hiredAt" label="Date hired">
+            <Form.Item name="hiredAt" label="Date Hired">
               <DatePicker style={{ width: '100%' }} />
             </Form.Item>
           </Col>
@@ -263,7 +263,7 @@ const Members: React.FC = () => {
               onSearch={setKeyword}
               onChange={(e) => !e.target.value && setKeyword('')}
               style={{ width: 260 }}
-              aria-label="Search members"
+              aria-label="Search Members"
             />
             <Segmented<StatusFilter>
               value={statusFilter}

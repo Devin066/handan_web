@@ -124,14 +124,14 @@ const EmployeeForm = ({ employee, onClose, onSaved }: { employee: any; onClose: 
           <Col xs={24} sm={12}>
             <Form.Item
               name="employmentType"
-              label="Employment status"
+              label="Employment Status"
               extra="Regular staff get statutory benefits and tax withholding. Contractual staff do not."
             >
               <Select options={options(EMPLOYMENT_TYPES)} />
             </Form.Item>
           </Col>
           <Col xs={24} sm={12}>
-            <Form.Item name="baseRate" label="Hourly rate">
+            <Form.Item name="baseRate" label="Hourly Rate">
               <InputNumber min={0} style={{ width: '100%' }} />
             </Form.Item>
           </Col>
@@ -168,7 +168,7 @@ const EmployeeDrawer = ({ employee, onClose }: { employee: any; onClose: () => v
         <Descriptions.Item label="Employment">
           {EMPLOYMENT_TYPES[employee?.employmentType as keyof typeof EMPLOYMENT_TYPES] ?? employee?.employmentType}
         </Descriptions.Item>
-        <Descriptions.Item label="Hourly rate">{formatCurrency(employee?.baseRate)}</Descriptions.Item>
+        <Descriptions.Item label="Hourly Rate">{formatCurrency(employee?.baseRate)}</Descriptions.Item>
         <Descriptions.Item label="Hired">
           {employee?.hiredAt ? dayjs(employee.hiredAt).format('YYYY-MM-DD') : '—'}
         </Descriptions.Item>
@@ -192,17 +192,17 @@ const EmployeeDrawer = ({ employee, onClose }: { employee: any; onClose: () => v
                 expandable={{
                   expandedRowRender: (p: any) => (
                     <Descriptions size="small" column={{ xs: 1, sm: 2 }}>
-                      <Descriptions.Item label="Regular hours">{formatQty(p.regularHours)}</Descriptions.Item>
-                      <Descriptions.Item label="Overtime hours">{formatQty(p.overtimeHours)}</Descriptions.Item>
-                      <Descriptions.Item label="Base pay">{formatCurrency(p.basePay)}</Descriptions.Item>
-                      <Descriptions.Item label="Overtime pay">{formatCurrency(p.overtimePay)}</Descriptions.Item>
+                      <Descriptions.Item label="Regular Hours">{formatQty(p.regularHours)}</Descriptions.Item>
+                      <Descriptions.Item label="Overtime Hours">{formatQty(p.overtimeHours)}</Descriptions.Item>
+                      <Descriptions.Item label="Base Pay">{formatCurrency(p.basePay)}</Descriptions.Item>
+                      <Descriptions.Item label="Overtime Pay">{formatCurrency(p.overtimePay)}</Descriptions.Item>
                       <Descriptions.Item label={`Piece rate (${formatQty(p.unitsProduced)} units)`}>
                         {formatCurrency(p.incentivePay)}
                       </Descriptions.Item>
                       <Descriptions.Item label="SSS">{formatCurrency(p.sssDeduction)}</Descriptions.Item>
                       <Descriptions.Item label="PhilHealth">{formatCurrency(p.philhealthDeduction)}</Descriptions.Item>
                       <Descriptions.Item label="Pag-IBIG">{formatCurrency(p.pagibigDeduction)}</Descriptions.Item>
-                      <Descriptions.Item label="Withholding tax">{formatCurrency(p.taxDeduction)}</Descriptions.Item>
+                      <Descriptions.Item label="Withholding Tax">{formatCurrency(p.taxDeduction)}</Descriptions.Item>
                     </Descriptions>
                   ),
                 }}
@@ -215,7 +215,7 @@ const EmployeeDrawer = ({ employee, onClose }: { employee: any; onClose: () => v
                     render: (_: any, p: any) => <span className="tabular-figures">{formatCurrency(p.grossPay)}</span>,
                   },
                   {
-                    title: 'Net pay',
+                    title: 'Net Pay',
                     align: 'right',
                     render: (_: any, p: any) => (
                       <span className="tabular-figures" style={{ fontWeight: 600 }}>
@@ -247,7 +247,7 @@ const EmployeeDrawer = ({ employee, onClose }: { employee: any; onClose: () => v
                     render: (_: any, c: any) => dayjs(c.insertedAt).format('YYYY-MM-DD'),
                   },
                   {
-                    title: 'Work order',
+                    title: 'Work Order',
                     render: (_: any, c: any) => <span className="doc-code">{c.workOrder?.code}</span>,
                   },
                   {
@@ -308,7 +308,7 @@ const EmployeeList = () => {
       render: (_, r) => EMPLOYMENT_TYPES[r.employmentType as keyof typeof EMPLOYMENT_TYPES] ?? r.employmentType,
     },
     {
-      title: 'Hourly rate',
+      title: 'Hourly Rate',
       dataIndex: 'baseRate',
       width: 120,
       align: 'right',

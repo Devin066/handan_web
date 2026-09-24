@@ -7,16 +7,16 @@
 export const VAT_RATE = 0.12;
 
 export const VAT_MODES = {
-  vat_exclusive: { label: 'VAT exclusive (add 12%)', short: 'VAT exclusive' },
-  vat_inclusive: { label: 'VAT inclusive (prices include 12%)', short: 'VAT inclusive' },
-  vat_exempt: { label: 'VAT exempt', short: 'VAT exempt' },
-  zero_rated: { label: 'Zero-rated', short: 'Zero-rated' },
+  vat_exclusive: { label: 'VAT Exclusive (add 12%)', short: 'VAT exclusive' },
+  vat_inclusive: { label: 'VAT Inclusive (Prices Include 12%)', short: 'VAT Inclusive' },
+  vat_exempt: { label: 'VAT Exempt', short: 'VAT exempt' },
+  zero_rated: { label: 'Zero-Rated', short: 'Zero-Rated' },
 } as const;
 
 export type VatMode = keyof typeof VAT_MODES;
 
 export const PAYMENT_TERMS = {
-  due_on_receipt: { label: 'Due on receipt', days: 0 },
+  due_on_receipt: { label: 'Due on Receipt', days: 0 },
   net_7: { label: 'Net 7', days: 7 },
   net_15: { label: 'Net 15', days: 15 },
   net_30: { label: 'Net 30', days: 30 },

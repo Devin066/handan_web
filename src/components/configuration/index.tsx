@@ -42,7 +42,7 @@ const Regional = () => {
   return (
     <Card loading={loading} style={{ maxWidth: 720, marginTop: 12 }}>
       <Title level={5} style={{ marginTop: 0 }}>
-        Timezone and decimals
+        Timezone and Decimals
       </Title>
       <Text type="secondary">
         The company timezone is saved for reports and exports. Attendance days, the dashboard&apos;s &quot;today&quot;
@@ -66,7 +66,7 @@ const Regional = () => {
           </div>
           <div>
             <div style={{ marginBottom: 4 }}>
-              <Text>Decimal places for money</Text>
+              <Text>Decimal Places for Money</Text>
             </div>
             <Select
               style={{ width: 120 }}
@@ -108,7 +108,7 @@ const ProductionClaiming = () => {
   return (
     <Card loading={loading} style={{ maxWidth: 720, marginTop: 12 }}>
       <Title level={5} style={{ marginTop: 0 }}>
-        Production board
+        Production Board
       </Title>
       <Text type="secondary">
         Who moves a task out of the queue. Passing quality check, final check and completing a task always need a
@@ -121,8 +121,8 @@ const ProductionClaiming = () => {
           onChange={(e) => update({ variables: { request: { productionClaimMode: e.target.value } } })}
         >
           <Space direction="vertical">
-            <Radio value="manager">A manager assigns tasks to workers</Radio>
-            <Radio value="self">Workers claim tasks themselves</Radio>
+            <Radio value="manager">A Manager Assigns Tasks to Workers</Radio>
+            <Radio value="self">Workers Claim Tasks Themselves</Radio>
           </Space>
         </Radio.Group>
       </div>

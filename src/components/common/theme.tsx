@@ -56,10 +56,11 @@ export const tokens = {
   borderStrong: '#747775',
 } as const;
 
-export const monoStack = "'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
+// --font-sans / --font-mono are defined in src/pages/_app.tsx by next/font,
+// which self-hosts Roboto and Roboto Mono and includes its own fallback stack.
+export const monoStack = 'var(--font-mono), ui-monospace, monospace';
 
-const fontStack =
-  "'Google Sans Text', 'Google Sans', Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+const fontStack = "'Google Sans Text', 'Google Sans', var(--font-sans), sans-serif";
 
 const theme: ThemeConfig = {
   token: {

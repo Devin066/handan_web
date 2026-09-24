@@ -196,7 +196,7 @@ const SalesInvoiceNew = ({ open, onClose, onCreated, salesOrderUuid }: Props) =>
       >
         <Row gutter={16}>
           <Col xs={24} md={12}>
-            <Form.Item label="Sales order" required>
+            <Form.Item label="Sales Order" required>
               <Select
                 showSearch
                 optionFilterProp="label"
@@ -210,18 +210,18 @@ const SalesInvoiceNew = ({ open, onClose, onCreated, salesOrderUuid }: Props) =>
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={6}>
-            <Form.Item label="Invoice date" name="invoiceDate" rules={[{ required: true, message: 'Pick a date.' }]}>
+            <Form.Item label="Invoice Date" name="invoiceDate" rules={[{ required: true, message: 'Pick a date.' }]}>
               <DatePicker style={{ width: '100%' }} onChange={(date) => recomputeDue(date ?? undefined)} />
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={6}>
-            <Form.Item label="Your reference / PO no." name="customerReference">
+            <Form.Item label="Your Reference / PO No." name="customerReference">
               <Input placeholder="Customer's PO number" />
             </Form.Item>
           </Col>
 
           <Col xs={24} sm={12} md={6}>
-            <Form.Item label="Payment terms" name="paymentTerms">
+            <Form.Item label="Payment Terms" name="paymentTerms">
               <Select
                 options={Object.entries(PAYMENT_TERMS).map(([value, { label }]) => ({ value, label }))}
                 onChange={(terms) => recomputeDue(undefined, terms)}
@@ -230,7 +230,7 @@ const SalesInvoiceNew = ({ open, onClose, onCreated, salesOrderUuid }: Props) =>
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Form.Item
-              label="Due date"
+              label="Due Date"
               name="dueDate"
               dependencies={['invoiceDate']}
               rules={[
@@ -281,7 +281,7 @@ const SalesInvoiceNew = ({ open, onClose, onCreated, salesOrderUuid }: Props) =>
         </Row>
         <AddressFields
           name="billTo"
-          label="Billing address"
+          label="Billing Address"
           extra="Filled from the customer's address on file. Printed on the invoice."
         />
 
@@ -346,7 +346,7 @@ const SalesInvoiceNew = ({ open, onClose, onCreated, salesOrderUuid }: Props) =>
                 ),
               },
               {
-                title: 'Unit price',
+                title: 'Unit Price',
                 dataIndex: 'unitPrice',
                 width: 140,
                 render: (price, line, index) => (
@@ -414,7 +414,7 @@ const SalesInvoiceNew = ({ open, onClose, onCreated, salesOrderUuid }: Props) =>
                 { key: 'vat', label: 'VAT (12%)', children: formatCurrency(totals.vatAmount) },
                 {
                   key: 'total',
-                  label: <Text strong>Total due</Text>,
+                  label: <Text strong>Total Due</Text>,
                   children: (
                     <Text strong className="tabular-figures" style={{ fontSize: 16, color: tokens.text }}>
                       {formatCurrency(totals.total)}

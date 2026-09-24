@@ -42,7 +42,7 @@ const SupplierList: React.FC = () => {
       dataIndex: 'name',
     },
     {
-      title: 'Contact person',
+      title: 'Contact Person',
       key: 'contactName',
       search: false,
       render: (_, record) =>

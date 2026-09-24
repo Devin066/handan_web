@@ -27,7 +27,7 @@ const ProcessNew = ({ onCreate }: { onCreate: (values: any) => Promise<unknown> 
       </Button>
       <Modal
         open={open}
-        title="New process"
+        title="New Process"
         okText="Add Process"
         onOk={() => form.submit()}
         onCancel={() => setOpen(false)}

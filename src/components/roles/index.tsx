@@ -55,7 +55,7 @@ const Roles = () => {
 
   return (
     <Space direction="vertical" size={12} style={{ width: '100%' }}>
-      <Card size="small" title="Module access by role">
+      <Card size="small" title="Module Access by Role">
         <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
           A role without a module does not see it in the menu, and its actions there are refused. The owner always has
           full access.
@@ -88,7 +88,7 @@ const Roles = () => {
         />
       </Card>
 
-      <Card size="small" title="People with a login">
+      <Card size="small" title="People with a Login">
         <Table
           size="small"
           rowKey="uuid"
@@ -128,7 +128,7 @@ const Roles = () => {
               ),
             },
             {
-              title: 'Can use',
+              title: 'Can Use',
               render: (_: any, s: any) =>
                 (roles.find((r) => r.role === s.role)?.modules ?? []).map((key: string) => (
                   <Tag key={key}>{modules.find((m) => m.key === key)?.label ?? key}</Tag>

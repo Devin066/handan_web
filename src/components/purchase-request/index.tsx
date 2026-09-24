@@ -122,7 +122,7 @@ const PurchaseRequestNew = ({ onCreated }: { onCreated: () => void }) => {
                     {fields.length > 1 ? (
                       <Button
                         type="text"
-                        aria-label="Remove line"
+                        aria-label="Remove Line"
                         icon={<MinusCircleOutlined />}
                         onClick={() => remove(field.name)}
                       />
@@ -136,7 +136,7 @@ const PurchaseRequestNew = ({ onCreated }: { onCreated: () => void }) => {
             )}
           </Form.List>
 
-          <Form.Item name="notes" label="Reason or notes">
+          <Form.Item name="notes" label="Reason or Notes">
             <Input.TextArea rows={2} placeholder="What the stock is for" />
           </Form.Item>
         </Form>
@@ -178,7 +178,7 @@ const PurchaseRequestList = () => {
       render: (_, r) => <span className="tabular-figures">{r.items?.length ?? 0}</span>,
     },
     {
-      title: 'Estimated cost',
+      title: 'Estimated Cost',
       dataIndex: 'items',
       align: 'right',
       width: 140,
@@ -194,7 +194,7 @@ const PurchaseRequestList = () => {
       ),
     },
     {
-      title: 'On purchase orders',
+      title: 'On Purchase Orders',
       dataIndex: 'purchaseOrderCodes',
       width: 170,
       render: (_, r) => (r.purchaseOrderCodes?.length ? r.purchaseOrderCodes.join(', ') : '—'),
@@ -274,12 +274,12 @@ const PurchaseRequestList = () => {
                   render: (_: any, l: any) => formatQty(l.orderedQty),
                 },
                 {
-                  title: 'Left to order',
+                  title: 'Left to Order',
                   align: 'right',
                   render: (_: any, l: any) => formatQty(l.remainingQty),
                 },
                 {
-                  title: 'Est. unit price',
+                  title: 'Est. Unit Price',
                   align: 'right',
                   render: (_: any, l: any) => formatCurrency(l.estimatedUnitPrice),
                 },

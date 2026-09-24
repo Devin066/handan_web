@@ -116,9 +116,9 @@ const GlobalLayout: FC<LayoutProps> = ({ children }) => {
           // The full wordmark already spells the name, so no title text beside it.
           // Collapsed, the rail is too narrow for it; the lathe mark stands in.
           logo: collapsed ? (
-            <img src="/handlathe-icon.png" alt={brand.name} className="brand-mark" />
+            <img src="/handlathe-icon.png" alt={brand.name} className="brand-mark" width={36} height={36} />
           ) : (
-            <img src="/handlathe-logo.jpg" alt={brand.name} className="brand-logo" />
+            <img src="/handlathe-logo.jpg" alt={brand.name} className="brand-logo" width={122} height={48} />
           ),
           title: false,
           layout: 'side',

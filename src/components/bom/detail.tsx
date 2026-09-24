@@ -102,7 +102,7 @@ const BomDetail = ({ uuid, visible, record, onClose }: any) => {
               render: (_: any, r: any) => itemTypeEnum[r.itemType]?.prefix ?? '—',
             },
             {
-              title: 'Qty per kit',
+              title: 'Qty per Kit',
               dataIndex: 'qty',
               align: 'right',
               render: (_: any, r: any) => <span className="tabular-figures">{formatQty(r.qty)}</span>,

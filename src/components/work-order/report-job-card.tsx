@@ -68,7 +68,7 @@ const ReportJobCard = (props: any) => {
           <ProFormDigit
             width="sm"
             name="producedQty"
-            label="Quantity completed"
+            label="Quantity Completed"
             fieldProps={{
               precision: 0,
             }}
@@ -79,7 +79,7 @@ const ReportJobCard = (props: any) => {
           <ProFormDigit
             width="sm"
             name="machineHours"
-            label="Lathe / CNC hours"
+            label="Lathe / CNC Hours"
             min={0}
             fieldProps={{ precision: 2 }}
             placeholder="0"

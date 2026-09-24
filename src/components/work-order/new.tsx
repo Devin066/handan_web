@@ -100,7 +100,7 @@ const WorkOrderNew = (props: any) => {
             label="End Time"
             rules={[{ required: true, message: 'Enter end time' }]}
           />
-          <ProFormDatePicker name="dueDate" label="Due date" />
+          <ProFormDatePicker name="dueDate" label="Due Date" />
         </ProForm.Group>
         <ProForm.Group>
           <ProFormSelect
@@ -114,7 +114,7 @@ const WorkOrderNew = (props: any) => {
           <ProFormDigit
             width="sm"
             name="pieceRate"
-            label="Piece rate"
+            label="Piece Rate"
             min={0}
             tooltip="Paid per good unit reported at each step, on top of hourly pay."
             placeholder="0"

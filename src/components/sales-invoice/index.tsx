@@ -56,7 +56,7 @@ const SalesInvoiceList: React.FC = () => {
       ),
     },
     {
-      title: 'Invoice date',
+      title: 'Invoice Date',
       dataIndex: 'invoiceDate',
       valueType: 'date',
       sorter: (a, b) => dayjs(a.invoiceDate).valueOf() - dayjs(b.invoiceDate).valueOf(),

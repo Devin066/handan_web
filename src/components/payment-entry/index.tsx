@@ -35,7 +35,7 @@ const PaymentEntryList: React.FC = () => {
       render: (_, r) => r.referenceNo || r.memo || '—',
     },
     {
-      title: 'Date paid',
+      title: 'Date Paid',
       dataIndex: 'paidOn',
       valueType: 'date',
       render: (_, r) => (r.paidOn ?? r.insertedAt ?? '').slice(0, 10) || '—',

@@ -4,9 +4,9 @@
 
 /*
  * Google type: Google Sans Text where the machine has it, Roboto otherwise,
- * Roboto Mono for document codes. display=swap keeps text visible while loading.
+ * Roboto Mono for document codes. Both are self-hosted by next/font in
+ * src/pages/_app.tsx, which defines --font-sans and --font-mono.
  */
-@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&family=Roboto:wght@400;500;700&display=swap");
 
 /*
  * Surface tokens, mirroring src/components/common/theme.tsx so plain CSS and
@@ -34,17 +34,7 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family:
-    "Google Sans Text",
-    "Google Sans",
-    Roboto,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    "Helvetica Neue",
-    Arial,
-    sans-serif;
+  font-family: "Google Sans Text", "Google Sans", var(--font-sans), sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -82,7 +72,7 @@ body {
  * references to copy or quote, distinct from names and prose around them.
  */
 .doc-code {
-  font-family: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 13px;
   font-weight: 500;
   letter-spacing: -0.01em;

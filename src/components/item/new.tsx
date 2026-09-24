@@ -165,7 +165,7 @@ const ItemNew = (props: any) => {
         }}
         width={'70%'}
         onOpenChange={setModalVisible}
-        title={<Space>New material</Space>}
+        title={<Space>New Material</Space>}
         submitTimeout={2000}
         autoFocusFirstInput
         open={modalVisible}
@@ -207,7 +207,7 @@ const ItemNew = (props: any) => {
           <ProFormDigit
             width="sm"
             name="sellingPrice"
-            label="Sale price"
+            label="Sale Price"
             fieldProps={{
               precision: 2,
               addonAfter: currency,
@@ -218,7 +218,7 @@ const ItemNew = (props: any) => {
           <ProFormDigit
             width="sm"
             name="standardCost"
-            label="Standard cost"
+            label="Standard Cost"
             fieldProps={{ precision: 2, addonAfter: currency }}
             placeholder="Per unit"
             tooltip="Used to value stock on the dashboard and to estimate purchase requests."
@@ -227,7 +227,7 @@ const ItemNew = (props: any) => {
           <ProFormDigit
             width="sm"
             name="minStockThreshold"
-            label="Reorder level"
+            label="Reorder Level"
             min={0}
             placeholder="0"
             tooltip="At or below this, the dashboard warns of low stock."

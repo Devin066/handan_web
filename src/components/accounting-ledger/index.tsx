@@ -83,7 +83,7 @@ const AccountingLedger = () => {
   return (
     <Row gutter={[12, 12]}>
       <Col xs={24}>
-        <Card size="small" title="Account balances" style={{ borderColor: tokens.border }}>
+        <Card size="small" title="Account Balances" style={{ borderColor: tokens.border }}>
           <Table
             size="small"
             rowKey="account"

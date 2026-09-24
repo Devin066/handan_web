@@ -52,7 +52,7 @@ const WorkOrderDetail = ({ uuid, visible, onClose, onChanged }: any) => {
   const isOpen = order && order.status !== 'completed' && order.status !== 'cancelled';
 
   return (
-    <Drawer width="min(960px, 100vw)" title={order?.code ?? 'Work order'} onClose={onClose} open={visible}>
+    <Drawer width="min(960px, 100vw)" title={order?.code ?? 'Work Order'} onClose={onClose} open={visible}>
       {loading && !order ? (
         <Skeleton active />
       ) : error || !order ? (
@@ -78,7 +78,7 @@ const WorkOrderDetail = ({ uuid, visible, onClose, onChanged }: any) => {
           />
 
           <Title level={5} style={{ marginTop: 24, marginBottom: 4 }}>
-            Production steps
+            Production Steps
           </Title>
           <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
             The operations from this product&apos;s BOM, in order. Report progress on a step as work is finished; expand
@@ -213,7 +213,7 @@ const WorkOrderDetail = ({ uuid, visible, onClose, onChanged }: any) => {
                 render: (v, m: any) => <Qty value={v} uom={m.uomName} />,
               },
               {
-                title: 'Still needed',
+                title: 'Still Needed',
                 dataIndex: 'remainingQty',
                 align: 'right',
                 render: (v, m: any) => (

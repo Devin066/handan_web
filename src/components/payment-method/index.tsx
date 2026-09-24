@@ -113,14 +113,14 @@ const PaymentMethodForm = ({ method, onClose, onSaved }: { method: any; onClose:
                 </Form.Item>
               </Col>
               <Col xs={24} sm={12}>
-                <Form.Item name="accountName" label="Account name">
+                <Form.Item name="accountName" label="Account Name">
                   <Input placeholder="Registered account holder" />
                 </Form.Item>
               </Col>
               <Col xs={24} sm={12}>
                 <Form.Item
                   name="accountNumber"
-                  label={kind === 'e_wallet' ? 'Account or mobile number' : 'Account number'}
+                  label={kind === 'e_wallet' ? 'Account or Mobile Number' : 'Account Number'}
                   rules={[
                     {
                       validator: (_, value) =>
@@ -144,7 +144,7 @@ const PaymentMethodForm = ({ method, onClose, onSaved }: { method: any; onClose:
           <Col xs={24} sm={12}>
             <Form.Item
               name="requiresReference"
-              label="Require a reference number"
+              label="Require a Reference Number"
               valuePropName="checked"
               extra="Transfer reference, check number or wallet transaction ID, checked when a payment is recorded."
             >

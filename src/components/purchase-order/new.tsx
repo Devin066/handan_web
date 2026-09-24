@@ -111,7 +111,7 @@ const PurchaseOrderNew = ({ onCreate }: { onCreate: (request: any) => Promise<un
         New Purchase Order
       </Button>
       <Modal
-        title="New purchase order"
+        title="New Purchase Order"
         open={open}
         onCancel={() => setOpen(false)}
         width="min(860px, 100vw)"
@@ -158,13 +158,13 @@ const PurchaseOrderNew = ({ onCreate }: { onCreate: (request: any) => Promise<un
             >
               <Select style={{ width: 200 }} options={warehouses} placeholder="Warehouse" />
             </Form.Item>
-            <Form.Item name="expectedDate" label="Expected delivery">
+            <Form.Item name="expectedDate" label="Expected Delivery">
               <DatePicker disabledDate={(d) => d.isBefore(dayjs().startOf('day'))} />
             </Form.Item>
           </Space>
 
           <Form.Item
-            label="Add from approved purchase requests"
+            label="Add from Approved Purchase Requests"
             extra={
               openLines.loading
                 ? undefined
@@ -246,7 +246,7 @@ const PurchaseOrderNew = ({ onCreate }: { onCreate: (request: any) => Promise<un
                         </span>
                         <Button
                           type="text"
-                          aria-label="Remove line"
+                          aria-label="Remove Line"
                           icon={<MinusCircleOutlined />}
                           onClick={() => remove(field.name)}
                         />

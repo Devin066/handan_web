@@ -111,7 +111,7 @@ const Payroll = () => {
             summary={() => (
               <Table.Summary.Row>
                 <Table.Summary.Cell index={0} colSpan={8}>
-                  <Text strong>Total net pay</Text>
+                  <Text strong>Total Net Pay</Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={1} align="right">
                   <Text strong>{money(p.totalNetPay)}</Text>
@@ -152,7 +152,7 @@ const Payroll = () => {
                 render: (_: any, e: any) => money(e.overtimePay),
               },
               {
-                title: 'Piece rate',
+                title: 'Piece Rate',
                 align: 'right',
                 render: (_: any, e: any) => (
                   <div>
@@ -182,7 +182,7 @@ const Payroll = () => {
                 render: (_: any, e: any) => money(e.taxDeduction),
               },
               {
-                title: 'Net pay',
+                title: 'Net Pay',
                 align: 'right',
                 render: (_: any, e: any) => <strong>{money(e.netPay)}</strong>,
               },
@@ -193,7 +193,7 @@ const Payroll = () => {
 
       <Modal
         open={open}
-        title="Run payroll"
+        title="Run Payroll"
         onCancel={() => setOpen(false)}
         onOk={() => form.submit()}
         okText="Compute"
@@ -218,13 +218,13 @@ const Payroll = () => {
             })
           }
         >
-          <Form.Item name="period" label="Pay period" rules={[{ required: true, message: 'Choose the period' }]}>
+          <Form.Item name="period" label="Pay Period" rules={[{ required: true, message: 'Choose the period' }]}>
             <DatePicker.RangePicker style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item name="name" label="Name">
             <Input placeholder="Defaults to the date range" />
           </Form.Item>
-          <Form.Item name="payDate" label="Pay date">
+          <Form.Item name="payDate" label="Pay Date">
             <DatePicker style={{ width: '100%' }} />
           </Form.Item>
         </Form>

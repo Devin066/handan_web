@@ -237,7 +237,7 @@ const Dashboard = () => {
 
       <div className="kpi-strip">
         <Kpi
-          title="Stock value"
+          title="Stock Value"
           value={formatCurrency(valuation.total ?? 0)}
           caption={
             <Tooltip
@@ -275,7 +275,7 @@ const Dashboard = () => {
           href="/finance/purchase-invoices"
         />
         <Kpi
-          title="Present today"
+          title="Present Today"
           value={`${workforce.present ?? 0} / ${workforce.total ?? 0}`}
           caption={
             workforce.absent?.length ? `not in: ${workforce.absent.slice(0, 3).join(', ')}` : 'everyone is clocked in'
@@ -339,7 +339,7 @@ const Dashboard = () => {
       <Row gutter={[12, 12]}>
         <Col xs={24} lg={8}>
           <WorkList
-            title="Delivery date at risk"
+            title="Delivery Date at Risk"
             href="/selling/sales-orders"
             items={delayed}
             loading={busy}
@@ -358,7 +358,7 @@ const Dashboard = () => {
         </Col>
         <Col xs={24} lg={8}>
           <WorkList
-            title="Open sales orders"
+            title="Open Sales Orders"
             href="/selling/sales-orders"
             items={d.openSalesOrders ?? []}
             loading={busy}
@@ -392,7 +392,7 @@ const Dashboard = () => {
       <Row gutter={[12, 12]}>
         <Col xs={24} lg={12}>
           <WorkList
-            title="Open purchase orders"
+            title="Open Purchase Orders"
             href="/purchasing/purchase-orders"
             items={d.openPurchaseOrders ?? []}
             loading={busy}
@@ -413,7 +413,7 @@ const Dashboard = () => {
         </Col>
         <Col xs={24} lg={12}>
           <WorkList
-            title="Open purchase requests"
+            title="Open Purchase Requests"
             href="/purchasing/purchase-requests"
             items={d.openPurchaseRequests ?? []}
             loading={busy}
@@ -432,7 +432,7 @@ const Dashboard = () => {
       <Row gutter={[12, 12]}>
         <Col xs={24} lg={12}>
           <WorkList
-            title="Open work orders"
+            title="Open Work Orders"
             href="/production/work-orders"
             items={d.openWorkOrders ?? []}
             loading={busy}
@@ -447,7 +447,7 @@ const Dashboard = () => {
         </Col>
         <Col xs={24} lg={12}>
           <WorkList
-            title="Manufactured today"
+            title="Manufactured Today"
             href="/production/work-orders"
             items={d.manufacturedToday ?? []}
             loading={busy}

@@ -54,7 +54,7 @@ const Benefits = () => {
       ) : null}
       <Row gutter={[12, 12]}>
         <Col xs={24} lg={12}>
-          <Card size="small" title="Statutory deductions (regular employees only)" style={{ height: '100%' }}>
+          <Card size="small" title="Statutory Deductions (Regular Employees Only)" style={{ height: '100%' }}>
             <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
               Employee share, as a percentage of gross pay. Contractual employees have none.
             </Text>
@@ -75,7 +75,7 @@ const Benefits = () => {
                 </Form.Item>
               </Col>
               <Col xs={24} sm={12}>
-                <Form.Item name="withholdingTaxRate" label="Withholding tax" extra="Applied after contributions.">
+                <Form.Item name="withholdingTaxRate" label="Withholding Tax" extra="Applied after contributions.">
                   <InputNumber {...percent} />
                 </Form.Item>
               </Col>
@@ -83,26 +83,26 @@ const Benefits = () => {
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card size="small" title="Hours and incentives" style={{ height: '100%' }}>
+          <Card size="small" title="Hours and Incentives" style={{ height: '100%' }}>
             <Row gutter={12}>
               <Col xs={24} sm={12}>
                 <Form.Item
                   name="standardHoursPerDay"
-                  label="Regular hours per day"
+                  label="Regular Hours per Day"
                   extra="Beyond this counts as overtime."
                 >
                   <InputNumber min={1} max={24} style={{ width: '100%' }} />
                 </Form.Item>
               </Col>
               <Col xs={24} sm={12}>
-                <Form.Item name="overtimeMultiplier" label="Overtime multiplier" extra="Times the hourly rate.">
+                <Form.Item name="overtimeMultiplier" label="Overtime Multiplier" extra="Times the hourly rate.">
                   <InputNumber min={1} step={0.05} style={{ width: '100%' }} />
                 </Form.Item>
               </Col>
               <Col xs={24} sm={12}>
                 <Form.Item
                   name="defaultPieceRate"
-                  label="Default piece rate"
+                  label="Default Piece Rate"
                   extra="Per good unit, for work orders without their own rate."
                 >
                   <InputNumber min={0} style={{ width: '100%' }} />

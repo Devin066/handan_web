@@ -96,7 +96,7 @@ const SalesOrderList: React.FC = () => {
     },
     statusColumn('Status', 'status', salesOrderStatusEnum, { width: 170 }),
     {
-      title: 'Target date',
+      title: 'Target Date',
       dataIndex: 'requiredDate',
       width: 150,
       render: (_: any, r: any) =>

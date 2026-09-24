@@ -95,7 +95,7 @@ const WorkOrderList: React.FC = () => {
       render: (_: any, r: any) => r.assignedStaffName ?? '—',
     },
     {
-      title: 'Sales order',
+      title: 'Sales Order',
       dataIndex: 'salesOrderCode',
       render: (_: any, r: any) => r.salesOrderCode ?? 'For stock',
     },

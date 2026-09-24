@@ -149,20 +149,20 @@ const SalesOrderNew = (props: any) => {
 
           <ProFormDatePicker
             name="requiredDate"
-            label="Target delivery date"
+            label="Target Delivery Date"
             tooltip="Orders due within 3 days or past this date are flagged on the dashboard."
           />
         </ProForm.Group>
 
         <AddressFields
           name="shipTo"
-          label="Delivery address"
+          label="Delivery Address"
           extra="Filled from the customer's address on file; change it if this order goes elsewhere."
         />
 
         <ProFormTextArea
           name="notes"
-          label="Build notes"
+          label="Build Notes"
           placeholder="Anything the shop needs to know about this order"
           fieldProps={{ rows: 2 }}
         />

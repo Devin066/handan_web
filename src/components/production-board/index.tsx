@@ -150,7 +150,7 @@ const TaskDrawer = ({
             <div className="tabular-figures">{reported ? formatQty(reported) : '—'}</div>
           </div>
           <div>
-            <Text type="secondary">Passed / rejected</Text>
+            <Text type="secondary">Passed / Rejected</Text>
             <div className="tabular-figures">
               {Number(task.goodQty) || Number(task.rejectedQty)
                 ? `${formatQty(task.goodQty)} / ${formatQty(task.rejectedQty)}`
@@ -158,7 +158,7 @@ const TaskDrawer = ({
             </div>
           </div>
           <div>
-            <Text type="secondary">Assigned to</Text>
+            <Text type="secondary">Assigned To</Text>
             <div>{task.assignedStaffName ?? 'Nobody yet'}</div>
           </div>
         </div>
@@ -173,7 +173,7 @@ const TaskDrawer = ({
             {pending.to === 'assigned' ? (
               <Form.Item
                 name="staffUuid"
-                label={claimMode === 'self' && !canSupervise ? 'Your name' : 'Assign to'}
+                label={claimMode === 'self' && !canSupervise ? 'Your Name' : 'Assign to'}
                 rules={[{ required: true, message: 'Choose who will do this task.' }]}
               >
                 <Select options={staff} showSearch optionFilterProp="label" placeholder="Choose an employee" />
@@ -182,7 +182,7 @@ const TaskDrawer = ({
             {pending.to === 'quality_check' && stage === 'in_progress' ? (
               <Form.Item
                 name="reportedQty"
-                label="Pieces made"
+                label="Pieces Made"
                 extra={`Ordered ${formatQty(task.plannedQty)}. Enter the real count; anything over the order is logged as extra.`}
                 rules={[{ required: true, message: 'Enter how many pieces were made.' }]}
               >
@@ -192,7 +192,7 @@ const TaskDrawer = ({
             {pending.to === 'final_check' ? (
               <Form.Item
                 name="goodQty"
-                label="Pieces that passed"
+                label="Pieces That Passed"
                 extra={`${formatQty(reported)} made. The rest are recorded as rejected.`}
                 rules={[
                   { required: true, message: 'Enter how many pieces passed.' },
@@ -331,7 +331,7 @@ const ProductionBoard = () => {
         </Text>
         <Space>
           <Tooltip title="Refresh Now">
-            <Button icon={<ReloadOutlined />} onClick={() => refetch()} loading={loading} aria-label="Refresh now" />
+            <Button icon={<ReloadOutlined />} onClick={() => refetch()} loading={loading} aria-label="Refresh Now" />
           </Tooltip>
           <Button icon={fullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />} onClick={toggleFullscreen}>
             {fullscreen ? 'Exit Full Screen' : 'Full Screen'}

@@ -157,7 +157,7 @@ const WorkOrderPrompt = ({ salesOrderUuid, onClose }: { salesOrderUuid?: string;
                 ),
               },
               {
-                title: 'Qty to make',
+                title: 'Qty to Make',
                 render: (_: any, row: Row, i: number) => (
                   <InputNumber min={1} value={row.qty} onChange={(v) => update(i, { qty: Number(v ?? 0) })} />
                 ),
@@ -176,7 +176,7 @@ const WorkOrderPrompt = ({ salesOrderUuid, onClose }: { salesOrderUuid?: string;
                 ),
               },
               {
-                title: 'Piece rate',
+                title: 'Piece Rate',
                 render: (_: any, row: Row, i: number) => (
                   <Space>
                     <InputNumber

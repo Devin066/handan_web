@@ -64,7 +64,7 @@ const SupplierNew = (props: any) => {
           <Col xs={24} sm={16}>
             <ProFormText
               name="name"
-              label="Business name"
+              label="Business Name"
               rules={[{ required: true, message: 'Enter the business name.' }]}
             />
           </Col>
@@ -81,14 +81,14 @@ const SupplierNew = (props: any) => {
           <Col xs={24} sm={8}>
             <ProFormText
               name="contactFirstName"
-              label="First name"
+              label="First Name"
               rules={[{ required: true, message: 'Enter a first name.' }]}
             />
           </Col>
           <Col xs={24} sm={8}>
             <ProFormText
               name="contactLastName"
-              label="Last name"
+              label="Last Name"
               rules={[{ required: true, message: 'Enter a last name.' }]}
             />
           </Col>

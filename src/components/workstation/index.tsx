@@ -93,7 +93,7 @@ const WorkstationForm = ({ station, onClose, onSaved }: { station: any; onClose:
           <Col xs={24} sm={10}>
             <Form.Item
               name="capacityHours"
-              label="Capacity (hours a day)"
+              label="Capacity (Hours a Day)"
               rules={[{ type: 'number', min: 0, max: 24, message: 'Between 0 and 24 hours.' }]}
             >
               <InputNumber min={0} max={24} step={0.5} style={{ width: '100%' }} />

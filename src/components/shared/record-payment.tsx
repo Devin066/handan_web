@@ -85,21 +85,21 @@ const RecordPayment = ({
       >
         <Form.Item
           name="orNumber"
-          label={sales ? 'Official Receipt (OR) number' : 'Supplier receipt or reference'}
+          label={sales ? 'Official Receipt (OR) Number' : 'Supplier Receipt or Reference'}
           rules={orRules}
         >
           <Input placeholder={sales ? 'As printed on the receipt' : 'Optional'} autoComplete="off" />
         </Form.Item>
         <Form.Item
           name="paymentMethodUuid"
-          label="Payment method"
+          label="Payment Method"
           rules={[{ required: true, message: 'Choose how it was paid' }]}
         >
           <Select options={methods} placeholder="Cash, bank transfer, cheque" />
         </Form.Item>
         <Form.Item
           name="referenceNo"
-          label="Reference number"
+          label="Reference Number"
           extra={
             method?.requiresReference ? `Required for ${method.label}.` : 'Transfer reference, check or wallet ID.'
           }
@@ -111,7 +111,7 @@ const RecordPayment = ({
         >
           <Input autoComplete="off" placeholder={method?.requiresReference ? undefined : 'Optional'} />
         </Form.Item>
-        <Form.Item name="paidOn" label="Date paid" rules={[{ required: true, message: 'Choose the date paid' }]}>
+        <Form.Item name="paidOn" label="Date Paid" rules={[{ required: true, message: 'Choose the date paid' }]}>
           <DatePicker style={{ width: '100%' }} disabledDate={(d) => d.isAfter(dayjs(), 'day')} format="YYYY-MM-DD" />
         </Form.Item>
         <Form.Item
