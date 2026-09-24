@@ -74,6 +74,12 @@ export type Company = {
   uuid?: Maybe<Scalars['ID']['output']>;
 };
 
+/** the root of query. */
+export type Configuration = {
+  __typename?: 'Configuration';
+  currency?: Maybe<Scalars['String']['output']>;
+};
+
 export type CreateBomRequest = {
   bomItems?: InputMaybe<Array<InputMaybe<BomItemArg>>>;
   bomProcesses?: InputMaybe<Array<InputMaybe<BomProcessArg>>>;
@@ -82,8 +88,36 @@ export type CreateBomRequest = {
 };
 
 export type CreateCustomerRequest = {
-  address: Scalars['String']['input'];
-  name: Scalars['String']['input'];
+  address?: InputMaybe<Scalars['String']['input']>;
+  alternatePhone?: InputMaybe<Scalars['String']['input']>;
+  barangay?: InputMaybe<Scalars['String']['input']>;
+  city?: InputMaybe<Scalars['String']['input']>;
+  companyName?: InputMaybe<Scalars['String']['input']>;
+  contactName?: InputMaybe<Scalars['String']['input']>;
+  customerType?: InputMaybe<Scalars['String']['input']>;
+  email?: InputMaybe<Scalars['String']['input']>;
+  facebook?: InputMaybe<Scalars['String']['input']>;
+  firstName?: InputMaybe<Scalars['String']['input']>;
+  instagram?: InputMaybe<Scalars['String']['input']>;
+  landline?: InputMaybe<Scalars['String']['input']>;
+  lastName?: InputMaybe<Scalars['String']['input']>;
+  marketplaceAccount?: InputMaybe<Scalars['String']['input']>;
+  messengerId?: InputMaybe<Scalars['String']['input']>;
+  middleName?: InputMaybe<Scalars['String']['input']>;
+  /** Optional: derived from the name parts when omitted. */
+  name?: InputMaybe<Scalars['String']['input']>;
+  notes?: InputMaybe<Scalars['String']['input']>;
+  phone?: InputMaybe<Scalars['String']['input']>;
+  postalCode?: InputMaybe<Scalars['String']['input']>;
+  primaryChannel?: InputMaybe<Scalars['String']['input']>;
+  province?: InputMaybe<Scalars['String']['input']>;
+  region?: InputMaybe<Scalars['String']['input']>;
+  sourcePlatform?: InputMaybe<Scalars['String']['input']>;
+  suffix?: InputMaybe<Scalars['String']['input']>;
+  telegram?: InputMaybe<Scalars['String']['input']>;
+  tiktok?: InputMaybe<Scalars['String']['input']>;
+  viber?: InputMaybe<Scalars['String']['input']>;
+  whatsapp?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CreateDeliveryNoteRequest = {
@@ -139,8 +173,18 @@ export type CreateReceiptNoteRequest = {
 };
 
 export type CreateSalesInvoiceRequest = {
+  /** Legacy: bill the whole order at this amount. Ignored when items are given. */
   amount?: InputMaybe<Scalars['Decimal']['input']>;
+  customerAddress?: InputMaybe<Scalars['String']['input']>;
+  customerReference?: InputMaybe<Scalars['String']['input']>;
+  customerTin?: InputMaybe<Scalars['String']['input']>;
+  dueDate?: InputMaybe<Scalars['DateTime']['input']>;
+  invoiceDate?: InputMaybe<Scalars['DateTime']['input']>;
+  items?: InputMaybe<Array<InputMaybe<SalesInvoiceItemArg>>>;
+  notes?: InputMaybe<Scalars['String']['input']>;
+  paymentTerms?: InputMaybe<Scalars['String']['input']>;
   salesOrderUuid?: InputMaybe<Scalars['ID']['input']>;
+  vatMode?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CreateSalesOrderRequest = {
@@ -152,7 +196,15 @@ export type CreateSalesOrderRequest = {
 
 export type CreateSupplierRequest = {
   address: Scalars['String']['input'];
+  contactFirstName: Scalars['String']['input'];
+  contactLastName: Scalars['String']['input'];
+  contactPosition?: InputMaybe<Scalars['String']['input']>;
+  email?: InputMaybe<Scalars['String']['input']>;
+  landline?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
+  notes?: InputMaybe<Scalars['String']['input']>;
+  phone?: InputMaybe<Scalars['String']['input']>;
+  tin?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CreateWorkOrderRequest = {
@@ -171,11 +223,39 @@ export type CreateWorkstationRequest = {
 export type Customer = {
   __typename?: 'Customer';
   address?: Maybe<Scalars['String']['output']>;
+  alternatePhone?: Maybe<Scalars['String']['output']>;
   balance?: Maybe<Scalars['Decimal']['output']>;
+  barangay?: Maybe<Scalars['String']['output']>;
+  city?: Maybe<Scalars['String']['output']>;
+  companyName?: Maybe<Scalars['String']['output']>;
+  contactName?: Maybe<Scalars['String']['output']>;
+  customerType?: Maybe<Scalars['String']['output']>;
+  email?: Maybe<Scalars['String']['output']>;
+  facebook?: Maybe<Scalars['String']['output']>;
+  firstName?: Maybe<Scalars['String']['output']>;
+  followUpStatus?: Maybe<Scalars['String']['output']>;
   insertedAt?: Maybe<Scalars['DateTime']['output']>;
+  instagram?: Maybe<Scalars['String']['output']>;
+  landline?: Maybe<Scalars['String']['output']>;
+  lastName?: Maybe<Scalars['String']['output']>;
+  marketplaceAccount?: Maybe<Scalars['String']['output']>;
+  messengerId?: Maybe<Scalars['String']['output']>;
+  middleName?: Maybe<Scalars['String']['output']>;
   name?: Maybe<Scalars['String']['output']>;
+  notes?: Maybe<Scalars['String']['output']>;
+  phone?: Maybe<Scalars['String']['output']>;
+  postalCode?: Maybe<Scalars['String']['output']>;
+  primaryChannel?: Maybe<Scalars['String']['output']>;
+  province?: Maybe<Scalars['String']['output']>;
+  region?: Maybe<Scalars['String']['output']>;
+  sourcePlatform?: Maybe<Scalars['String']['output']>;
+  suffix?: Maybe<Scalars['String']['output']>;
+  telegram?: Maybe<Scalars['String']['output']>;
+  tiktok?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   uuid?: Maybe<Scalars['ID']['output']>;
+  viber?: Maybe<Scalars['String']['output']>;
+  whatsapp?: Maybe<Scalars['String']['output']>;
 };
 
 export type DeliveryNote = {
@@ -245,13 +325,22 @@ export type InventoryEntry = {
 
 export type Item = {
   __typename?: 'Item';
+  /** onHandQty minus reservedQty. */
+  availableQty?: Maybe<Scalars['Decimal']['output']>;
   bom?: Maybe<Bom>;
+  category?: Maybe<Scalars['String']['output']>;
   defaultStockUomName?: Maybe<Scalars['String']['output']>;
   defaultStockUomUuid?: Maybe<Scalars['ID']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   insertedAt?: Maybe<Scalars['DateTime']['output']>;
+  minStockThreshold?: Maybe<Scalars['Decimal']['output']>;
   name?: Maybe<Scalars['String']['output']>;
+  /** Across all warehouses, in the default stock UOM. */
+  onHandQty?: Maybe<Scalars['Decimal']['output']>;
+  /** Committed to open orders, in the default stock UOM. */
+  reservedQty?: Maybe<Scalars['Decimal']['output']>;
   sellingPrice?: Maybe<Scalars['Decimal']['output']>;
+  sku?: Maybe<Scalars['String']['output']>;
   spec?: Maybe<Scalars['String']['output']>;
   stockItems?: Maybe<Array<Maybe<StockItem>>>;
   stockUoms?: Maybe<Array<Maybe<StockUom>>>;
@@ -468,8 +557,10 @@ export type RootMutationType = {
   createWorkstation?: Maybe<Workstation>;
   login?: Maybe<User>;
   reportJobCard?: Maybe<WorkOrder>;
+  saveStaff?: Maybe<Staff>;
   scheduleWorkOrder?: Maybe<WorkOrder>;
   storeFinishItem?: Maybe<WorkOrder>;
+  updateConfiguration?: Maybe<Configuration>;
 };
 
 
@@ -588,6 +679,12 @@ export type RootMutationTypeReportJobCardArgs = {
 
 
 /** the root of mutaion. */
+export type RootMutationTypeSaveStaffArgs = {
+  request: StaffRequest;
+};
+
+
+/** the root of mutaion. */
 export type RootMutationTypeScheduleWorkOrderArgs = {
   request: WorkOrderRequest;
 };
@@ -598,12 +695,18 @@ export type RootMutationTypeStoreFinishItemArgs = {
   request: StoreFinishItemRequest;
 };
 
-/** the root of query. */
+
+/** the root of mutaion. */
+export type RootMutationTypeUpdateConfigurationArgs = {
+  request: UpdateConfigurationRequest;
+};
+
 export type RootQueryType = {
   __typename?: 'RootQueryType';
   bom?: Maybe<Bom>;
   boms?: Maybe<Array<Maybe<Bom>>>;
   company?: Maybe<Company>;
+  configuration?: Maybe<Configuration>;
   currentUser?: Maybe<User>;
   customer?: Maybe<Customer>;
   customers?: Maybe<Array<Maybe<Customer>>>;
@@ -645,126 +748,148 @@ export type RootQueryType = {
 };
 
 
-/** the root of query. */
 export type RootQueryTypeBomArgs = {
   request: IdRequest;
 };
 
 
-/** the root of query. */
 export type RootQueryTypeCustomerArgs = {
   request: IdRequest;
 };
 
 
-/** the root of query. */
 export type RootQueryTypeDeliveryNoteArgs = {
   request: DeliveryNoteRequest;
 };
 
 
-/** the root of query. */
 export type RootQueryTypeItemArgs = {
   request: IdRequest;
 };
 
 
-/** the root of query. */
 export type RootQueryTypePaymentEntryArgs = {
   request: IdRequest;
 };
 
 
-/** the root of query. */
 export type RootQueryTypePaymentMethodArgs = {
   request: IdRequest;
 };
 
 
-/** the root of query. */
 export type RootQueryTypeProcessArgs = {
   request: IdRequest;
 };
 
 
-/** the root of query. */
 export type RootQueryTypePurchaseInvoiceArgs = {
   request: PurchaseInvoiceRequest;
 };
 
 
-/** the root of query. */
 export type RootQueryTypePurchaseOrderArgs = {
   request: PurchaseOrderRequest;
 };
 
 
-/** the root of query. */
 export type RootQueryTypeReceiptNoteArgs = {
   request: ReceiptNoteRequest;
 };
 
 
-/** the root of query. */
 export type RootQueryTypeSalesInvoiceArgs = {
   request: SalesInvoiceRequest;
 };
 
 
-/** the root of query. */
 export type RootQueryTypeSalesOrderArgs = {
   request: SalesOrderRequest;
 };
 
 
-/** the root of query. */
 export type RootQueryTypeSupplierArgs = {
   request: IdRequest;
 };
 
 
-/** the root of query. */
 export type RootQueryTypeUnpaidPurchaseInvoicesBySupplierArgs = {
   request: IdRequest;
 };
 
 
-/** the root of query. */
 export type RootQueryTypeUnpaidSalesInvoicesByCustomerArgs = {
   request: IdRequest;
 };
 
 
-/** the root of query. */
 export type RootQueryTypeWorkOrderArgs = {
   request: IdRequest;
 };
 
 
-/** the root of query. */
 export type RootQueryTypeWorkOrderItemArgs = {
   request: IdRequest;
 };
 
 
-/** the root of query. */
 export type RootQueryTypeWorkstationArgs = {
   request: IdRequest;
 };
 
 export type SalesInvoice = {
   __typename?: 'SalesInvoice';
+  /** Grand total payable, VAT included. */
   amount?: Maybe<Scalars['Decimal']['output']>;
+  /** amount minus paidAmount. */
+  balance?: Maybe<Scalars['Decimal']['output']>;
   code?: Maybe<Scalars['String']['output']>;
   customer?: Maybe<Customer>;
+  customerAddress?: Maybe<Scalars['String']['output']>;
   customerName?: Maybe<Scalars['String']['output']>;
+  customerReference?: Maybe<Scalars['String']['output']>;
+  customerTin?: Maybe<Scalars['String']['output']>;
   customerUuid?: Maybe<Scalars['ID']['output']>;
+  discountAmount?: Maybe<Scalars['Decimal']['output']>;
+  dueDate?: Maybe<Scalars['DateTime']['output']>;
   insertedAt?: Maybe<Scalars['DateTime']['output']>;
+  invoiceDate?: Maybe<Scalars['DateTime']['output']>;
+  items?: Maybe<Array<Maybe<SalesInvoiceItem>>>;
+  notes?: Maybe<Scalars['String']['output']>;
+  paidAmount?: Maybe<Scalars['Decimal']['output']>;
+  paymentTerms?: Maybe<Scalars['String']['output']>;
   salesOrder?: Maybe<SalesOrder>;
+  salesOrderCode?: Maybe<Scalars['String']['output']>;
   salesOrderUuid?: Maybe<Scalars['ID']['output']>;
   status?: Maybe<Scalars['String']['output']>;
+  subtotal?: Maybe<Scalars['Decimal']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   uuid?: Maybe<Scalars['ID']['output']>;
+  vatAmount?: Maybe<Scalars['Decimal']['output']>;
+  vatMode?: Maybe<Scalars['String']['output']>;
+  vatableAmount?: Maybe<Scalars['Decimal']['output']>;
+};
+
+export type SalesInvoiceItem = {
+  __typename?: 'SalesInvoiceItem';
+  description?: Maybe<Scalars['String']['output']>;
+  discount?: Maybe<Scalars['Decimal']['output']>;
+  itemName?: Maybe<Scalars['String']['output']>;
+  itemUuid?: Maybe<Scalars['ID']['output']>;
+  lineTotal?: Maybe<Scalars['Decimal']['output']>;
+  qty?: Maybe<Scalars['Decimal']['output']>;
+  salesOrderItemUuid?: Maybe<Scalars['ID']['output']>;
+  unitPrice?: Maybe<Scalars['Decimal']['output']>;
+  uomName?: Maybe<Scalars['String']['output']>;
+  uuid?: Maybe<Scalars['ID']['output']>;
+};
+
+export type SalesInvoiceItemArg = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  discount?: InputMaybe<Scalars['Decimal']['input']>;
+  qty: Scalars['Decimal']['input'];
+  salesOrderItemUuid: Scalars['ID']['input'];
+  unitPrice?: InputMaybe<Scalars['Decimal']['input']>;
 };
 
 export type SalesInvoiceRequest = {
@@ -803,6 +928,8 @@ export type SalesOrderItem = {
   amount?: Maybe<Scalars['Decimal']['output']>;
   deliveredQty?: Maybe<Scalars['Decimal']['output']>;
   insertedAt?: Maybe<Scalars['DateTime']['output']>;
+  /** Quantity already on sales invoices. */
+  invoicedQty?: Maybe<Scalars['Decimal']['output']>;
   item?: Maybe<Item>;
   itemName?: Maybe<Scalars['String']['output']>;
   itemUuid?: Maybe<Scalars['ID']['output']>;
@@ -810,6 +937,8 @@ export type SalesOrderItem = {
   remainingQty?: Maybe<Scalars['Decimal']['output']>;
   salesOrder?: Maybe<SalesOrder>;
   stockUomUuid?: Maybe<Scalars['ID']['output']>;
+  /** orderedQty minus invoicedQty. */
+  uninvoicedQty?: Maybe<Scalars['Decimal']['output']>;
   unitPrice?: Maybe<Scalars['Decimal']['output']>;
   uomName?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -832,11 +961,36 @@ export type Staff = {
   __typename?: 'Staff';
   company?: Maybe<Company>;
   email?: Maybe<Scalars['String']['output']>;
+  /** regular, probationary, contractual or part_time. */
+  employmentType?: Maybe<Scalars['String']['output']>;
+  /** True when this member has an account they can sign in with. */
+  hasLogin?: Maybe<Scalars['Boolean']['output']>;
+  hiredAt?: Maybe<Scalars['DateTime']['output']>;
   insertedAt?: Maybe<Scalars['DateTime']['output']>;
   name?: Maybe<Scalars['String']['output']>;
+  phone?: Maybe<Scalars['String']['output']>;
+  position?: Maybe<Scalars['String']['output']>;
+  /** The login account's role, when there is one. */
+  role?: Maybe<Scalars['String']['output']>;
+  shift?: Maybe<Scalars['String']['output']>;
+  /** active or inactive. Inactive members stay on past records but can't be assigned new work. */
+  status?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   user?: Maybe<User>;
   uuid?: Maybe<Scalars['ID']['output']>;
+};
+
+export type StaffRequest = {
+  email: Scalars['String']['input'];
+  employmentType?: InputMaybe<Scalars['String']['input']>;
+  hiredAt?: InputMaybe<Scalars['DateTime']['input']>;
+  name: Scalars['String']['input'];
+  phone?: InputMaybe<Scalars['String']['input']>;
+  position?: InputMaybe<Scalars['String']['input']>;
+  shift?: InputMaybe<Scalars['String']['input']>;
+  status?: InputMaybe<Scalars['String']['input']>;
+  /** Omit to create a new member. */
+  uuid?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type StockItem = {
@@ -873,8 +1027,17 @@ export type StoreFinishItemRequest = {
 export type Supplier = {
   __typename?: 'Supplier';
   address?: Maybe<Scalars['String']['output']>;
+  contactFirstName?: Maybe<Scalars['String']['output']>;
+  contactLastName?: Maybe<Scalars['String']['output']>;
+  contactName?: Maybe<Scalars['String']['output']>;
+  contactPosition?: Maybe<Scalars['String']['output']>;
+  email?: Maybe<Scalars['String']['output']>;
   insertedAt?: Maybe<Scalars['DateTime']['output']>;
+  landline?: Maybe<Scalars['String']['output']>;
   name?: Maybe<Scalars['String']['output']>;
+  notes?: Maybe<Scalars['String']['output']>;
+  phone?: Maybe<Scalars['String']['output']>;
+  tin?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   uuid?: Maybe<Scalars['ID']['output']>;
 };
@@ -886,6 +1049,10 @@ export type Uom = {
   name?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   uuid?: Maybe<Scalars['ID']['output']>;
+};
+
+export type UpdateConfigurationRequest = {
+  currency?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type User = {
@@ -996,13 +1163,13 @@ export type Workstation = {
 
 export type BomFieldsFragment = { __typename?: 'Bom', uuid?: string | null, name?: string | null, insertedAt?: any | null, updatedAt?: any | null };
 
-export type CustomerFieldsFragment = { __typename?: 'Customer', uuid?: string | null, name?: string | null, address?: string | null, insertedAt?: any | null, updatedAt?: any | null };
+export type CustomerFieldsFragment = { __typename?: 'Customer', uuid?: string | null, name?: string | null, customerType?: string | null, firstName?: string | null, middleName?: string | null, lastName?: string | null, suffix?: string | null, companyName?: string | null, contactName?: string | null, phone?: string | null, alternatePhone?: string | null, landline?: string | null, email?: string | null, messengerId?: string | null, facebook?: string | null, viber?: string | null, whatsapp?: string | null, telegram?: string | null, instagram?: string | null, tiktok?: string | null, marketplaceAccount?: string | null, address?: string | null, barangay?: string | null, city?: string | null, province?: string | null, region?: string | null, postalCode?: string | null, sourcePlatform?: string | null, primaryChannel?: string | null, followUpStatus?: string | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null };
 
 export type DeliveryNoteFieldsFragment = { __typename?: 'DeliveryNote', uuid?: string | null, code?: string | null, status?: string | null, customerName?: string | null, totalAmount?: any | null, totalQty?: any | null, salesOrderUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null };
 
 export type DeliveryNoteItemFieldsFragment = { __typename?: 'DeliveryNoteItem', uuid?: string | null, itemName?: string | null, actualQty?: any | null, unitPrice?: any | null, amount?: any | null, uomName?: string | null, insertedAt?: any | null, updatedAt?: any | null };
 
-export type ItemFieldsFragment = { __typename?: 'Item', uuid?: string | null, name?: string | null, spec?: string | null, sellingPrice?: any | null, defaultStockUomUuid?: string | null, defaultStockUomName?: string | null, insertedAt?: any | null, updatedAt?: any | null };
+export type ItemFieldsFragment = { __typename?: 'Item', uuid?: string | null, name?: string | null, sku?: string | null, category?: string | null, spec?: string | null, sellingPrice?: any | null, minStockThreshold?: any | null, onHandQty?: any | null, reservedQty?: any | null, availableQty?: any | null, defaultStockUomUuid?: string | null, defaultStockUomName?: string | null, insertedAt?: any | null, updatedAt?: any | null };
 
 export type JobCardFieldsFragment = { __typename?: 'JobCard', uuid?: string | null, startTime?: any | null, endTime?: any | null, status?: string | null, defectiveQty?: any | null, producedQty?: any | null, workOrderItemUuid?: string | null, workOrderUuid?: string | null, operatorStaff?: { __typename?: 'Staff', email?: string | null } | null };
 
@@ -1024,15 +1191,15 @@ export type ReceiptNoteFieldsFragment = { __typename?: 'ReceiptNote', uuid?: str
 
 export type ReceiptNoteItemFieldsFragment = { __typename?: 'ReceiptNoteItem', uuid?: string | null, itemName?: string | null, uomName?: string | null, unitPrice?: any | null, actualQty?: any | null, amount?: any | null };
 
-export type SalesInvoiceFieldsFragment = { __typename?: 'SalesInvoice', uuid?: string | null, code?: string | null, status?: string | null, amount?: any | null, customerUuid?: string | null, customerName?: string | null, salesOrderUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null };
+export type SalesInvoiceFieldsFragment = { __typename?: 'SalesInvoice', uuid?: string | null, code?: string | null, status?: string | null, amount?: any | null, paidAmount?: any | null, balance?: any | null, customerUuid?: string | null, customerName?: string | null, salesOrderUuid?: string | null, salesOrderCode?: string | null, invoiceDate?: any | null, dueDate?: any | null, paymentTerms?: string | null, customerAddress?: string | null, customerTin?: string | null, customerReference?: string | null, vatMode?: string | null, subtotal?: any | null, discountAmount?: any | null, vatableAmount?: any | null, vatAmount?: any | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null };
 
 export type SalesOrderFieldsFragment = { __typename?: 'SalesOrder', uuid?: string | null, code?: string | null, status?: string | null, billingStatus?: string | null, deliveryStatus?: string | null, customerName?: string | null, totalAmount?: any | null, paidAmount?: any | null, remainingAmount?: any | null, totalQty?: any | null, deliveredQty?: any | null, remainingQty?: any | null, warehouseName?: string | null, insertedAt?: any | null, updatedAt?: any | null };
 
-export type SalesOrderItemFieldsFragment = { __typename?: 'SalesOrderItem', uuid?: string | null, itemUuid?: string | null, itemName?: string | null, amount?: any | null, unitPrice?: any | null, orderedQty?: any | null, deliveredQty?: any | null, remainingQty?: any | null };
+export type SalesOrderItemFieldsFragment = { __typename?: 'SalesOrderItem', uuid?: string | null, itemUuid?: string | null, itemName?: string | null, uomName?: string | null, amount?: any | null, unitPrice?: any | null, orderedQty?: any | null, deliveredQty?: any | null, remainingQty?: any | null, invoicedQty?: any | null, uninvoicedQty?: any | null };
 
-export type StaffFieldsFragment = { __typename?: 'Staff', uuid?: string | null, email?: string | null, name?: string | null };
+export type StaffFieldsFragment = { __typename?: 'Staff', uuid?: string | null, email?: string | null, name?: string | null, phone?: string | null, position?: string | null, employmentType?: string | null, shift?: string | null, hiredAt?: any | null, status?: string | null, hasLogin?: boolean | null, role?: string | null, insertedAt?: any | null };
 
-export type SupplierFieldsFragment = { __typename?: 'Supplier', uuid?: string | null, name?: string | null, address?: string | null };
+export type SupplierFieldsFragment = { __typename?: 'Supplier', uuid?: string | null, name?: string | null, address?: string | null, tin?: string | null, contactFirstName?: string | null, contactLastName?: string | null, contactPosition?: string | null, contactName?: string | null, phone?: string | null, landline?: string | null, email?: string | null, notes?: string | null, insertedAt?: any | null };
 
 export type UomFieldsFragment = { __typename?: 'Uom', uuid?: string | null, name?: string | null, insertedAt?: any | null, updatedAt?: any | null };
 
@@ -1070,7 +1237,7 @@ export type CreateCustomerMutationVariables = Exact<{
 }>;
 
 
-export type CreateCustomerMutation = { __typename?: 'RootMutationType', createCustomer?: { __typename?: 'Customer', uuid?: string | null, name?: string | null, address?: string | null } | null };
+export type CreateCustomerMutation = { __typename?: 'RootMutationType', createCustomer?: { __typename?: 'Customer', uuid?: string | null, name?: string | null, customerType?: string | null, firstName?: string | null, middleName?: string | null, lastName?: string | null, suffix?: string | null, companyName?: string | null, contactName?: string | null, phone?: string | null, alternatePhone?: string | null, landline?: string | null, email?: string | null, messengerId?: string | null, facebook?: string | null, viber?: string | null, whatsapp?: string | null, telegram?: string | null, instagram?: string | null, tiktok?: string | null, marketplaceAccount?: string | null, address?: string | null, barangay?: string | null, city?: string | null, province?: string | null, region?: string | null, postalCode?: string | null, sourcePlatform?: string | null, primaryChannel?: string | null, followUpStatus?: string | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null };
 
 export type CreateDeliveryNoteMutationVariables = Exact<{
   request: CreateDeliveryNoteRequest;
@@ -1133,7 +1300,7 @@ export type CreateSalesInvoiceMutationVariables = Exact<{
 }>;
 
 
-export type CreateSalesInvoiceMutation = { __typename?: 'RootMutationType', createSalesInvoice?: { __typename?: 'SalesInvoice', status?: string | null, amount?: any | null } | null };
+export type CreateSalesInvoiceMutation = { __typename?: 'RootMutationType', createSalesInvoice?: { __typename?: 'SalesInvoice', uuid?: string | null, code?: string | null, status?: string | null, amount?: any | null, paidAmount?: any | null, balance?: any | null, customerUuid?: string | null, customerName?: string | null, salesOrderUuid?: string | null, salesOrderCode?: string | null, invoiceDate?: any | null, dueDate?: any | null, paymentTerms?: string | null, customerAddress?: string | null, customerTin?: string | null, customerReference?: string | null, vatMode?: string | null, subtotal?: any | null, discountAmount?: any | null, vatableAmount?: any | null, vatAmount?: any | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null };
 
 export type CreateSalesOrderMutationVariables = Exact<{
   request: CreateSalesOrderRequest;
@@ -1147,7 +1314,7 @@ export type CreateSupplierMutationVariables = Exact<{
 }>;
 
 
-export type CreateSupplierMutation = { __typename?: 'RootMutationType', createSupplier?: { __typename?: 'Supplier', uuid?: string | null, name?: string | null, address?: string | null } | null };
+export type CreateSupplierMutation = { __typename?: 'RootMutationType', createSupplier?: { __typename?: 'Supplier', uuid?: string | null, name?: string | null, address?: string | null, tin?: string | null, contactFirstName?: string | null, contactLastName?: string | null, contactPosition?: string | null, contactName?: string | null, phone?: string | null, landline?: string | null, email?: string | null, notes?: string | null, insertedAt?: any | null } | null };
 
 export type CreateWorkOrderMutationVariables = Exact<{
   request: CreateWorkOrderRequest;
@@ -1177,12 +1344,26 @@ export type ReportJobCardMutationVariables = Exact<{
 
 export type ReportJobCardMutation = { __typename?: 'RootMutationType', reportJobCard?: { __typename?: 'WorkOrder', status?: string | null, uuid?: string | null } | null };
 
+export type SaveStaffMutationVariables = Exact<{
+  request: StaffRequest;
+}>;
+
+
+export type SaveStaffMutation = { __typename?: 'RootMutationType', saveStaff?: { __typename?: 'Staff', uuid?: string | null, email?: string | null, name?: string | null, phone?: string | null, position?: string | null, employmentType?: string | null, shift?: string | null, hiredAt?: any | null, status?: string | null, hasLogin?: boolean | null, role?: string | null, insertedAt?: any | null } | null };
+
 export type StoreFinishItemMutationVariables = Exact<{
   request: StoreFinishItemRequest;
 }>;
 
 
 export type StoreFinishItemMutation = { __typename?: 'RootMutationType', storeFinishItem?: { __typename?: 'WorkOrder', status?: string | null, uuid?: string | null } | null };
+
+export type UpdateConfigurationMutationVariables = Exact<{
+  request: UpdateConfigurationRequest;
+}>;
+
+
+export type UpdateConfigurationMutation = { __typename?: 'RootMutationType', updateConfiguration?: { __typename?: 'Configuration', currency?: string | null } | null };
 
 export type BomQueryVariables = Exact<{
   request: IdRequest;
@@ -1201,6 +1382,11 @@ export type CompanyQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type CompanyQuery = { __typename?: 'RootQueryType', company?: { __typename?: 'Company', uuid?: string | null, name?: string | null } | null };
 
+export type ConfigurationQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ConfigurationQuery = { __typename?: 'RootQueryType', configuration?: { __typename?: 'Configuration', currency?: string | null } | null };
+
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -1211,12 +1397,12 @@ export type CustomerQueryVariables = Exact<{
 }>;
 
 
-export type CustomerQuery = { __typename?: 'RootQueryType', customer?: { __typename?: 'Customer', uuid?: string | null, name?: string | null, address?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null };
+export type CustomerQuery = { __typename?: 'RootQueryType', customer?: { __typename?: 'Customer', uuid?: string | null, name?: string | null, customerType?: string | null, firstName?: string | null, middleName?: string | null, lastName?: string | null, suffix?: string | null, companyName?: string | null, contactName?: string | null, phone?: string | null, alternatePhone?: string | null, landline?: string | null, email?: string | null, messengerId?: string | null, facebook?: string | null, viber?: string | null, whatsapp?: string | null, telegram?: string | null, instagram?: string | null, tiktok?: string | null, marketplaceAccount?: string | null, address?: string | null, barangay?: string | null, city?: string | null, province?: string | null, region?: string | null, postalCode?: string | null, sourcePlatform?: string | null, primaryChannel?: string | null, followUpStatus?: string | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null };
 
 export type CustomersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type CustomersQuery = { __typename?: 'RootQueryType', customers?: Array<{ __typename?: 'Customer', uuid?: string | null, name?: string | null, address?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null };
+export type CustomersQuery = { __typename?: 'RootQueryType', customers?: Array<{ __typename?: 'Customer', uuid?: string | null, name?: string | null, customerType?: string | null, firstName?: string | null, middleName?: string | null, lastName?: string | null, suffix?: string | null, companyName?: string | null, contactName?: string | null, phone?: string | null, alternatePhone?: string | null, landline?: string | null, email?: string | null, messengerId?: string | null, facebook?: string | null, viber?: string | null, whatsapp?: string | null, telegram?: string | null, instagram?: string | null, tiktok?: string | null, marketplaceAccount?: string | null, address?: string | null, barangay?: string | null, city?: string | null, province?: string | null, region?: string | null, postalCode?: string | null, sourcePlatform?: string | null, primaryChannel?: string | null, followUpStatus?: string | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null };
 
 export type DeliveryNoteQueryVariables = Exact<{
   request: DeliveryNoteRequest;
@@ -1233,7 +1419,7 @@ export type DeliveryNotesQuery = { __typename?: 'RootQueryType', deliveryNotes?:
 export type InventoryEntriesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type InventoryEntriesQuery = { __typename?: 'RootQueryType', inventoryEntries?: Array<{ __typename?: 'InventoryEntry', code?: string | null, actualQty?: any | null, type?: string | null, qtyAfterTransaction?: any | null, threadType?: string | null, stockUomUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null, item?: { __typename?: 'Item', uuid?: string | null, name?: string | null, spec?: string | null, sellingPrice?: any | null, defaultStockUomUuid?: string | null, defaultStockUomName?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null, warehouse?: { __typename?: 'Warehouse', uuid?: string | null, name?: string | null, address?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null, stockUom?: { __typename?: 'StockUom', uuid?: string | null, uomName?: string | null } | null } | null> | null };
+export type InventoryEntriesQuery = { __typename?: 'RootQueryType', inventoryEntries?: Array<{ __typename?: 'InventoryEntry', code?: string | null, actualQty?: any | null, type?: string | null, qtyAfterTransaction?: any | null, threadType?: string | null, stockUomUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null, item?: { __typename?: 'Item', uuid?: string | null, name?: string | null, sku?: string | null, category?: string | null, spec?: string | null, sellingPrice?: any | null, minStockThreshold?: any | null, onHandQty?: any | null, reservedQty?: any | null, availableQty?: any | null, defaultStockUomUuid?: string | null, defaultStockUomName?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null, warehouse?: { __typename?: 'Warehouse', uuid?: string | null, name?: string | null, address?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null, stockUom?: { __typename?: 'StockUom', uuid?: string | null, uomName?: string | null } | null } | null> | null };
 
 export type ItemQueryVariables = Exact<{
   request: IdRequest;
@@ -1245,12 +1431,12 @@ export type ItemQuery = { __typename?: 'RootQueryType', item?: { __typename?: 'I
 export type ItemsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ItemsQuery = { __typename?: 'RootQueryType', items?: Array<{ __typename?: 'Item', uuid?: string | null, name?: string | null, spec?: string | null, sellingPrice?: any | null, defaultStockUomUuid?: string | null, defaultStockUomName?: string | null, insertedAt?: any | null, updatedAt?: any | null, stockUoms?: Array<{ __typename?: 'StockUom', uuid?: string | null, conversionFactor?: number | null, uomName?: string | null } | null> | null } | null> | null };
+export type ItemsQuery = { __typename?: 'RootQueryType', items?: Array<{ __typename?: 'Item', uuid?: string | null, name?: string | null, sku?: string | null, category?: string | null, spec?: string | null, sellingPrice?: any | null, minStockThreshold?: any | null, onHandQty?: any | null, reservedQty?: any | null, availableQty?: any | null, defaultStockUomUuid?: string | null, defaultStockUomName?: string | null, insertedAt?: any | null, updatedAt?: any | null, stockUoms?: Array<{ __typename?: 'StockUom', uuid?: string | null, conversionFactor?: number | null, uomName?: string | null } | null> | null } | null> | null };
 
 export type ListStaffQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ListStaffQuery = { __typename?: 'RootQueryType', listStaff?: Array<{ __typename?: 'Staff', uuid?: string | null, email?: string | null, name?: string | null } | null> | null };
+export type ListStaffQuery = { __typename?: 'RootQueryType', listStaff?: Array<{ __typename?: 'Staff', uuid?: string | null, email?: string | null, name?: string | null, phone?: string | null, position?: string | null, employmentType?: string | null, shift?: string | null, hiredAt?: any | null, status?: string | null, hasLogin?: boolean | null, role?: string | null, insertedAt?: any | null } | null> | null };
 
 export type PaymentEntriesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1329,24 +1515,24 @@ export type SalesInvoiceQueryVariables = Exact<{
 }>;
 
 
-export type SalesInvoiceQuery = { __typename?: 'RootQueryType', salesInvoice?: { __typename?: 'SalesInvoice', uuid?: string | null, code?: string | null, status?: string | null, amount?: any | null, customerUuid?: string | null, customerName?: string | null, salesOrderUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null };
+export type SalesInvoiceQuery = { __typename?: 'RootQueryType', salesInvoice?: { __typename?: 'SalesInvoice', uuid?: string | null, code?: string | null, status?: string | null, amount?: any | null, paidAmount?: any | null, balance?: any | null, customerUuid?: string | null, customerName?: string | null, salesOrderUuid?: string | null, salesOrderCode?: string | null, invoiceDate?: any | null, dueDate?: any | null, paymentTerms?: string | null, customerAddress?: string | null, customerTin?: string | null, customerReference?: string | null, vatMode?: string | null, subtotal?: any | null, discountAmount?: any | null, vatableAmount?: any | null, vatAmount?: any | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null, items?: Array<{ __typename?: 'SalesInvoiceItem', uuid?: string | null, itemName?: string | null, description?: string | null, uomName?: string | null, qty?: any | null, unitPrice?: any | null, discount?: any | null, lineTotal?: any | null } | null> | null } | null };
 
 export type SalesInvoicesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type SalesInvoicesQuery = { __typename?: 'RootQueryType', salesInvoices?: Array<{ __typename?: 'SalesInvoice', uuid?: string | null, code?: string | null, status?: string | null, amount?: any | null, customerUuid?: string | null, customerName?: string | null, salesOrderUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null };
+export type SalesInvoicesQuery = { __typename?: 'RootQueryType', salesInvoices?: Array<{ __typename?: 'SalesInvoice', uuid?: string | null, code?: string | null, status?: string | null, amount?: any | null, paidAmount?: any | null, balance?: any | null, customerUuid?: string | null, customerName?: string | null, salesOrderUuid?: string | null, salesOrderCode?: string | null, invoiceDate?: any | null, dueDate?: any | null, paymentTerms?: string | null, customerAddress?: string | null, customerTin?: string | null, customerReference?: string | null, vatMode?: string | null, subtotal?: any | null, discountAmount?: any | null, vatableAmount?: any | null, vatAmount?: any | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null };
 
 export type SalesOrderQueryVariables = Exact<{
   request: SalesOrderRequest;
 }>;
 
 
-export type SalesOrderQuery = { __typename?: 'RootQueryType', salesOrder?: { __typename?: 'SalesOrder', uuid?: string | null, code?: string | null, status?: string | null, billingStatus?: string | null, deliveryStatus?: string | null, customerName?: string | null, totalAmount?: any | null, paidAmount?: any | null, remainingAmount?: any | null, totalQty?: any | null, deliveredQty?: any | null, remainingQty?: any | null, warehouseName?: string | null, insertedAt?: any | null, updatedAt?: any | null, items?: Array<{ __typename?: 'SalesOrderItem', uuid?: string | null, itemUuid?: string | null, itemName?: string | null, amount?: any | null, unitPrice?: any | null, orderedQty?: any | null, deliveredQty?: any | null, remainingQty?: any | null } | null> | null, deliveryNotes?: Array<{ __typename?: 'DeliveryNote', uuid?: string | null, code?: string | null, status?: string | null, customerName?: string | null, totalAmount?: any | null, totalQty?: any | null, salesOrderUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null, salesInvoices?: Array<{ __typename?: 'SalesInvoice', uuid?: string | null, code?: string | null, status?: string | null, amount?: any | null, customerUuid?: string | null, customerName?: string | null, salesOrderUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null } | null };
+export type SalesOrderQuery = { __typename?: 'RootQueryType', salesOrder?: { __typename?: 'SalesOrder', uuid?: string | null, code?: string | null, status?: string | null, billingStatus?: string | null, deliveryStatus?: string | null, customerName?: string | null, totalAmount?: any | null, paidAmount?: any | null, remainingAmount?: any | null, totalQty?: any | null, deliveredQty?: any | null, remainingQty?: any | null, warehouseName?: string | null, insertedAt?: any | null, updatedAt?: any | null, items?: Array<{ __typename?: 'SalesOrderItem', uuid?: string | null, itemUuid?: string | null, itemName?: string | null, uomName?: string | null, amount?: any | null, unitPrice?: any | null, orderedQty?: any | null, deliveredQty?: any | null, remainingQty?: any | null, invoicedQty?: any | null, uninvoicedQty?: any | null } | null> | null, deliveryNotes?: Array<{ __typename?: 'DeliveryNote', uuid?: string | null, code?: string | null, status?: string | null, customerName?: string | null, totalAmount?: any | null, totalQty?: any | null, salesOrderUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null, salesInvoices?: Array<{ __typename?: 'SalesInvoice', uuid?: string | null, code?: string | null, status?: string | null, amount?: any | null, paidAmount?: any | null, balance?: any | null, customerUuid?: string | null, customerName?: string | null, salesOrderUuid?: string | null, salesOrderCode?: string | null, invoiceDate?: any | null, dueDate?: any | null, paymentTerms?: string | null, customerAddress?: string | null, customerTin?: string | null, customerReference?: string | null, vatMode?: string | null, subtotal?: any | null, discountAmount?: any | null, vatableAmount?: any | null, vatAmount?: any | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null } | null };
 
 export type SalesOrdersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type SalesOrdersQuery = { __typename?: 'RootQueryType', salesOrders?: Array<{ __typename?: 'SalesOrder', uuid?: string | null, code?: string | null, status?: string | null, billingStatus?: string | null, deliveryStatus?: string | null, customerName?: string | null, totalAmount?: any | null, paidAmount?: any | null, remainingAmount?: any | null, totalQty?: any | null, deliveredQty?: any | null, remainingQty?: any | null, warehouseName?: string | null, insertedAt?: any | null, updatedAt?: any | null, items?: Array<{ __typename?: 'SalesOrderItem', uuid?: string | null, itemUuid?: string | null, itemName?: string | null, amount?: any | null, unitPrice?: any | null, orderedQty?: any | null, deliveredQty?: any | null, remainingQty?: any | null } | null> | null } | null> | null };
+export type SalesOrdersQuery = { __typename?: 'RootQueryType', salesOrders?: Array<{ __typename?: 'SalesOrder', uuid?: string | null, code?: string | null, status?: string | null, billingStatus?: string | null, deliveryStatus?: string | null, customerName?: string | null, totalAmount?: any | null, paidAmount?: any | null, remainingAmount?: any | null, totalQty?: any | null, deliveredQty?: any | null, remainingQty?: any | null, warehouseName?: string | null, insertedAt?: any | null, updatedAt?: any | null, items?: Array<{ __typename?: 'SalesOrderItem', uuid?: string | null, itemUuid?: string | null, itemName?: string | null, uomName?: string | null, amount?: any | null, unitPrice?: any | null, orderedQty?: any | null, deliveredQty?: any | null, remainingQty?: any | null, invoicedQty?: any | null, uninvoicedQty?: any | null } | null> | null } | null> | null };
 
 export type ScheduleWorkOrderMutationVariables = Exact<{
   request: WorkOrderRequest;
@@ -1360,12 +1546,12 @@ export type SupplierQueryVariables = Exact<{
 }>;
 
 
-export type SupplierQuery = { __typename?: 'RootQueryType', supplier?: { __typename?: 'Supplier', uuid?: string | null, name?: string | null, address?: string | null } | null };
+export type SupplierQuery = { __typename?: 'RootQueryType', supplier?: { __typename?: 'Supplier', uuid?: string | null, name?: string | null, address?: string | null, tin?: string | null, contactFirstName?: string | null, contactLastName?: string | null, contactPosition?: string | null, contactName?: string | null, phone?: string | null, landline?: string | null, email?: string | null, notes?: string | null, insertedAt?: any | null } | null };
 
 export type SuppliersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type SuppliersQuery = { __typename?: 'RootQueryType', suppliers?: Array<{ __typename?: 'Supplier', uuid?: string | null, name?: string | null, address?: string | null } | null> | null };
+export type SuppliersQuery = { __typename?: 'RootQueryType', suppliers?: Array<{ __typename?: 'Supplier', uuid?: string | null, name?: string | null, address?: string | null, tin?: string | null, contactFirstName?: string | null, contactLastName?: string | null, contactPosition?: string | null, contactName?: string | null, phone?: string | null, landline?: string | null, email?: string | null, notes?: string | null, insertedAt?: any | null } | null> | null };
 
 export type UoMsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1384,7 +1570,7 @@ export type UnpaidSalesInvoicesByCustomerQueryVariables = Exact<{
 }>;
 
 
-export type UnpaidSalesInvoicesByCustomerQuery = { __typename?: 'RootQueryType', unpaidSalesInvoicesByCustomer?: Array<{ __typename?: 'SalesInvoice', uuid?: string | null, code?: string | null, status?: string | null, amount?: any | null, customerUuid?: string | null, customerName?: string | null, salesOrderUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null };
+export type UnpaidSalesInvoicesByCustomerQuery = { __typename?: 'RootQueryType', unpaidSalesInvoicesByCustomer?: Array<{ __typename?: 'SalesInvoice', uuid?: string | null, code?: string | null, status?: string | null, amount?: any | null, paidAmount?: any | null, balance?: any | null, customerUuid?: string | null, customerName?: string | null, salesOrderUuid?: string | null, salesOrderCode?: string | null, invoiceDate?: any | null, dueDate?: any | null, paymentTerms?: string | null, customerAddress?: string | null, customerTin?: string | null, customerReference?: string | null, vatMode?: string | null, subtotal?: any | null, discountAmount?: any | null, vatableAmount?: any | null, vatAmount?: any | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null };
 
 export type WarehousesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1396,7 +1582,7 @@ export type WorkOrderQueryVariables = Exact<{
 }>;
 
 
-export type WorkOrderQuery = { __typename?: 'RootQueryType', workOrder?: { __typename?: 'WorkOrder', uuid?: string | null, code?: string | null, title?: string | null, startTime?: any | null, endTime?: any | null, type?: string | null, status?: string | null, plannedQty?: any | null, storedQty?: any | null, producedQty?: any | null, scrapedQty?: any | null, itemUuid?: string | null, itemName?: string | null, uomName?: string | null, supplierName?: string | null, supplierUuid?: string | null, salesOrderUuid?: string | null, stockUomUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null, items?: Array<{ __typename?: 'WorkOrderItem', uuid?: string | null, workOrderUuid?: string | null, itemName?: string | null, processName?: string | null, position?: number | null, requiredQty?: any | null, defectiveQty?: any | null, producedQty?: any | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null, materialRequests?: Array<{ __typename?: 'WorkOrderMaterialRequest', uuid?: string | null, itemName?: string | null, actualQty?: any | null, remainingQty?: any | null, receivedQty?: any | null, uomName?: string | null, stockUomUuid?: string | null, bomUuid?: string | null, warehouseUuid?: string | null, itemUuid?: string | null, workOrderUuid?: string | null, warehouse?: { __typename?: 'Warehouse', name?: string | null } | null } | null> | null } | null };
+export type WorkOrderQuery = { __typename?: 'RootQueryType', workOrder?: { __typename?: 'WorkOrder', uuid?: string | null, code?: string | null, title?: string | null, startTime?: any | null, endTime?: any | null, type?: string | null, status?: string | null, plannedQty?: any | null, storedQty?: any | null, producedQty?: any | null, scrapedQty?: any | null, itemUuid?: string | null, itemName?: string | null, uomName?: string | null, supplierName?: string | null, supplierUuid?: string | null, salesOrderUuid?: string | null, stockUomUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null, items?: Array<{ __typename?: 'WorkOrderItem', uuid?: string | null, workOrderUuid?: string | null, itemName?: string | null, processName?: string | null, position?: number | null, requiredQty?: any | null, defectiveQty?: any | null, producedQty?: any | null, insertedAt?: any | null, updatedAt?: any | null, jobCards?: Array<{ __typename?: 'JobCard', uuid?: string | null, startTime?: any | null, endTime?: any | null, status?: string | null, defectiveQty?: any | null, producedQty?: any | null, workOrderItemUuid?: string | null, workOrderUuid?: string | null, operatorStaff?: { __typename?: 'Staff', email?: string | null } | null } | null> | null } | null> | null, materialRequests?: Array<{ __typename?: 'WorkOrderMaterialRequest', uuid?: string | null, itemName?: string | null, actualQty?: any | null, remainingQty?: any | null, receivedQty?: any | null, uomName?: string | null, stockUomUuid?: string | null, bomUuid?: string | null, warehouseUuid?: string | null, itemUuid?: string | null, workOrderUuid?: string | null, warehouse?: { __typename?: 'Warehouse', name?: string | null } | null } | null> | null } | null };
 
 export type WorkOrderItemQueryVariables = Exact<{
   request: IdRequest;
@@ -1439,7 +1625,35 @@ export const CustomerFieldsFragmentDoc = gql`
     fragment CustomerFields on Customer {
   uuid
   name
+  customerType
+  firstName
+  middleName
+  lastName
+  suffix
+  companyName
+  contactName
+  phone
+  alternatePhone
+  landline
+  email
+  messengerId
+  facebook
+  viber
+  whatsapp
+  telegram
+  instagram
+  tiktok
+  marketplaceAccount
   address
+  barangay
+  city
+  province
+  region
+  postalCode
+  sourcePlatform
+  primaryChannel
+  followUpStatus
+  notes
   insertedAt
   updatedAt
 }
@@ -1473,8 +1687,14 @@ export const ItemFieldsFragmentDoc = gql`
     fragment ItemFields on Item {
   uuid
   name
+  sku
+  category
   spec
   sellingPrice
+  minStockThreshold
+  onHandQty
+  reservedQty
+  availableQty
   defaultStockUomUuid
   defaultStockUomName
   insertedAt
@@ -1622,9 +1842,24 @@ export const SalesInvoiceFieldsFragmentDoc = gql`
   code
   status
   amount
+  paidAmount
+  balance
   customerUuid
   customerName
   salesOrderUuid
+  salesOrderCode
+  invoiceDate
+  dueDate
+  paymentTerms
+  customerAddress
+  customerTin
+  customerReference
+  vatMode
+  subtotal
+  discountAmount
+  vatableAmount
+  vatAmount
+  notes
   insertedAt
   updatedAt
 }
@@ -1653,11 +1888,14 @@ export const SalesOrderItemFieldsFragmentDoc = gql`
   uuid
   itemUuid
   itemName
+  uomName
   amount
   unitPrice
   orderedQty
   deliveredQty
   remainingQty
+  invoicedQty
+  uninvoicedQty
 }
     `;
 export const StaffFieldsFragmentDoc = gql`
@@ -1665,6 +1903,15 @@ export const StaffFieldsFragmentDoc = gql`
   uuid
   email
   name
+  phone
+  position
+  employmentType
+  shift
+  hiredAt
+  status
+  hasLogin
+  role
+  insertedAt
 }
     `;
 export const SupplierFieldsFragmentDoc = gql`
@@ -1672,6 +1919,16 @@ export const SupplierFieldsFragmentDoc = gql`
   uuid
   name
   address
+  tin
+  contactFirstName
+  contactLastName
+  contactPosition
+  contactName
+  phone
+  landline
+  email
+  notes
+  insertedAt
 }
     `;
 export const UomFieldsFragmentDoc = gql`
@@ -1841,12 +2098,10 @@ export type CreateBomMutationOptions = Apollo.BaseMutationOptions<CreateBomMutat
 export const CreateCustomerDocument = gql`
     mutation CreateCustomer($request: CreateCustomerRequest!) {
   createCustomer(request: $request) {
-    uuid
-    name
-    address
+    ...CustomerFields
   }
 }
-    `;
+    ${CustomerFieldsFragmentDoc}`;
 export type CreateCustomerMutationFn = Apollo.MutationFunction<CreateCustomerMutation, CreateCustomerMutationVariables>;
 
 /**
@@ -2155,11 +2410,10 @@ export type CreateReceiptNoteMutationOptions = Apollo.BaseMutationOptions<Create
 export const CreateSalesInvoiceDocument = gql`
     mutation CreateSalesInvoice($request: CreateSalesInvoiceRequest!) {
   createSalesInvoice(request: $request) {
-    status
-    amount
+    ...SalesInvoiceFields
   }
 }
-    `;
+    ${SalesInvoiceFieldsFragmentDoc}`;
 export type CreateSalesInvoiceMutationFn = Apollo.MutationFunction<CreateSalesInvoiceMutation, CreateSalesInvoiceMutationVariables>;
 
 /**
@@ -2225,12 +2479,10 @@ export type CreateSalesOrderMutationOptions = Apollo.BaseMutationOptions<CreateS
 export const CreateSupplierDocument = gql`
     mutation CreateSupplier($request: CreateSupplierRequest!) {
   createSupplier(request: $request) {
-    uuid
-    name
-    address
+    ...SupplierFields
   }
 }
-    `;
+    ${SupplierFieldsFragmentDoc}`;
 export type CreateSupplierMutationFn = Apollo.MutationFunction<CreateSupplierMutation, CreateSupplierMutationVariables>;
 
 /**
@@ -2393,6 +2645,39 @@ export function useReportJobCardMutation(baseOptions?: Apollo.MutationHookOption
 export type ReportJobCardMutationHookResult = ReturnType<typeof useReportJobCardMutation>;
 export type ReportJobCardMutationResult = Apollo.MutationResult<ReportJobCardMutation>;
 export type ReportJobCardMutationOptions = Apollo.BaseMutationOptions<ReportJobCardMutation, ReportJobCardMutationVariables>;
+export const SaveStaffDocument = gql`
+    mutation SaveStaff($request: StaffRequest!) {
+  saveStaff(request: $request) {
+    ...StaffFields
+  }
+}
+    ${StaffFieldsFragmentDoc}`;
+export type SaveStaffMutationFn = Apollo.MutationFunction<SaveStaffMutation, SaveStaffMutationVariables>;
+
+/**
+ * __useSaveStaffMutation__
+ *
+ * To run a mutation, you first call `useSaveStaffMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSaveStaffMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [saveStaffMutation, { data, loading, error }] = useSaveStaffMutation({
+ *   variables: {
+ *      request: // value for 'request'
+ *   },
+ * });
+ */
+export function useSaveStaffMutation(baseOptions?: Apollo.MutationHookOptions<SaveStaffMutation, SaveStaffMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<SaveStaffMutation, SaveStaffMutationVariables>(SaveStaffDocument, options);
+      }
+export type SaveStaffMutationHookResult = ReturnType<typeof useSaveStaffMutation>;
+export type SaveStaffMutationResult = Apollo.MutationResult<SaveStaffMutation>;
+export type SaveStaffMutationOptions = Apollo.BaseMutationOptions<SaveStaffMutation, SaveStaffMutationVariables>;
 export const StoreFinishItemDocument = gql`
     mutation StoreFinishItem($request: StoreFinishItemRequest!) {
   storeFinishItem(request: $request) {
@@ -2427,6 +2712,39 @@ export function useStoreFinishItemMutation(baseOptions?: Apollo.MutationHookOpti
 export type StoreFinishItemMutationHookResult = ReturnType<typeof useStoreFinishItemMutation>;
 export type StoreFinishItemMutationResult = Apollo.MutationResult<StoreFinishItemMutation>;
 export type StoreFinishItemMutationOptions = Apollo.BaseMutationOptions<StoreFinishItemMutation, StoreFinishItemMutationVariables>;
+export const UpdateConfigurationDocument = gql`
+    mutation UpdateConfiguration($request: UpdateConfigurationRequest!) {
+  updateConfiguration(request: $request) {
+    currency
+  }
+}
+    `;
+export type UpdateConfigurationMutationFn = Apollo.MutationFunction<UpdateConfigurationMutation, UpdateConfigurationMutationVariables>;
+
+/**
+ * __useUpdateConfigurationMutation__
+ *
+ * To run a mutation, you first call `useUpdateConfigurationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateConfigurationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateConfigurationMutation, { data, loading, error }] = useUpdateConfigurationMutation({
+ *   variables: {
+ *      request: // value for 'request'
+ *   },
+ * });
+ */
+export function useUpdateConfigurationMutation(baseOptions?: Apollo.MutationHookOptions<UpdateConfigurationMutation, UpdateConfigurationMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateConfigurationMutation, UpdateConfigurationMutationVariables>(UpdateConfigurationDocument, options);
+      }
+export type UpdateConfigurationMutationHookResult = ReturnType<typeof useUpdateConfigurationMutation>;
+export type UpdateConfigurationMutationResult = Apollo.MutationResult<UpdateConfigurationMutation>;
+export type UpdateConfigurationMutationOptions = Apollo.BaseMutationOptions<UpdateConfigurationMutation, UpdateConfigurationMutationVariables>;
 export const BomDocument = gql`
     query Bom($request: IdRequest!) {
   bom(request: $request) {
@@ -2559,6 +2877,45 @@ export type CompanyQueryHookResult = ReturnType<typeof useCompanyQuery>;
 export type CompanyLazyQueryHookResult = ReturnType<typeof useCompanyLazyQuery>;
 export type CompanySuspenseQueryHookResult = ReturnType<typeof useCompanySuspenseQuery>;
 export type CompanyQueryResult = Apollo.QueryResult<CompanyQuery, CompanyQueryVariables>;
+export const ConfigurationDocument = gql`
+    query Configuration {
+  configuration {
+    currency
+  }
+}
+    `;
+
+/**
+ * __useConfigurationQuery__
+ *
+ * To run a query within a React component, call `useConfigurationQuery` and pass it any options that fit your needs.
+ * When your component renders, `useConfigurationQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useConfigurationQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useConfigurationQuery(baseOptions?: Apollo.QueryHookOptions<ConfigurationQuery, ConfigurationQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ConfigurationQuery, ConfigurationQueryVariables>(ConfigurationDocument, options);
+      }
+export function useConfigurationLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ConfigurationQuery, ConfigurationQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ConfigurationQuery, ConfigurationQueryVariables>(ConfigurationDocument, options);
+        }
+export function useConfigurationSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ConfigurationQuery, ConfigurationQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<ConfigurationQuery, ConfigurationQueryVariables>(ConfigurationDocument, options);
+        }
+export type ConfigurationQueryHookResult = ReturnType<typeof useConfigurationQuery>;
+export type ConfigurationLazyQueryHookResult = ReturnType<typeof useConfigurationLazyQuery>;
+export type ConfigurationSuspenseQueryHookResult = ReturnType<typeof useConfigurationSuspenseQuery>;
+export type ConfigurationQueryResult = Apollo.QueryResult<ConfigurationQuery, ConfigurationQueryVariables>;
 export const CurrentUserDocument = gql`
     query CurrentUser {
   currentUser {
@@ -3448,6 +3805,16 @@ export const SalesInvoiceDocument = gql`
     query SalesInvoice($request: SalesInvoiceRequest!) {
   salesInvoice(request: $request) {
     ...SalesInvoiceFields
+    items {
+      uuid
+      itemName
+      description
+      uomName
+      qty
+      unitPrice
+      discount
+      lineTotal
+    }
   }
 }
     ${SalesInvoiceFieldsFragmentDoc}`;
@@ -3894,6 +4261,9 @@ export const WorkOrderDocument = gql`
     ...WorkOrderFields
     items {
       ...WorkOrderItemFields
+      jobCards {
+        ...JobCardFields
+      }
     }
     materialRequests {
       ...MaterialRequestFields
@@ -3902,6 +4272,7 @@ export const WorkOrderDocument = gql`
 }
     ${WorkOrderFieldsFragmentDoc}
 ${WorkOrderItemFieldsFragmentDoc}
+${JobCardFieldsFragmentDoc}
 ${MaterialRequestFieldsFragmentDoc}`;
 
 /**

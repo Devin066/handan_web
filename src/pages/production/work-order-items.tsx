@@ -1,3 +1,13 @@
-import WorkOrderItems from '@/components/work-order/items';
+import type { GetServerSideProps } from 'next';
 
-export default WorkOrderItems;
+/**
+ * Production steps now live inside each work order's detail drawer. This keeps
+ * old bookmarks working.
+ */
+export const getServerSideProps: GetServerSideProps = async () => ({
+  redirect: { destination: '/production/work-orders', permanent: false },
+});
+
+export default function WorkOrderItemsRedirect() {
+  return null;
+}

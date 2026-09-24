@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Space, Button } from 'antd';
+import { Button } from 'antd';
 import { ModalForm, ProForm, ProFormDateTimePicker, ProFormDigit, ProFormSelect } from '@ant-design/pro-components';
 
 // locale
@@ -36,13 +36,8 @@ const ReportJobCard = (props: any) => {
 
   return (
     <>
-      <Button
-        size="small"
-        onClick={() => {
-          setModalVisible(true);
-        }}
-      >
-        Report Job Card
+      <Button size="small" type={props.primary ? 'primary' : 'default'} onClick={() => setModalVisible(true)}>
+        Report progress
       </Button>
 
       <ModalForm
@@ -51,9 +46,9 @@ const ReportJobCard = (props: any) => {
         modalProps={{
           destroyOnClose: true,
         }}
-        width={'70%'}
+        width="min(640px, 100vw)"
         onOpenChange={setModalVisible}
-        title={<Space>Report Job Card</Space>}
+        title={`Report progress · ${record.processName ?? ''}`}
         submitTimeout={2000}
         autoFocusFirstInput
         open={modalVisible}
@@ -72,12 +67,12 @@ const ReportJobCard = (props: any) => {
           <ProFormDigit
             width="sm"
             name="producedQty"
-            label="Produced Qty"
+            label="Quantity completed"
             fieldProps={{
               precision: 0,
             }}
-            placeholder="Enter produced qty"
-            rules={[{ required: true, message: 'Enter produced qty' }]}
+            placeholder="How many were finished"
+            rules={[{ required: true, message: 'Enter the quantity completed.' }]}
           />
 
           {/* <ProFormDigit

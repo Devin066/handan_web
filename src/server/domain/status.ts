@@ -9,8 +9,14 @@ import { Prisma } from '@/generated/prisma/client';
  * removes a button from a screen, so they are defined in one place and the
  * labels live alongside them in src/utils/enum.tsx.
  */
-export const DELIVERY_NOTE_STATUS = { open: 'to_deliver', done: 'completed' } as const;
-export const RECEIPT_NOTE_STATUS = { open: 'to_receive', done: 'completed' } as const;
+export const DELIVERY_NOTE_STATUS = {
+  open: 'to_deliver',
+  done: 'completed',
+} as const;
+export const RECEIPT_NOTE_STATUS = {
+  open: 'to_receive',
+  done: 'completed',
+} as const;
 
 export const WORK_ORDER_STATUS = {
   draft: 'draft',
@@ -84,6 +90,33 @@ export const ROLE = {
   owner: 'owner',
 } as const;
 
+/** Individuals buy most custom work; shops and resellers buy as a business. */
+export const CUSTOMER_TYPE = {
+  individual: 'individual',
+  business: 'business',
+} as const;
+
+/**
+ * Where a customer was first discovered (PRD 13).
+ *
+ * Kept separate from SALES_CHANNEL, which is where an order actually came from:
+ * a customer found on TikTok may since order direct, and both answers matter.
+ */
+export const CUSTOMER_SOURCE = {
+  direct: 'direct',
+  walkIn: 'walk_in',
+  referral: 'referral',
+  shopee: 'shopee',
+  lazada: 'lazada',
+  tiktok: 'tiktok',
+  facebookPage: 'facebook_page',
+  facebookMarketplace: 'facebook_marketplace',
+  instagram: 'instagram',
+  website: 'website',
+  google: 'google',
+  other: 'other',
+} as const;
+
 const d = (v: Prisma.Decimal | number | null | undefined) => new Prisma.Decimal(v ?? 0);
 
 /** Goods movement progress on an order line or header. */
@@ -151,7 +184,6 @@ export function purchaseOrderStatus(receipt: string, billing: string) {
 
 /** Invoices that still owe money — what the payment screens list. */
 export const UNSETTLED_INVOICE_STATUSES = ['unpaid', 'partly_paid'] as const;
-
 
 /** Production progress rolled up to the order header (PRD 8). */
 export function orderProductionStatus(produced: Prisma.Decimal | number, total: Prisma.Decimal | number) {

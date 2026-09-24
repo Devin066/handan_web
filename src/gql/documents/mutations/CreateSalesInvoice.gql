@@ -1,6 +1,5 @@
 mutation CreateSalesInvoice($request: CreateSalesInvoiceRequest!) {
-	createSalesInvoice(request: $request) {
-		status
-		amount
-	}
+  createSalesInvoice(request: $request) {
+    ...SalesInvoiceFields
+  }
 }

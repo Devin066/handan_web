@@ -12,6 +12,7 @@ import {
 } from '@/gql';
 import { onError } from '@/utils';
 import { fetchCustomers, fetchPaymentMethods, fetchSuppliers } from '@/utils/api';
+import { formatCurrency } from '@/utils/format';
 
 const PaymentEntryNew = (props: any) => {
   const { saleInvoice, purchaseInvoice, visible, onClose } = props;
@@ -165,9 +166,13 @@ const PaymentEntryNew = (props: any) => {
           suffixIcon: null,
           onSearch: (value: any) => {
             if (party.type === 'customer') {
-              fetchSalesInvoices({ variables: { request: { uuid: party.uuid } } });
+              fetchSalesInvoices({
+                variables: { request: { uuid: party.uuid } },
+              });
             } else {
-              fetchPurchaseInvoices({ variables: { request: { uuid: party.uuid } } });
+              fetchPurchaseInvoices({
+                variables: { request: { uuid: party.uuid } },
+              });
             }
           },
           onChange: (value: any) => {
@@ -237,7 +242,8 @@ const PaymentEntryNew = (props: any) => {
           render: (props, doms) => {
             return [
               <div key="lineItemTotal" style={{ marginRight: '10px' }}>
-                Amount: <span style={{ fontSize: '20px', color: '#ab956d' }}>$ {amount.lineItemTotal}</span>
+                Amount:{' '}
+                <span style={{ fontSize: '20px', color: '#ab956d' }}>{formatCurrency(amount.lineItemTotal)}</span>
               </div>,
               <Divider key="divider4" type="vertical" />,
               <Button type="primary" key="submit" onClick={() => props.form?.submit()}>

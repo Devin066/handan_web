@@ -29,6 +29,15 @@ export const tokens = {
   background: '#F1F5F9',
   surface: '#FFFFFF',
   surfaceMuted: '#F8FAFC',
+  primarySubtle: '#EFF6FF',
+
+  // Sidebar chrome. A deep navy rail gives the shell a fixed identity and
+  // separates navigation from the white working surface without shadows.
+  chrome: '#0B1B3F',
+  chromeHover: '#132A5C',
+  chromeSelected: '#1E3A8A',
+  chromeText: '#C7D2E5',
+  chromeTextMuted: '#8EA0C0',
 
   text: '#0F172A',
   textSecondary: '#475569',
@@ -36,6 +45,8 @@ export const tokens = {
   border: '#E2E8F0',
   borderStrong: '#CBD5E1',
 } as const;
+
+export const monoStack = "'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace";
 
 const fontStack =
   "'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
@@ -80,7 +91,7 @@ const theme: ThemeConfig = {
     Menu: {
       itemBg: tokens.surface,
       subMenuItemBg: tokens.surface,
-      itemSelectedBg: '#EFF6FF',
+      itemSelectedBg: tokens.primarySubtle,
       itemSelectedColor: tokens.primary,
       itemHeight: 38,
       iconSize: 16,

@@ -1,11 +1,14 @@
 query workOrder($request: IdRequest!) {
-	workOrder(request: $request) {
-		...WorkOrderFields
-		items {
-			...WorkOrderItemFields
-		}
-		materialRequests {
-			...MaterialRequestFields
-		}
-	}
+  workOrder(request: $request) {
+    ...WorkOrderFields
+    items {
+      ...WorkOrderItemFields
+      jobCards {
+        ...JobCardFields
+      }
+    }
+    materialRequests {
+      ...MaterialRequestFields
+    }
+  }
 }

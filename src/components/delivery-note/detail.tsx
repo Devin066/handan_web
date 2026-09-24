@@ -1,3 +1,5 @@
+import { StatusBadge } from '@/components/shared/columns';
+import { deliveryNoteStatusEnum } from '@/utils/enum';
 import { useEffect, useState } from 'react';
 import { Drawer, TabsProps, Tabs } from 'antd';
 import { ProDescriptions, ProCard, ProTable } from '@ant-design/pro-components';
@@ -72,11 +74,13 @@ const DeliveryNoteDetail = ({ uuid, visible, record, onClose }: any) => {
   ];
 
   return (
-    <Drawer width={'60%'} title={entry?.uuid} onClose={onClose} open={visible} style={{ backgroundColor: '#f7f8fa' }}>
+    <Drawer width="min(960px, 100vw)" title={entry?.uuid} onClose={onClose} open={visible}>
       <ProCard title="Basic Info" style={{ marginTop: '10px' }}>
-        <ProDescriptions column={3} size="small">
+        <ProDescriptions column={{ xs: 1, sm: 2, lg: 3 }} size="small">
           <ProDescriptions.Item label="Customer Name">{entry?.customerName}</ProDescriptions.Item>
-          <ProDescriptions.Item label="Status">{entry.status}</ProDescriptions.Item>
+          <ProDescriptions.Item label="Status">
+            <StatusBadge value={entry.status} valueEnum={deliveryNoteStatusEnum} />
+          </ProDescriptions.Item>
           <ProDescriptions.Item label="Warehouse Name">{entry.warehouseName}</ProDescriptions.Item>
         </ProDescriptions>
       </ProCard>

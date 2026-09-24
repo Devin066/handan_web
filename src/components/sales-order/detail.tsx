@@ -1,3 +1,6 @@
+import { formatCurrency } from '@/utils/format';
+import { StatusBadge } from '@/components/shared/columns';
+import { salesOrderStatusEnum, salesOrderBillingStatusEnum, salesOrderDeliveryStatusEnum } from '@/utils/enum';
 import { useEffect, useState } from 'react';
 import { Drawer, TabsProps, Tabs } from 'antd';
 import { ProDescriptions, ProCard, ProTable } from '@ant-design/pro-components';
@@ -81,7 +84,9 @@ const SalesOrderDetail = ({ uuid, visible, record, onClose }: any) => {
     },
     {
       title: 'Amount',
-      valueType: 'money',
+      align: 'right' as const,
+      // Not valueType 'money': that always uses the locale's $, ignoring the company currency.
+      renderText: (value: unknown) => <span className="tabular-figures">{formatCurrency(value)}</span>,
       dataIndex: 'amount',
       key: 'amount',
     },
@@ -141,13 +146,19 @@ const SalesOrderDetail = ({ uuid, visible, record, onClose }: any) => {
   ];
 
   return (
-    <Drawer width={'60%'} title={entry?.code} onClose={onClose} open={visible} style={{ backgroundColor: '#f7f8fa' }}>
+    <Drawer width="min(960px, 100vw)" title={entry?.code} onClose={onClose} open={visible}>
       <ProCard title="Basic Info" style={{ marginTop: '10px' }}>
-        <ProDescriptions column={3} size="small">
+        <ProDescriptions column={{ xs: 1, sm: 2, lg: 3 }} size="small">
           <ProDescriptions.Item label="Customer Name">{entry?.customerName}</ProDescriptions.Item>
-          <ProDescriptions.Item label="Status">{entry.status}</ProDescriptions.Item>
-          <ProDescriptions.Item label="Payment Status">{entry.billingStatus}</ProDescriptions.Item>
-          <ProDescriptions.Item label="Delivery Status">{entry.deliveryStatus}</ProDescriptions.Item>
+          <ProDescriptions.Item label="Status">
+            <StatusBadge value={entry.status} valueEnum={salesOrderStatusEnum} />
+          </ProDescriptions.Item>
+          <ProDescriptions.Item label="Payment Status">
+            <StatusBadge value={entry.billingStatus} valueEnum={salesOrderBillingStatusEnum} />
+          </ProDescriptions.Item>
+          <ProDescriptions.Item label="Delivery Status">
+            <StatusBadge value={entry.deliveryStatus} valueEnum={salesOrderDeliveryStatusEnum} />
+          </ProDescriptions.Item>
           <ProDescriptions.Item label="Warehouse">{entry.warehouseName}</ProDescriptions.Item>
           <ProDescriptions.Item label="Created At" valueType="dateTime">
             {entry.insertedAt}

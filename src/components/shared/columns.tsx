@@ -1,8 +1,9 @@
 import type { ProColumns } from '@ant-design/pro-components';
-import { Tooltip } from 'antd';
+import { Badge, Tooltip } from 'antd';
 
 import type { StatusEnum } from '@/utils/enum';
 import { formatCurrency, formatProgress, formatQty } from '@/utils/format';
+import { tokens } from '@/components/common/theme';
 
 /**
  * Column builders shared by the list screens.
@@ -64,7 +65,7 @@ export const qtyColumn = (
     <span className="tabular-figures">
       {formatQty(record[dataIndex])}
       {uomField && record[uomField] ? (
-        <span style={{ color: '#64748B', marginLeft: 4 }}>{record[uomField]}</span>
+        <span style={{ color: tokens.textTertiary, marginLeft: 4 }}>{record[uomField]}</span>
       ) : null}
     </span>
   ),
@@ -92,7 +93,7 @@ export const progressColumn = (
     const complete = total > 0 && done >= total;
 
     return (
-      <span className="tabular-figures" style={{ color: complete ? '#15803D' : undefined }}>
+      <span className="tabular-figures" style={{ color: complete ? tokens.success : undefined }}>
         {formatProgress(record[doneField], record[totalField])}
       </span>
     );
@@ -131,10 +132,15 @@ export const amountBreakdownColumn = (
         }
       >
         <div className="tabular-figures" style={{ lineHeight: 1.35 }}>
-          <div style={{ fontWeight: 600, color: due > 0 ? '#B45309' : '#15803D' }}>
+          <div
+            style={{
+              fontWeight: 600,
+              color: due > 0 ? tokens.warning : tokens.success,
+            }}
+          >
             {due > 0 ? `${formatCurrency(due)} due` : 'Settled'}
           </div>
-          <div style={{ fontSize: 12, color: '#64748B' }}>of {formatCurrency(record[fields.total])}</div>
+          <div style={{ fontSize: 12, color: tokens.textTertiary }}>of {formatCurrency(record[fields.total])}</div>
         </div>
       </Tooltip>
     );
@@ -150,10 +156,17 @@ export const codeColumn = (title: string, dataIndex = 'code', onClick?: (record:
   copyable: true,
   render: (_: any, record: any) =>
     onClick ? (
-      <a onClick={() => onClick(record)} style={{ fontWeight: 600 }}>
+      <a onClick={() => onClick(record)} className="doc-code">
         {record[dataIndex]}
       </a>
     ) : (
-      <span style={{ fontWeight: 600 }}>{record[dataIndex]}</span>
+      <span className="doc-code">{record[dataIndex]}</span>
     ),
 });
+
+/** A status outside a table, rendered the same way as `statusColumn`. */
+export const StatusBadge = ({ value, valueEnum }: { value?: string | null; valueEnum: StatusEnum }) => {
+  const entry = value ? valueEnum[value] : undefined;
+  if (!entry) return <span>{value ?? '—'}</span>;
+  return <Badge status={entry.status.toLowerCase() as any} text={entry.text} />;
+};

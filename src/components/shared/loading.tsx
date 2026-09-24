@@ -5,7 +5,7 @@ const Loading: React.FC = () => {
   return (
     <div
       style={{
-        background: '#fafafa',
+        background: '#F1F5F9',
         padding: 24,
       }}
     >

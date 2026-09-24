@@ -29,6 +29,18 @@ type Staff {
   uuid: ID
   email: String
   name: String
+  phone: String
+  position: String
+  "regular, probationary, contractual or part_time."
+  employmentType: String
+  shift: String
+  hiredAt: DateTime
+  "active or inactive. Inactive members stay on past records but can't be assigned new work."
+  status: String
+  "True when this member has an account they can sign in with."
+  hasLogin: Boolean
+  "The login account's role, when there is one."
+  role: String
   user: User
   company: Company
   insertedAt: DateTime
@@ -59,6 +71,15 @@ type Item {
   sellingPrice: Decimal
   defaultStockUomUuid: ID
   defaultStockUomName: String
+  sku: String
+  category: String
+  minStockThreshold: Decimal
+  "Across all warehouses, in the default stock UOM."
+  onHandQty: Decimal
+  "Committed to open orders, in the default stock UOM."
+  reservedQty: Decimal
+  "onHandQty minus reservedQty."
+  availableQty: Decimal
   stockUoms: [StockUom]
   stockItems: [StockItem]
   bom: Bom
@@ -91,7 +112,41 @@ type Warehouse {
 type Customer {
   uuid: ID
   name: String
+  customerType: String
+
+  firstName: String
+  middleName: String
+  lastName: String
+  suffix: String
+  companyName: String
+  contactName: String
+
+  phone: String
+  alternatePhone: String
+  landline: String
+  email: String
+
+  messengerId: String
+  facebook: String
+  viber: String
+  whatsapp: String
+  telegram: String
+  instagram: String
+  tiktok: String
+  marketplaceAccount: String
+
   address: String
+  barangay: String
+  city: String
+  province: String
+  region: String
+  postalCode: String
+
+  sourcePlatform: String
+  primaryChannel: String
+  followUpStatus: String
+  notes: String
+
   balance: Decimal
   insertedAt: DateTime
   updatedAt: DateTime
@@ -101,6 +156,15 @@ type Supplier {
   uuid: ID
   name: String
   address: String
+  tin: String
+  contactFirstName: String
+  contactLastName: String
+  contactPosition: String
+  contactName: String
+  phone: String
+  landline: String
+  email: String
+  notes: String
   insertedAt: DateTime
   updatedAt: DateTime
 }
@@ -199,6 +263,10 @@ type SalesOrderItem {
   orderedQty: Decimal
   deliveredQty: Decimal
   remainingQty: Decimal
+  "Quantity already on sales invoices."
+  invoicedQty: Decimal
+  "orderedQty minus invoicedQty."
+  uninvoicedQty: Decimal
   amount: Decimal
   salesOrder: SalesOrder
   insertedAt: DateTime
@@ -237,16 +305,47 @@ type DeliveryNoteItem {
   updatedAt: DateTime
 }
 
+type SalesInvoiceItem {
+  uuid: ID
+  salesOrderItemUuid: ID
+  itemUuid: ID
+  itemName: String
+  description: String
+  uomName: String
+  qty: Decimal
+  unitPrice: Decimal
+  discount: Decimal
+  lineTotal: Decimal
+}
+
 type SalesInvoice {
   uuid: ID
   code: String
   status: String
+  "Grand total payable, VAT included."
   amount: Decimal
+  paidAmount: Decimal
+  "amount minus paidAmount."
+  balance: Decimal
   customerUuid: ID
   customerName: String
   customer: Customer
   salesOrderUuid: ID
   salesOrder: SalesOrder
+  salesOrderCode: String
+  invoiceDate: DateTime
+  dueDate: DateTime
+  paymentTerms: String
+  customerAddress: String
+  customerTin: String
+  customerReference: String
+  vatMode: String
+  subtotal: Decimal
+  discountAmount: Decimal
+  vatableAmount: Decimal
+  vatAmount: Decimal
+  notes: String
+  items: [SalesInvoiceItem]
   insertedAt: DateTime
   updatedAt: DateTime
 }
@@ -448,8 +547,55 @@ type PaymentEntry {
 
 input IdRequest { uuid: ID }
 input LoginRequest { email: String, password: String }
-input CreateCustomerRequest { name: String!, address: String! }
-input CreateSupplierRequest { name: String!, address: String! }
+input CreateCustomerRequest {
+  """Optional: derived from the name parts when omitted."""
+  name: String
+  customerType: String
+
+  firstName: String
+  middleName: String
+  lastName: String
+  suffix: String
+  companyName: String
+  contactName: String
+
+  phone: String
+  alternatePhone: String
+  landline: String
+  email: String
+
+  messengerId: String
+  facebook: String
+  viber: String
+  whatsapp: String
+  telegram: String
+  instagram: String
+  tiktok: String
+  marketplaceAccount: String
+
+  address: String
+  barangay: String
+  city: String
+  province: String
+  region: String
+  postalCode: String
+
+  sourcePlatform: String
+  primaryChannel: String
+  notes: String
+}
+input CreateSupplierRequest {
+  name: String!
+  address: String!
+  tin: String
+  contactFirstName: String!
+  contactLastName: String!
+  contactPosition: String
+  phone: String
+  landline: String
+  email: String
+  notes: String
+}
 input CreateProcessRequest { name: String, code: String, description: String }
 input CreateWorkstationRequest { name: String, description: String }
 input CreatePaymentMethodRequest { name: String }
@@ -493,7 +639,41 @@ input DeliveryNoteItemArg { salesOrderItemUuid: ID, actualQty: Decimal }
 input CreateDeliveryNoteRequest { salesOrderUuid: ID, deliveryItems: [DeliveryNoteItemArg] }
 input DeliveryNoteRequest { deliveryNoteUuid: ID, salesOrderUuid: ID }
 
-input CreateSalesInvoiceRequest { salesOrderUuid: ID, amount: Decimal }
+input StaffRequest {
+  "Omit to create a new member."
+  uuid: ID
+  name: String!
+  email: String!
+  phone: String
+  position: String
+  employmentType: String
+  shift: String
+  hiredAt: DateTime
+  status: String
+}
+
+input SalesInvoiceItemArg {
+  salesOrderItemUuid: ID!
+  qty: Decimal!
+  unitPrice: Decimal
+  discount: Decimal
+  description: String
+}
+
+input CreateSalesInvoiceRequest {
+  salesOrderUuid: ID
+  "Legacy: bill the whole order at this amount. Ignored when items are given."
+  amount: Decimal
+  items: [SalesInvoiceItemArg]
+  invoiceDate: DateTime
+  paymentTerms: String
+  dueDate: DateTime
+  customerAddress: String
+  customerTin: String
+  customerReference: String
+  vatMode: String
+  notes: String
+}
 input SalesInvoiceRequest { salesInvoiceUuid: ID, salesOrderUuid: ID }
 
 input PurchaseOrderItemArg {
@@ -549,7 +729,16 @@ input CreatePaymentEntryRequest {
 }
 
 "the root of query."
+type Configuration {
+  currency: String
+}
+
+input UpdateConfigurationRequest {
+  currency: String
+}
+
 type RootQueryType {
+  configuration: Configuration
   company: Company
   currentUser: User
   listStaff: [Staff]
@@ -605,6 +794,9 @@ type RootQueryType {
 "the root of mutaion."
 type RootMutationType {
   login(request: LoginRequest!): User
+  saveStaff(request: StaffRequest!): Staff
+
+  updateConfiguration(request: UpdateConfigurationRequest!): Configuration
 
   createItem(request: CreateItemRequest!): Item
   createCustomer(request: CreateCustomerRequest!): Customer

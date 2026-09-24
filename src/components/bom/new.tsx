@@ -143,7 +143,6 @@ const BOMNew = (props: any) => {
       valueType: 'option',
       render: (text, record, _, action) => [
         <a
-          style={{ color: '#1677ff' }}
           key="editable"
           onClick={() => {
             action?.startEditable?.(record.uuid);
@@ -211,7 +210,6 @@ const BOMNew = (props: any) => {
       valueType: 'option',
       render: (text, record, _, action) => [
         <a
-          style={{ color: '#1677ff' }}
           key="editable"
           onClick={() => {
             action?.startEditable?.(record.uuid);

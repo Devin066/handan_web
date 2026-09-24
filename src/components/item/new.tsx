@@ -13,8 +13,10 @@ import type { ProColumns } from '@ant-design/pro-components';
 // locale
 import { useUoMsLazyQuery, useWarehousesLazyQuery } from '@/gql';
 import { onError } from '@/utils';
+import useConfigStore from '@/stores/useConfig';
 
 const ItemNew = (props: any) => {
+  const currency = useConfigStore((state) => state.currency);
   const { onCreate } = props;
 
   const [form] = ProForm.useForm();
@@ -127,7 +129,6 @@ const ItemNew = (props: any) => {
       valueType: 'option',
       render: (text, record, _, action) => [
         <a
-          style={{ color: '#1677ff' }}
           key="editable"
           onClick={() => {
             action?.startEditable?.(record.uuid);
@@ -180,7 +181,7 @@ const ItemNew = (props: any) => {
             label="Sale Price"
             fieldProps={{
               precision: 2,
-              addonAfter: 'USD',
+              addonAfter: currency,
             }}
             placeholder="Enter sale price"
             rules={[{ required: true, message: 'Enter sale price' }]}

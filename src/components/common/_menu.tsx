@@ -3,7 +3,7 @@ import {
   BookOutlined,
   ShoppingCartOutlined,
   ProfileOutlined,
-  PayCircleOutlined,
+  WalletOutlined,
   DatabaseOutlined,
   RocketOutlined,
   SettingOutlined,
@@ -31,10 +31,6 @@ const menuProps = {
             path: '/selling/customers',
             name: 'Customers',
           },
-          {
-            path: '/selling/stats',
-            name: 'Sales Stats',
-          },
         ],
       },
       {
@@ -50,10 +46,6 @@ const menuProps = {
             path: '/purchasing/suppliers',
             name: 'Suppliers',
           },
-          {
-            path: '/purchasing/stats',
-            name: 'Purchase Stats',
-          },
         ],
       },
       {
@@ -64,10 +56,6 @@ const menuProps = {
           {
             path: '/production/work-orders',
             name: 'Work Orders',
-          },
-          {
-            path: '/production/work-order-items',
-            name: 'Work Order Items',
           },
           {
             path: '/production/boms',
@@ -105,7 +93,7 @@ const menuProps = {
       {
         path: '/finance',
         name: 'Finance',
-        icon: <PayCircleOutlined />,
+        icon: <WalletOutlined />,
         routes: [
           {
             name: 'Sales Invoices',
@@ -151,7 +139,11 @@ const menuProps = {
         routes: [
           {
             name: 'Members',
-            path: '/system/users',
+            path: '/system/members',
+          },
+          {
+            name: 'Configuration',
+            path: '/system/configuration',
           },
         ],
       },

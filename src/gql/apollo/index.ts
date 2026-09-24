@@ -88,16 +88,24 @@ const authLink = new ApolloLink((operation, forward) => {
   // );
 });
 
+// A signed-out or expired session gets sent to the login page instead of
+// leaving each screen to render against null data.
+const redirectToLogin = () => {
+  clearStorage();
+  if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+    window.location.assign(`/login?next=${encodeURIComponent(window.location.pathname)}`);
+  }
+};
+
 const errorLink = onError(({ graphQLErrors, networkError }) => {
+  if (graphQLErrors?.some((error) => error.extensions?.code === 'UNAUTHENTICATED')) {
+    redirectToLogin();
+    return;
+  }
+
   if (graphQLErrors)
-    graphQLErrors.forEach(({ code, message, locations, path }) => {
-      console.log(`[GraphQL error]: Message: ${message}, Path: ${path}, Code: ${code}`);
-      // console.log('code:', code);
-      // FIXME howto
-      if (code == 4000) {
-        // AM.error(message);
-        clearStorage();
-      }
+    graphQLErrors.forEach(({ message, path }) => {
+      console.log(`[GraphQL error]: Message: ${message}, Path: ${path}`);
     });
 
   if (networkError) console.error(`[Network error]: ${networkError}`);

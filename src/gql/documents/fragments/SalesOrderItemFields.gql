@@ -2,10 +2,12 @@ fragment SalesOrderItemFields on SalesOrderItem {
   uuid
   itemUuid
   itemName
+  uomName
   amount
   unitPrice
   orderedQty
   deliveredQty
   remainingQty
+  invoicedQty
+  uninvoicedQty
 }
-

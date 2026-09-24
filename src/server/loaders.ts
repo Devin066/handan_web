@@ -119,6 +119,29 @@ export function createLoaders(db: Db) {
 
       return itemUuids.map((uuid) => grouped.get(uuid) ?? []);
     }),
+
+    /**
+     * Stock totals per item across every warehouse, in the item's default
+     * (base) unit. Rows are stored per stock UOM, so each is multiplied by its
+     * conversion factor before summing: 2 boxes of 12 count as 24.
+     */
+    stockLevelByItem: new DataLoader<string, { onHand: number; reserved: number }>(async (itemUuids) => {
+      const rows = await db.stockItem.findMany({
+        where: { itemUuid: { in: [...itemUuids] } },
+        include: { stockUom: { select: { conversionFactor: true } } },
+      });
+
+      const totals = new Map<string, { onHand: number; reserved: number }>();
+      for (const row of rows) {
+        const factor = row.stockUom.conversionFactor || 1;
+        const total = totals.get(row.itemUuid) ?? { onHand: 0, reserved: 0 };
+        total.onHand += Number(row.totalOnHand) * factor;
+        total.reserved += Number(row.reservedQty) * factor;
+        totals.set(row.itemUuid, total);
+      }
+
+      return itemUuids.map((uuid) => totals.get(uuid) ?? { onHand: 0, reserved: 0 });
+    }),
   };
 }
 

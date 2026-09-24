@@ -1,8 +1,35 @@
 fragment CustomerFields on Customer {
   uuid
   name
+  customerType
+  firstName
+  middleName
+  lastName
+  suffix
+  companyName
+  contactName
+  phone
+  alternatePhone
+  landline
+  email
+  messengerId
+  facebook
+  viber
+  whatsapp
+  telegram
+  instagram
+  tiktok
+  marketplaceAccount
   address
+  barangay
+  city
+  province
+  region
+  postalCode
+  sourcePlatform
+  primaryChannel
+  followUpStatus
+  notes
   insertedAt
   updatedAt
 }
-

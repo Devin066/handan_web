@@ -1,3 +1,6 @@
+import { DEFAULT_CURRENCY } from '@/config/currency';
+import { getCurrency } from '@/stores/useConfig';
+
 /**
  * Shared display formatting.
  *
@@ -7,12 +10,34 @@
  * two impossible to compare at a glance.
  */
 
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
+/**
+ * Built per currency and cached, because constructing an Intl.NumberFormat is
+ * expensive and these run once per cell on tables of hundreds of rows.
+ *
+ * Fraction digits are left to Intl rather than pinned at 2: JPY and KRW have no
+ * minor unit, and forcing "¥1,200.00" on them would look wrong to anyone used to
+ * reading those amounts.
+ */
+const currencyFormatters = new Map<string, Intl.NumberFormat>();
+
+const currencyFormatter = (currency: string): Intl.NumberFormat => {
+  const cached = currencyFormatters.get(currency);
+  if (cached) return cached;
+
+  let formatter: Intl.NumberFormat;
+  try {
+    formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency });
+  } catch {
+    // An unknown code would otherwise throw inside a render and blank the page.
+    formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: DEFAULT_CURRENCY,
+    });
+  }
+
+  currencyFormatters.set(currency, formatter);
+  return formatter;
+};
 
 const quantityFormatter = new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 0,
@@ -25,10 +50,15 @@ const toNumber = (value: unknown): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
-/** Money. Returns an em dash for missing values rather than "$0.00", which would read as a real zero balance. */
-export const formatCurrency = (value: unknown): string => {
+/**
+ * Money, in the company's configured display currency (Settings -> Configuration).
+ *
+ * Returns an em dash for missing values rather than "$0.00", which would read as
+ * a real zero balance. Pass `currency` only to override the company setting.
+ */
+export const formatCurrency = (value: unknown, currency?: string): string => {
   const n = toNumber(value);
-  return n === null ? '—' : currencyFormatter.format(n);
+  return n === null ? '—' : currencyFormatter(currency ?? getCurrency()).format(n);
 };
 
 /** Quantities: no forced decimals, so 5 stays "5" and 2.5 stays "2.5". */

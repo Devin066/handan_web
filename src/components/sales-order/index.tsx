@@ -6,12 +6,7 @@ import size from 'lodash.size';
 // locale
 import { useMessageContext } from '@/components/common/message-context';
 import client from '@/gql/apollo';
-import {
-  useCreateSalesOrderMutation,
-  SalesOrdersDocument,
-  useCreateDeliveryNoteMutation,
-  useCreateSalesInvoiceMutation,
-} from '@/gql';
+import { useCreateSalesOrderMutation, SalesOrdersDocument, useCreateDeliveryNoteMutation } from '@/gql';
 import { onError } from '@/utils';
 import { fetchCustomers } from '@/utils/api';
 import { salesOrderStatusEnum, salesOrderDeliveryStatusEnum, salesOrderBillingStatusEnum } from '@/utils/enum';
@@ -20,13 +15,14 @@ import { amountBreakdownColumn, codeColumn, progressColumn, statusColumn } from 
 
 import SalesOrderNew from './new';
 import SalesOrderDetail from './detail';
-import SalesInvoiceNew from './invoice-new';
+import SalesInvoiceNew from '@/components/sales-invoice/new';
 
 const SalesOrderList: React.FC = () => {
   const { messageApi } = useMessageContext();
 
   const [detailVisible, setDetailVisible] = useState(false);
   const [record, setRecord] = useState<any>(null);
+  const [invoicingOrder, setInvoicingOrder] = useState<string | undefined>();
 
   const [createSalesOrder] = useCreateSalesOrderMutation({
     onCompleted: () => {
@@ -39,14 +35,6 @@ const SalesOrderList: React.FC = () => {
   const [createDeliveryNote] = useCreateDeliveryNoteMutation({
     onCompleted: () => {
       messageApi?.success('Delivery note created successfully');
-      handleReloadTable();
-    },
-    onError,
-  });
-
-  const [createSalesInvoice] = useCreateSalesInvoiceMutation({
-    onCompleted: () => {
-      messageApi?.success('Payment receipt created successfully');
       handleReloadTable();
     },
     onError,
@@ -74,10 +62,6 @@ const SalesOrderList: React.FC = () => {
     };
 
     await createDeliveryNote({ variables: { request } });
-  };
-
-  const handleCreateSalesInvoice = async (request: any) => {
-    await createSalesInvoice({ variables: { request } });
   };
 
   const handleDetail = (record: any) => {
@@ -120,7 +104,9 @@ const SalesOrderList: React.FC = () => {
       render: (item: any, record: any) => [
         <>
           {record.status !== 'draft' && record.billingStatus != 'fully_billed' && (
-            <SalesInvoiceNew key="sales-invoice-new" record={record} onCallback={handleCreateSalesInvoice} />
+            <Button key="sales-invoice-new" size="small" type="link" onClick={() => setInvoicingOrder(record.uuid)}>
+              Create invoice
+            </Button>
           )}
         </>,
         <>
@@ -164,6 +150,13 @@ const SalesOrderList: React.FC = () => {
           };
         }}
         toolBarRender={() => [<SalesOrderNew key="sales-order-new" onCreate={(values: any) => handleCreate(values)} />]}
+      />
+
+      <SalesInvoiceNew
+        open={!!invoicingOrder}
+        salesOrderUuid={invoicingOrder}
+        onClose={() => setInvoicingOrder(undefined)}
+        onCreated={handleReloadTable}
       />
 
       <SalesOrderDetail

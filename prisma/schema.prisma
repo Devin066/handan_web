@@ -211,22 +211,79 @@ model InventoryEntry {
 }
 
 model Customer {
-  uuid               String    @id @default(uuid())
-  name               String
-  address            String?
-  contactName        String?
-  phone              String?
-  email              String?
+  uuid String @id @default(uuid())
+
+  /**
+   * Display name, shown on every order, invoice and delivery note and copied
+   * onto those documents when they are created. Derived server-side from the
+   * name parts below (or companyName for a business), so it is never edited
+   * directly and can never disagree with them.
+   */
+  name String
+
+  customerType String @default("individual")
+
+  // Philippine personal names carry a middle name (conventionally the mother's
+  // maiden surname) and very often a suffix, and both appear on official
+  // documents — so they are separate fields rather than one free-text name.
+  firstName   String?
+  middleName  String?
+  lastName    String?
+  suffix      String?
+  companyName String?
+  /**
+   * Person to talk to at a business customer.
+   */
+  contactName String?
+
+  // Contact numbers. Mobile is the one that matters: many customers have no
+  // landline at all.
+  phone          String?
+  alternatePhone String?
+  landline       String?
+  email          String?
+
+  // Messaging and social. Messenger and Viber carry most customer conversation
+  // in the Philippines, so they are first-class fields rather than notes.
   messengerId        String?
+  facebook           String?
+  viber              String?
+  whatsapp           String?
+  telegram           String?
+  instagram          String?
+  tiktok             String?
+  /**
+   * Shopee / Lazada / TikTok Shop buyer handle.
+   */
   marketplaceAccount String?
-  primaryChannel     String    @default("direct")
-  followUpStatus     String    @default("none")
-  lastInteractionAt  DateTime?
-  nextFollowUpAt     DateTime?
-  notes              String?
-  companyUuid        String
-  insertedAt         DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+
+  // Address, in the order a Philippine address is written. `address` holds the
+  // house or unit number and street; barangay is required to actually find a
+  // place here, which is why it is stored separately rather than buried in a
+  // single free-text line.
+  address    String?
+  barangay   String?
+  city       String?
+  province   String?
+  region     String?
+  postalCode String?
+
+  /**
+   * Where this customer was first found (PRD 13), which is not the same as
+   * `primaryChannel`, where they now order. Someone discovered on TikTok may
+   * since have moved to ordering direct, and marketing needs to keep the
+   * original answer.
+   */
+  sourcePlatform String @default("direct")
+
+  primaryChannel    String    @default("direct")
+  followUpStatus    String    @default("none")
+  lastInteractionAt DateTime?
+  nextFollowUpAt    DateTime?
+  notes             String?
+  companyUuid       String
+  insertedAt        DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   salesOrders   SalesOrder[]
   salesInvoices SalesInvoice[]
@@ -239,11 +296,23 @@ model Customer {
 
 model Supplier {
   uuid        String   @id @default(uuid())
+  /// Registered business name, shown on purchase orders and invoices.
   name        String
   address     String?
-  contactName String?
+  /// Tax identification number, printed on supplier invoices.
+  tin         String?
+
+  // Point of contact at the supplier. contactName is derived from the parts so
+  // lists can show one string that never disagrees with them.
+  contactFirstName String?
+  contactLastName  String?
+  contactPosition  String?
+  contactName      String?
+
   phone       String?
+  landline    String?
   email       String?
+  notes       String?
   companyUuid String
   insertedAt  DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -392,6 +461,7 @@ model SalesOrderItem {
   salesOrder        SalesOrder         @relation(fields: [salesOrderUuid], references: [uuid], onDelete: Cascade)
   item              Item               @relation(fields: [itemUuid], references: [uuid])
   deliveryNoteItems DeliveryNoteItem[]
+  invoiceItems      SalesInvoiceItem[]
 
   @@index([salesOrderUuid])
 }
@@ -442,6 +512,7 @@ model SalesInvoice {
   uuid           String   @id @default(uuid())
   code           String
   status         String   @default("unpaid")
+  /// Grand total payable, VAT included.
   amount         Decimal  @default(0) @db.Decimal(18, 4)
   paidAmount     Decimal  @default(0) @db.Decimal(18, 4)
   customerUuid   String
@@ -451,10 +522,55 @@ model SalesInvoice {
   insertedAt     DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  customer   Customer   @relation(fields: [customerUuid], references: [uuid])
-  salesOrder SalesOrder @relation(fields: [salesOrderUuid], references: [uuid], onDelete: Cascade)
+  invoiceDate  DateTime  @default(now())
+  dueDate      DateTime?
+  /// due_on_receipt, net_7, net_15, net_30, net_60
+  paymentTerms String?
+
+  // Billing details as printed, copied at the time of invoicing so a later edit
+  // to the customer never rewrites an issued invoice.
+  customerAddress   String?
+  customerTin       String?
+  /// The customer's own PO or reference number.
+  customerReference String?
+
+  /// vat_exclusive, vat_inclusive, vat_exempt or zero_rated.
+  vatMode        String  @default("vat_exclusive")
+  /// Sum of line gross amounts (qty x unit price), before discounts.
+  subtotal       Decimal @default(0) @db.Decimal(18, 4)
+  discountAmount Decimal @default(0) @db.Decimal(18, 4)
+  /// Amount VAT is charged on (net of VAT and discount).
+  vatableAmount  Decimal @default(0) @db.Decimal(18, 4)
+  vatAmount      Decimal @default(0) @db.Decimal(18, 4)
+  notes          String?
+
+  customer   Customer           @relation(fields: [customerUuid], references: [uuid])
+  salesOrder SalesOrder         @relation(fields: [salesOrderUuid], references: [uuid], onDelete: Cascade)
+  items      SalesInvoiceItem[]
 
   @@index([companyUuid])
+}
+
+model SalesInvoiceItem {
+  uuid               String  @id @default(uuid())
+  salesInvoiceUuid   String
+  salesOrderItemUuid String?
+  itemUuid           String
+  itemName           String
+  description        String?
+  uomName            String?
+  qty                Decimal @db.Decimal(18, 4)
+  unitPrice          Decimal @db.Decimal(18, 4)
+  /// Discount on this line, as an amount.
+  discount           Decimal @default(0) @db.Decimal(18, 4)
+  /// qty x unitPrice - discount.
+  lineTotal          Decimal @db.Decimal(18, 4)
+
+  salesInvoice   SalesInvoice    @relation(fields: [salesInvoiceUuid], references: [uuid], onDelete: Cascade)
+  salesOrderItem SalesOrderItem? @relation(fields: [salesOrderItemUuid], references: [uuid])
+
+  @@index([salesInvoiceUuid])
+  @@index([salesOrderItemUuid])
 }
 
 model PurchaseOrder {

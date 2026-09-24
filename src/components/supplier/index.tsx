@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
+import { Typography } from 'antd';
 
 // locale
 import { useMessageContext } from '@/components/common/message-context';
@@ -8,6 +9,8 @@ import client from '@/gql/apollo';
 import { SuppliersDocument, useCreateSupplierMutation } from '@/gql';
 import { onError } from '@/utils';
 import SupplierNew from './new';
+
+const { Text } = Typography;
 
 const SupplierList: React.FC = () => {
   const { messageApi } = useMessageContext();
@@ -37,10 +40,42 @@ const SupplierList: React.FC = () => {
       dataIndex: 'name',
     },
     {
+      title: 'Contact person',
+      key: 'contactName',
+      search: false,
+      render: (_, record) =>
+        record.contactName ? (
+          <div>
+            <div>{record.contactName}</div>
+            {record.contactPosition ? (
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {record.contactPosition}
+              </Text>
+            ) : null}
+          </div>
+        ) : (
+          <Text type="secondary">—</Text>
+        ),
+    },
+    {
+      title: 'Phone',
+      key: 'phone',
+      search: false,
+      render: (_, record) => record.phone || record.landline || <Text type="secondary">—</Text>,
+    },
+    {
+      title: 'Email',
+      key: 'email',
+      search: false,
+      render: (_, record) =>
+        record.email ? <a href={`mailto:${record.email}`}>{record.email}</a> : <Text type="secondary">—</Text>,
+    },
+    {
       title: 'Address',
       key: 'address',
       search: false,
       dataIndex: 'address',
+      ellipsis: true,
     },
     {
       title: 'Created At',

@@ -168,8 +168,8 @@ const WorkOrderList: React.FC = () => {
       <WorkOrderDetail
         uuid={record?.uuid}
         visible={detailVisible}
-        record={record}
         onClose={() => setDetailVisible(false)}
+        onChanged={handleReloadTable}
       />
     </>
   );

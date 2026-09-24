@@ -6,6 +6,7 @@ import { inventoryEntryTypeEnum } from '@/utils/enum';
 import DataTable from '@/components/shared/data-table';
 import { qtyColumn, statusColumn } from '@/components/shared/columns';
 import { InventoryEntriesDocument } from '@/gql';
+import { tokens } from '@/components/common/theme';
 
 const InventoryEntryList: React.FC = () => {
   const columns: ProColumns<any>[] = [
@@ -14,7 +15,10 @@ const InventoryEntryList: React.FC = () => {
     //   width: 200,
     //   dataIndex: 'code',
     // },
-    statusColumn('Type', 'type', inventoryEntryTypeEnum, { width: 170, search: false }),
+    statusColumn('Type', 'type', inventoryEntryTypeEnum, {
+      width: 170,
+      search: false,
+    }),
     {
       title: 'Item',
       search: false,
@@ -31,7 +35,13 @@ const InventoryEntryList: React.FC = () => {
         const qty = Number(record.actualQty ?? 0);
         const inbound = qty >= 0;
         return (
-          <span className="tabular-figures" style={{ color: inbound ? '#15803D' : '#B45309', fontWeight: 500 }}>
+          <span
+            className="tabular-figures"
+            style={{
+              color: inbound ? tokens.success : tokens.warning,
+              fontWeight: 500,
+            }}
+          >
             {inbound ? '+' : '−'}
             {Math.abs(qty).toLocaleString()}
           </span>

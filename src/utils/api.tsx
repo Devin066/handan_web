@@ -40,12 +40,13 @@ export const fetchStaff = async (params?: any) => {
     variables: { request },
   });
 
-  const result = data?.listStaff?.map((item: any) => {
-    return {
+  // Only active members can be given new work.
+  const result = data?.listStaff
+    ?.filter((item: any) => item.status !== 'inactive')
+    .map((item: any) => ({
       value: item.uuid,
-      label: item.email,
-    };
-  });
+      label: item.name ? `${item.name} (${item.email})` : item.email,
+    }));
 
   return result;
 };

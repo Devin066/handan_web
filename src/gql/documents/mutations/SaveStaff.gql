@@ -1,0 +1,5 @@
+mutation SaveStaff($request: StaffRequest!) {
+  saveStaff(request: $request) {
+    ...StaffFields
+  }
+}

@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { ProTable } from '@ant-design/pro-components';
 import type { ProColumns, ProTableProps } from '@ant-design/pro-components';
-import { Empty, Typography } from 'antd';
+import { Empty, Grid, Typography } from 'antd';
+import { tokens } from '@/components/common/theme';
 
 const { Text } = Typography;
 
@@ -10,6 +11,8 @@ type DataTableProps<T extends Record<string, any>> = ProTableProps<T, any> & {
   entityName?: string;
   /** One line telling the user how to get their first record. */
   emptyHint?: string;
+  /** Overrides "No {entityName} yet", e.g. when a search or filter is active. */
+  emptyTitle?: string;
 };
 
 /**
@@ -22,6 +25,7 @@ type DataTableProps<T extends Record<string, any>> = ProTableProps<T, any> & {
 function DataTable<T extends Record<string, any>>({
   entityName = 'records',
   emptyHint,
+  emptyTitle,
   columns,
   ...props
 }: DataTableProps<T>) {
@@ -29,12 +33,16 @@ function DataTable<T extends Record<string, any>>({
    * These tables scroll horizontally, which on a wide list pushes the row
    * actions off-screen — the one column the operator came to use. Pin it.
    */
+  const screens = Grid.useBreakpoint();
+  // On a phone a pinned column is wider than the viewport and hides the data.
+  const pinActions = screens.md !== false;
+
   const pinnedColumns = useMemo(
     () =>
       (columns ?? []).map((column) => {
         const col = column as ProColumns<T>;
 
-        if (col.valueType === 'option') {
+        if (col.valueType === 'option' && pinActions) {
           return { ...column, fixed: 'right' as const };
         }
 
@@ -46,11 +54,13 @@ function DataTable<T extends Record<string, any>>({
 
         return column;
       }),
-    [columns],
+    [columns, pinActions],
   );
 
   return (
     <ProTable<T, any>
+      // ProTable keeps its first column set, so remount when pinning changes.
+      key={pinActions ? 'pinned' : 'unpinned'}
       rowKey="uuid"
       // Compact rows: these screens are read in bulk, and default padding fits
       // roughly a third fewer rows on screen.
@@ -84,7 +94,9 @@ function DataTable<T extends Record<string, any>>({
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={
               <span>
-                <div style={{ color: '#475569', marginBottom: 4 }}>No {entityName} yet</div>
+                <div style={{ color: tokens.textSecondary, marginBottom: 4 }}>
+                  {emptyTitle ?? `No ${entityName} yet`}
+                </div>
                 {emptyHint ? (
                   <Text type="secondary" style={{ fontSize: 13 }}>
                     {emptyHint}

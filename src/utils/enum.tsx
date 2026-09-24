@@ -12,7 +12,10 @@
 
 export type StatusEnum = Record<
   string,
-  { text: string; status: 'Default' | 'Processing' | 'Success' | 'Warning' | 'Error' }
+  {
+    text: string;
+    status: 'Default' | 'Processing' | 'Success' | 'Warning' | 'Error';
+  }
 >;
 
 // --- Sales -----------------------------------------------------------------
@@ -119,4 +122,31 @@ export const paymentEntryTypeEnum: StatusEnum = {
 export const partyTypeEnum: StatusEnum = {
   customer: { text: 'Customer', status: 'Processing' },
   supplier: { text: 'Supplier', status: 'Default' },
+};
+
+// --- Customers -------------------------------------------------------------
+
+/** Plain label maps, for columns that show a value rather than a status badge. */
+export const customerTypeEnum: Record<string, { text: string }> = {
+  individual: { text: 'Individual' },
+  business: { text: 'Business' },
+};
+
+/**
+ * Where a customer was first found. Ordered roughly by how the business
+ * actually acquires people: marketplaces first, then social, then the rest.
+ */
+export const customerSourceEnum: Record<string, { text: string }> = {
+  shopee: { text: 'Shopee' },
+  lazada: { text: 'Lazada' },
+  tiktok: { text: 'TikTok' },
+  facebook_page: { text: 'Facebook Page' },
+  facebook_marketplace: { text: 'Facebook Marketplace' },
+  instagram: { text: 'Instagram' },
+  website: { text: 'Website' },
+  google: { text: 'Google Search' },
+  referral: { text: 'Referral' },
+  walk_in: { text: 'Walk-in' },
+  direct: { text: 'Direct / Repeat' },
+  other: { text: 'Other' },
 };

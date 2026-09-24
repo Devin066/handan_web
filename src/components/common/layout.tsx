@@ -1,17 +1,15 @@
 import { PageContainer, ProLayout } from '@ant-design/pro-components';
 import type { MenuDataItem } from '@ant-design/pro-components';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { createContext, useContext, useState } from 'react';
 import type { FC, ReactNode } from 'react';
 
-import useAuthUserStore from '@/stores/persisted/useAuthUser';
-
 import menuProps from './_menu';
 import { tokens } from './theme';
 import brand from '@/config/brand';
-import AvatarDropdown from './avatar-dropdown';
 import GlobalFloatButtons from './global-float-buttons';
-import HeaderActions from './header-actions';
+import SiderFooter from './sider-footer';
 
 interface LayoutProps {
   children: ReactNode;
@@ -43,7 +41,25 @@ export const useLayout = () => useContext(LayoutContext);
 const GlobalLayout: FC<LayoutProps> = ({ children }) => {
   const { layoutConfig } = useLayout();
   const router = useRouter();
-  const { currentUser, logout } = useAuthUserStore();
+
+  // Remember whether the sidebar is collapsed to icons across page loads.
+  const [collapsed, setCollapsed] = useState(() => {
+    // On phones the sidebar is a drawer; "not collapsed" would open it on load.
+    if (window.innerWidth < 768) return true;
+    try {
+      return localStorage.getItem('sidebar-collapsed') === '1';
+    } catch {
+      return false;
+    }
+  });
+  const handleCollapse = (next: boolean) => {
+    setCollapsed(next);
+    try {
+      localStorage.setItem('sidebar-collapsed', next ? '1' : '0');
+    } catch {
+      // Storage can be unavailable (private mode); the toggle still works.
+    }
+  };
 
   const menuDataRender = (menuList: MenuDataItem[]): MenuDataItem[] => {
     const menuListTemp = menuList
@@ -77,28 +93,41 @@ const GlobalLayout: FC<LayoutProps> = ({ children }) => {
     >
       <ProLayout
         {...({
-          siderWidth: 180,
+          siderWidth: 232,
+          collapsed,
+          onCollapse: handleCollapse,
+          // Without this ProLayout collapses by screen width on load and reports it
+          // through onCollapse, overwriting the user's saved choice.
+          breakpoint: false,
+          // The default toggle floats over the sidebar edge and covers the logo
+          // when collapsed; a footer button keeps it in the rail.
+          collapsedButtonRender: false,
+          menuFooterRender: () => <SiderFooter collapsed={collapsed} onToggle={() => handleCollapse(!collapsed)} />,
           ...menuProps,
           logo: '/logo.png',
           title: brand.name,
-          layout: 'mix',
+          layout: 'side',
           onMenuHeaderClick: handleLogoClick,
           // Chrome stays quiet so the data carries the visual weight. The
           // previous warm-beige palette and blurred, rounded panels fought the
           // tables for attention and cost a blur pass on every scroll.
           token: {
-            colorTextMenuTitle: tokens.text,
-            colorTextMenu: tokens.textSecondary,
-            colorTextMenuSelected: tokens.primary,
-            colorTextMenuActive: tokens.primary,
-            colorBgMenuItemSelected: '#EFF6FF',
-            colorBgMenuItemHover: tokens.surfaceMuted,
             colorBgCollapsedButton: tokens.surface,
             colorTextCollapsedButtonHover: tokens.primary,
             colorTextCollapsedButton: tokens.textTertiary,
             sider: {
-              colorMenuBackground: tokens.surface,
-              colorBgMenuItemCollapsedElevated: tokens.surface,
+              colorMenuBackground: tokens.chrome,
+              colorBgMenuItemCollapsedElevated: tokens.chrome,
+              colorMenuItemDivider: tokens.chromeHover,
+              colorTextMenuTitle: '#FFFFFF',
+              colorTextMenu: tokens.chromeText,
+              colorTextMenuSecondary: tokens.chromeTextMuted,
+              colorTextMenuSelected: '#FFFFFF',
+              colorTextMenuActive: '#FFFFFF',
+              colorTextMenuItemHover: '#FFFFFF',
+              colorBgMenuItemHover: tokens.chromeHover,
+              colorBgMenuItemSelected: tokens.chromeSelected,
+              colorTextSubMenuSelected: '#FFFFFF',
             },
             header: {
               colorBgHeader: tokens.surface,
@@ -114,36 +143,12 @@ const GlobalLayout: FC<LayoutProps> = ({ children }) => {
               boxShadow: 'none',
             },
           },
-          siderMenuProps: {
-            style: {
-              borderRight: `1px solid ${tokens.border}`,
-            },
-          },
+          siderMenuProps: { className: 'app-sider' },
           location: {
             pathname: window?.location.pathname,
           },
           menuDataRender: menuDataRender,
-          avatarProps: {
-            title: currentUser?.email,
-            size: 'small',
-            style: { backgroundColor: tokens.primary },
-            children: currentUser?.email?.charAt(0)?.toUpperCase(),
-            render: (_: any, avatarChildren: any) => {
-              return <AvatarDropdown signOut={logout}>{avatarChildren}</AvatarDropdown>;
-            },
-          },
-          actionsRender: (props: any) => {
-            return [<HeaderActions key="header-actions" isMobile={props.isMobile} />];
-          },
-          menuItemRender: (item: any, dom: any) => (
-            <div
-              onClick={() => {
-                router.push(item.path || '/');
-              }}
-            >
-              {dom}
-            </div>
-          ),
+          menuItemRender: (item: any, dom: any) => <Link href={item.path || '/'}>{dom}</Link>,
         } as any)}
       >
         <PageContainer

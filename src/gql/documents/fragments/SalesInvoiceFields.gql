@@ -1,12 +1,26 @@
 fragment SalesInvoiceFields on SalesInvoice {
   uuid
-	code
+  code
   status
-	amount
-	customerUuid
-	customerName
-	salesOrderUuid
-	insertedAt
-	updatedAt
+  amount
+  paidAmount
+  balance
+  customerUuid
+  customerName
+  salesOrderUuid
+  salesOrderCode
+  invoiceDate
+  dueDate
+  paymentTerms
+  customerAddress
+  customerTin
+  customerReference
+  vatMode
+  subtotal
+  discountAmount
+  vatableAmount
+  vatAmount
+  notes
+  insertedAt
+  updatedAt
 }
-

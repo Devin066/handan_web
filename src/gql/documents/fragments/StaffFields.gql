@@ -1,6 +1,14 @@
 fragment StaffFields on Staff {
   uuid
-	email
-	name
+  email
+  name
+  phone
+  position
+  employmentType
+  shift
+  hiredAt
+  status
+  hasLogin
+  role
+  insertedAt
 }
-

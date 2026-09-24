@@ -90,9 +90,9 @@ const BomDetail = ({ uuid, visible, record, onClose }: any) => {
   ];
 
   return (
-    <Drawer width={'60%'} title={entry?.uuid} onClose={onClose} open={visible} style={{ backgroundColor: '#f7f8fa' }}>
+    <Drawer width="min(960px, 100vw)" title={entry?.uuid} onClose={onClose} open={visible}>
       <ProCard title="Basic Info" style={{ marginTop: '10px' }}>
-        <ProDescriptions column={3} size="small">
+        <ProDescriptions column={{ xs: 1, sm: 2, lg: 3 }} size="small">
           <ProDescriptions.Item label="BOM Name">{entry?.name}</ProDescriptions.Item>
           <ProDescriptions.Item label="Item Name">{entry?.itemName}</ProDescriptions.Item>
         </ProDescriptions>

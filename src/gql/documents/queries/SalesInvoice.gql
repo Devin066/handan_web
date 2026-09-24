@@ -1,5 +1,15 @@
 query SalesInvoice($request: SalesInvoiceRequest!) {
-	salesInvoice(request: $request) {
-		...SalesInvoiceFields
-	}
+  salesInvoice(request: $request) {
+    ...SalesInvoiceFields
+    items {
+      uuid
+      itemName
+      description
+      uomName
+      qty
+      unitPrice
+      discount
+      lineTotal
+    }
+  }
 }

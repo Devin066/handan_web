@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Card, Col, Empty, List, Row, Skeleton, Statistic, Tag, Typography } from 'antd';
+import { Alert, Button, Card, Col, Empty, List, Row, Skeleton, Tag, Typography } from 'antd';
 import {
   ArrowRightOutlined,
   ContainerOutlined,
@@ -23,13 +23,17 @@ const { Text } = Typography;
 const sum = (rows: any[] | undefined | null, field: string) =>
   (rows ?? []).reduce((total, row) => total + Number(row?.[field] ?? 0), 0);
 
-/** A KPI. The caption says what the number is for, so it is not just a figure. */
+/**
+ * One figure in the KPI strip. The caption says what the number is for, so it
+ * is not just a figure. Cells share one panel, divided by rules, so the row reads
+ * as a single status line rather than four unrelated cards.
+ */
 const Kpi = ({
   title,
   value,
   caption,
   icon,
-  accent,
+  attention,
   loading,
   href,
 }: {
@@ -37,34 +41,26 @@ const Kpi = ({
   value: string;
   caption: string;
   icon: React.ReactNode;
-  accent: string;
+  /** Amber value: reserved for figures that need the operator's attention. */
+  attention?: boolean;
   loading: boolean;
   href: string;
 }) => (
-  <Link href={href} style={{ display: 'block' }}>
-    <Card
-      size="small"
-      style={{ height: '100%', borderColor: tokens.border }}
-      styles={{ body: { padding: 16 } }}
-      hoverable
-    >
-      {loading ? (
-        <Skeleton active paragraph={{ rows: 1 }} title={{ width: '50%' }} />
-      ) : (
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-            <span style={{ color: accent, display: 'flex' }}>{icon}</span>
-            <Text type="secondary" style={{ fontSize: 13 }}>
-              {title}
-            </Text>
-          </div>
-          <Statistic value={value} valueStyle={{ fontSize: 24, fontWeight: 600, color: tokens.text }} />
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            {caption}
-          </Text>
-        </>
-      )}
-    </Card>
+  <Link href={href} className="kpi-cell">
+    {loading ? (
+      <Skeleton active paragraph={{ rows: 1 }} title={{ width: '50%' }} />
+    ) : (
+      <>
+        <div className="kpi-label">
+          {icon}
+          <span>{title}</span>
+        </div>
+        <div className="kpi-value tabular-figures" style={{ color: attention ? tokens.accent : tokens.text }}>
+          {value}
+        </div>
+        <div className="kpi-caption">{caption}</div>
+      </>
+    )}
   </Link>
 );
 
@@ -109,7 +105,7 @@ const WorkList = ({
         renderItem={(item: any) => (
           <List.Item style={{ paddingInline: 0 }}>
             <List.Item.Meta
-              title={<span style={{ fontWeight: 600, fontSize: 13 }}>{item.code}</span>}
+              title={<span className="doc-code">{item.code}</span>}
               description={<span style={{ fontSize: 12 }}>{renderMeta(item)}</span>}
             />
           </List.Item>
@@ -131,7 +127,9 @@ const Dashboard = () => {
   const deliveryNotes = useDeliveryNotesQuery();
   const receiptNotes = useReceiptNotesQuery();
 
-  const loading = salesOrders.loading || purchaseOrders.loading || workOrders.loading || deliveryNotes.loading;
+  const queries = [salesOrders, purchaseOrders, workOrders, deliveryNotes, receiptNotes];
+  const loading = queries.some((q) => q.loading);
+  const failed = queries.some((q) => q.error);
 
   const so = (salesOrders.data?.salesOrders ?? []) as any[];
   const po = (purchaseOrders.data?.purchaseOrders ?? []) as any[];
@@ -148,58 +146,64 @@ const Dashboard = () => {
   const pendingStockOut = dn.filter((n) => n?.status === 'to_deliver');
   const pendingStockIn = rn.filter((n) => n?.status === 'to_receive');
 
+  // Zeros from a failed request would read as real balances, so show nothing.
+  if (failed) {
+    return (
+      <Alert
+        type="error"
+        showIcon
+        message="The dashboard couldn't load."
+        description="Figures are hidden rather than shown as zero. Check your connection and try again."
+        action={
+          <Button size="small" onClick={() => queries.forEach((q) => q.refetch())}>
+            Retry
+          </Button>
+        }
+      />
+    );
+  }
+
   return (
     <div>
-      <Row gutter={[12, 12]}>
-        <Col xs={24} sm={12} xl={6}>
-          <Kpi
-            title="Receivable"
-            value={formatCurrency(receivable)}
-            caption={`across ${so.length} sales order(s)`}
-            icon={<DollarOutlined />}
-            accent={tokens.accent}
-            loading={loading}
-            href="/selling/sales-orders"
-          />
-        </Col>
-        <Col xs={24} sm={12} xl={6}>
-          <Kpi
-            title="Payable"
-            value={formatCurrency(payable)}
-            caption={`across ${po.length} purchase orders`}
-            icon={<ShoppingCartOutlined />}
-            accent={tokens.info}
-            loading={loading}
-            href="/purchasing/purchase-orders"
-          />
-        </Col>
-        <Col xs={24} sm={12} xl={6}>
-          <Kpi
-            title="Orders to deliver"
-            value={formatQty(toDeliver.length)}
-            caption={
-              pendingStockOut.length
-                ? `${pendingStockOut.length} note(s) awaiting stock out`
-                : 'no notes awaiting stock out'
-            }
-            icon={<ContainerOutlined />}
-            accent={tokens.primary}
-            loading={loading}
-            href="/stock/delivery-notes"
-          />
-        </Col>
-        <Col xs={24} sm={12} xl={6}>
-          <Kpi
-            title="Work in progress"
-            value={formatQty(openWork.length)}
-            caption={`${wo.length} work order(s) total`}
-            icon={<ToolOutlined />}
-            accent={tokens.success}
-            loading={loading}
-            href="/production/work-orders"
-          />
-        </Col>
-      </Row>
+      <div className="kpi-strip">
+        <Kpi
+          title="Receivable"
+          value={formatCurrency(receivable)}
+          caption={`across ${so.length} sales order${so.length === 1 ? '' : 's'}`}
+          attention={receivable > 0}
+          icon={<DollarOutlined />}
+          loading={loading}
+          href="/selling/sales-orders"
+        />
+        <Kpi
+          title="Payable"
+          value={formatCurrency(payable)}
+          caption={`across ${po.length} purchase order${po.length === 1 ? '' : 's'}`}
+          icon={<ShoppingCartOutlined />}
+          loading={loading}
+          href="/purchasing/purchase-orders"
+        />
+        <Kpi
+          title="Orders to deliver"
+          value={formatQty(toDeliver.length)}
+          caption={
+            pendingStockOut.length
+              ? `${pendingStockOut.length} note${pendingStockOut.length === 1 ? '' : 's'} awaiting stock out`
+              : 'no notes awaiting stock out'
+          }
+          icon={<ContainerOutlined />}
+          loading={loading}
+          href="/stock/delivery-notes"
+        />
+        <Kpi
+          title="Work in progress"
+          value={formatQty(openWork.length)}
+          caption={`of ${wo.length} work order${wo.length === 1 ? '' : 's'}`}
+          icon={<ToolOutlined />}
+          loading={loading}
+          href="/production/work-orders"
+        />
+      </div>
 
       <Row gutter={[12, 12]} style={{ marginTop: 12 }}>
         <Col xs={24} lg={8}>
@@ -232,7 +236,7 @@ const Dashboard = () => {
         </Col>
         <Col xs={24} lg={8}>
           <WorkList
-            title="Stock movements pending"
+            title="Pending stock moves"
             href="/stock/delivery-notes"
             items={[...pendingStockOut, ...pendingStockIn]}
             loading={loading}

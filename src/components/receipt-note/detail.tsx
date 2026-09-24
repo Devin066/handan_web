@@ -1,3 +1,6 @@
+import { formatCurrency } from '@/utils/format';
+import { StatusBadge } from '@/components/shared/columns';
+import { receiptNoteStatusEnum } from '@/utils/enum';
 import { useEffect, useState } from 'react';
 import { Drawer, TabsProps, Tabs } from 'antd';
 import { ProDescriptions, ProCard, ProTable } from '@ant-design/pro-components';
@@ -44,12 +47,16 @@ const ReceiptNoteDetail = ({ uuid, visible, record, onClose }: any) => {
     {
       title: 'Unit Price',
       dataIndex: 'unitPrice',
-      valueType: 'money',
+      align: 'right' as const,
+      // Not valueType 'money': that always uses the locale's $, ignoring the company currency.
+      renderText: (value: unknown) => <span className="tabular-figures">{formatCurrency(value)}</span>,
       key: 'unitPrice',
     },
     {
       title: 'Amount',
-      valueType: 'money',
+      align: 'right' as const,
+      // Not valueType 'money': that always uses the locale's $, ignoring the company currency.
+      renderText: (value: unknown) => <span className="tabular-figures">{formatCurrency(value)}</span>,
       dataIndex: 'amount',
       key: 'amount',
     },
@@ -74,11 +81,13 @@ const ReceiptNoteDetail = ({ uuid, visible, record, onClose }: any) => {
   ];
 
   return (
-    <Drawer width={'60%'} title={entry?.uuid} onClose={onClose} open={visible} style={{ backgroundColor: '#f7f8fa' }}>
+    <Drawer width="min(960px, 100vw)" title={entry?.uuid} onClose={onClose} open={visible}>
       <ProCard title="Basic Info" style={{ marginTop: '10px' }}>
-        <ProDescriptions column={3} size="small">
+        <ProDescriptions column={{ xs: 1, sm: 2, lg: 3 }} size="small">
           <ProDescriptions.Item label="Supplier Name">{entry?.supplierName}</ProDescriptions.Item>
-          <ProDescriptions.Item label="Status">{entry.status}</ProDescriptions.Item>
+          <ProDescriptions.Item label="Status">
+            <StatusBadge value={entry.status} valueEnum={receiptNoteStatusEnum} />
+          </ProDescriptions.Item>
           <ProDescriptions.Item label="Warehouse Name">{entry.warehouseName}</ProDescriptions.Item>
         </ProDescriptions>
       </ProCard>

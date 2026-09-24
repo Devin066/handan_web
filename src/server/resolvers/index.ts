@@ -5,6 +5,7 @@ import { sellingResolvers } from './selling';
 import { purchasingResolvers } from './purchasing';
 import { productionResolvers } from './production';
 import { financeResolvers } from './finance';
+import { configurationResolvers } from './configuration';
 
 type ResolverMap = Record<string, Record<string, unknown>>;
 
@@ -33,4 +34,5 @@ export const resolvers = mergeResolvers(
   purchasingResolvers as unknown as ResolverMap,
   productionResolvers as unknown as ResolverMap,
   financeResolvers as unknown as ResolverMap,
+  configurationResolvers as unknown as ResolverMap,
 );

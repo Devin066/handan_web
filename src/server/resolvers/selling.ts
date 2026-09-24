@@ -1,3 +1,4 @@
+import { createSalesInvoice, invoicedQtyByOrderItem, type CreateSalesInvoiceRequest } from '../domain/sales-invoice';
 import { GraphQLError } from 'graphql';
 import { Prisma } from '@/generated/prisma/client';
 import type { Context } from '../context';
@@ -304,39 +305,9 @@ export const sellingResolvers = {
       });
     },
 
-    createSalesInvoice: async (
-      _: unknown,
-      { request }: { request: { salesOrderUuid?: string; amount?: number } },
-      ctx: Context,
-    ) => {
+    createSalesInvoice: async (_: unknown, { request }: { request: CreateSalesInvoiceRequest }, ctx: Context) => {
       const companyUuid = requireCompany(ctx);
-
-      if (!request.salesOrderUuid) {
-        throw new GraphQLError('salesOrderUuid is required');
-      }
-
-      return ctx.db.$transaction(async (tx) => {
-        const order = await tx.salesOrder.findFirstOrThrow({
-          where: { uuid: request.salesOrderUuid, companyUuid },
-        });
-
-        const code = await nextCode(tx, companyUuid, 'salesInvoice');
-
-        const invoice = await tx.salesInvoice.create({
-          data: {
-            code,
-            companyUuid,
-            amount: new Prisma.Decimal(request.amount ?? order.totalAmount),
-            customerUuid: order.customerUuid,
-            customerName: order.customerName,
-            salesOrderUuid: order.uuid,
-          },
-        });
-
-        await refreshSalesOrder(tx, order.uuid);
-
-        return invoice;
-      });
+      return ctx.db.$transaction((tx) => createSalesInvoice(tx, companyUuid, request));
     },
   },
 
@@ -368,6 +339,10 @@ export const sellingResolvers = {
       new Prisma.Decimal(parent.unitPrice).mul(parent.orderedQty),
     remainingQty: (parent: { orderedQty: Prisma.Decimal; deliveredQty: Prisma.Decimal }) =>
       new Prisma.Decimal(parent.orderedQty).sub(parent.deliveredQty),
+    invoicedQty: async (parent: { uuid: string }, _: unknown, ctx: Context) =>
+      (await invoicedQtyByOrderItem(ctx.db, [parent.uuid])).get(parent.uuid) ?? 0,
+    uninvoicedQty: async (parent: { uuid: string; orderedQty: Prisma.Decimal }, _: unknown, ctx: Context) =>
+      Number(parent.orderedQty) - ((await invoicedQtyByOrderItem(ctx.db, [parent.uuid])).get(parent.uuid) ?? 0),
   },
 
   DeliveryNote: {
@@ -391,6 +366,12 @@ export const sellingResolvers = {
   },
 
   SalesInvoice: {
+    items: (parent: { uuid: string }, _: unknown, ctx: Context) =>
+      ctx.db.salesInvoiceItem.findMany({ where: { salesInvoiceUuid: parent.uuid } }),
+    balance: (parent: { amount: Prisma.Decimal; paidAmount: Prisma.Decimal }) =>
+      new Prisma.Decimal(parent.amount).sub(parent.paidAmount),
+    salesOrderCode: async (parent: { salesOrderUuid: string }, _: unknown, ctx: Context) =>
+      (await ctx.loaders.salesOrder.load(parent.salesOrderUuid))?.code ?? null,
     customer: (parent: { customerUuid: string }, _: unknown, ctx: Context) =>
       ctx.loaders.customer.load(parent.customerUuid),
     salesOrder: (parent: { salesOrderUuid: string }, _: unknown, ctx: Context) =>

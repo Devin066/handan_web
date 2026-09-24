@@ -35,6 +35,10 @@ the UI gates buttons on these exact strings. Add a value there, never inline.
 | 11 Production Tracking | Eight statuses, start/finish times, supervisor validation | `JobCard.status` (`JOB_CARD_STATUS`), `startTime` / `pausedAt` / `pausedSeconds` / `endTime`, `validatedByUserUuid` / `validatedAt` |
 | 12 Employee Output | Who produced what, how many, when; quotas vary by difficulty | `JobCard.operatorStaffUuid`, `producedQty`, `targetQty`, `difficulty` |
 | 13 CRM | Marketplace account, Messenger, contact, last interaction, follow-up status | `Customer.marketplaceAccount` / `messengerId` / `contactName` / `phone` / `email` / `lastInteractionAt` / `followUpStatus`; `CustomerInteraction` |
+| 13 CRM (names) | Customer identity, individual or business | `Customer.customerType`; `firstName` / `middleName` / `lastName` / `suffix` for Philippine personal names, `companyName` + `contactName` for a business. `Customer.name` is the display name derived from these by `customerDisplayName()` and copied onto every order, invoice and delivery note |
+| 13 CRM (contact) | Reachable however the customer actually talks | `phone` (mobile) / `alternatePhone` / `landline` / `email`; `messengerId`, `viber`, `facebook`, `whatsapp`, `telegram`, `instagram`, `tiktok` |
+| 13 CRM (address) | Philippine address | `address` (house/unit & street), `barangay`, `city`, `province`, `region`, `postalCode` — barangay is separate because an address without it does not locate anything here |
+| 13 CRM (acquisition) | Platform the customer was discovered on | `Customer.sourcePlatform` (`CUSTOMER_SOURCE`), kept distinct from `primaryChannel`, which is where they order now |
 | 14 Customer Follow-Up | Configurable no-response interval (BR-09) | `FollowUpRule.noResponseHours` (seeded at 72h), `Customer.nextFollowUpAt` |
 | 15 Finance | Expense categories, revenue vs costs | `ExpenseCategory`, `Expense`; revenue from `SalesInvoice` / `PaymentEntry` |
 | 16 HR & Payroll | Profiles, salary, overtime, SSS, PhilHealth | `Staff.position` / `employmentType` / `shift` / `hiredAt` / `baseRate`; `PayrollPeriod`, `PayrollEntry` |

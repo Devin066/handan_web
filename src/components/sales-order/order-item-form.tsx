@@ -162,7 +162,6 @@ const OrderItemForm = (props: any) => {
       valueType: 'option',
       render: (text, record, _, action) => [
         <a
-          style={{ color: '#1677ff' }}
           key="editable"
           onClick={() => {
             action?.startEditable?.(record.uuid);
@@ -171,7 +170,7 @@ const OrderItemForm = (props: any) => {
           Edit
         </a>,
         <a
-          style={{ color: '#ff4d4f' }}
+          className="ant-typography ant-typography-danger"
           key="delete"
           onClick={() => {
             setDataSource(dataSource.filter((item: any) => item.uuid !== record.uuid));

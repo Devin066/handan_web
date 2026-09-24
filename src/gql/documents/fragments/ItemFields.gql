@@ -1,10 +1,16 @@
 fragment ItemFields on Item {
   uuid
   name
-	spec
+  sku
+  category
+  spec
   sellingPrice
+  minStockThreshold
+  onHandQty
+  reservedQty
+  availableQty
   defaultStockUomUuid
-	defaultStockUomName
+  defaultStockUomName
   insertedAt
   updatedAt
 }

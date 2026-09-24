@@ -62,7 +62,13 @@ export default function Home() {
           <Title level={1} style={{ fontSize: 44, marginBottom: 8, color: tokens.text }}>
             {brand.name}
           </Title>
-          <Paragraph style={{ fontSize: 17, color: tokens.textSecondary, marginBottom: 28 }}>
+          <Paragraph
+            style={{
+              fontSize: 17,
+              color: tokens.textSecondary,
+              marginBottom: 28,
+            }}
+          >
             Manufacturing resource planning for small and medium businesses
           </Paragraph>
           <Space size="middle">
@@ -77,12 +83,26 @@ export default function Home() {
             <Col xs={24} sm={12} lg={8} key={module.title}>
               <Card size="small" style={{ height: '100%', borderColor: tokens.border }}>
                 <Space align="start" size={12}>
-                  <span style={{ color: tokens.primary, fontSize: 20, lineHeight: 1 }}>{module.icon}</span>
+                  <span
+                    style={{
+                      color: tokens.primary,
+                      fontSize: 20,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {module.icon}
+                  </span>
                   <div>
                     <Title level={5} style={{ marginTop: 0, marginBottom: 4 }}>
                       {module.title}
                     </Title>
-                    <Paragraph style={{ marginBottom: 0, color: tokens.textSecondary, fontSize: 13 }}>
+                    <Paragraph
+                      style={{
+                        marginBottom: 0,
+                        color: tokens.textSecondary,
+                        fontSize: 13,
+                      }}
+                    >
                       {module.body}
                     </Paragraph>
                   </div>
@@ -92,10 +112,14 @@ export default function Home() {
           ))}
         </Row>
 
-        <div style={{ textAlign: 'center', marginTop: 48, color: tokens.textTertiary, fontSize: 13 }}>
-          <Paragraph style={{ color: tokens.textTertiary, marginBottom: 4 }}>
-            Next.js · TypeScript · GraphQL · Prisma · PostgreSQL
-          </Paragraph>
+        <div
+          style={{
+            textAlign: 'center',
+            marginTop: 48,
+            color: tokens.textTertiary,
+            fontSize: 13,
+          }}
+        >
           {/*
             Credit is kept as plain text, not an outbound link. The MIT terms are
             satisfied by LICENSE and NOTICE shipping with the source; they do not

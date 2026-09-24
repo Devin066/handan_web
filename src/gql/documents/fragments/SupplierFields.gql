@@ -2,6 +2,14 @@ fragment SupplierFields on Supplier {
   uuid
   name
   address
-  
+  tin
+  contactFirstName
+  contactLastName
+  contactPosition
+  contactName
+  phone
+  landline
+  email
+  notes
+  insertedAt
 }
-

@@ -1,26 +1,12 @@
-import { QuestionCircleOutlined } from '@ant-design/icons';
 import { FloatButton } from 'antd';
 import React from 'react';
-import brand from '@/config/brand';
 
 /**
- * Global float button component
- * includes: Help, Back to Top
+ * Back-to-top only. Help lives in the header; a second floating Help button sat
+ * over the table pagination on the right edge.
  */
-const GlobalFloatButtons: React.FC = () => {
-  return (
-    <FloatButton.Group shape="circle" style={{ right: 24, bottom: 24 }}>
-      {/* Help docs button */}
-      <FloatButton
-        icon={<QuestionCircleOutlined />}
-        tooltip="Help"
-        onClick={() => window.open(brand.helpUrl, '_blank')}
-      />
-
-      {/* Back-to-top button */}
-      <FloatButton.BackTop tooltip="Back to Top" visibilityHeight={300} />
-    </FloatButton.Group>
-  );
-};
+const GlobalFloatButtons: React.FC = () => (
+  <FloatButton.BackTop tooltip="Back to top" visibilityHeight={600} style={{ right: 24, bottom: 72 }} />
+);
 
 export default GlobalFloatButtons;

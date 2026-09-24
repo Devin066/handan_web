@@ -3,8 +3,46 @@ import type { Context } from '../context';
 import { requireCompany } from '../context';
 import { UNSETTLED_INVOICE_STATUSES } from '../domain/status';
 import { applyStockMove } from '../domain/stock';
+import { assertCustomerValid, customerDisplayName, normalizeCustomerInput } from '../domain/customer';
+import { normaliseSupplier, type SupplierInput } from '../domain/supplier';
 
 type Id = { request: { uuid?: string } };
+
+/**
+ * Every field is optional on the way in; `customerDisplayName` is what insists
+ * on enough to identify the customer.
+ */
+type CustomerInput = {
+  name?: string;
+  customerType?: string;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+  suffix?: string;
+  companyName?: string;
+  contactName?: string;
+  phone?: string;
+  alternatePhone?: string;
+  landline?: string;
+  email?: string;
+  messengerId?: string;
+  facebook?: string;
+  viber?: string;
+  whatsapp?: string;
+  telegram?: string;
+  instagram?: string;
+  tiktok?: string;
+  marketplaceAccount?: string;
+  address?: string;
+  barangay?: string;
+  city?: string;
+  province?: string;
+  region?: string;
+  postalCode?: string;
+  sourcePlatform?: string;
+  primaryChannel?: string;
+  notes?: string;
+};
 
 export const setupResolvers = {
   RootQueryType: {
@@ -143,14 +181,23 @@ export const setupResolvers = {
       });
     },
 
-    createCustomer: async (_: unknown, { request }: { request: { name: string; address: string } }, ctx: Context) => {
+    createCustomer: async (_: unknown, { request }: { request: CustomerInput }, ctx: Context) => {
       const companyUuid = requireCompany(ctx);
-      return ctx.db.customer.create({ data: { ...request, companyUuid } });
+
+      // Normalise first: the checks below treat an untouched "" the same as a
+      // field that was never sent, which is only true once the blanks are gone.
+      const input = normalizeCustomerInput(request);
+      assertCustomerValid(input);
+
+      return ctx.db.customer.create({
+        data: { ...input, name: customerDisplayName(input), companyUuid },
+      });
     },
 
-    createSupplier: async (_: unknown, { request }: { request: { name: string; address: string } }, ctx: Context) => {
+    createSupplier: async (_: unknown, { request }: { request: SupplierInput }, ctx: Context) => {
       const companyUuid = requireCompany(ctx);
-      return ctx.db.supplier.create({ data: { ...request, companyUuid } });
+      const input = normaliseSupplier(request);
+      return ctx.db.supplier.create({ data: { ...input, companyUuid } });
     },
 
     createProcess: async (
@@ -198,6 +245,14 @@ export const setupResolvers = {
     defaultStockUomName: async (parent: { uuid: string }, _: unknown, ctx: Context) => {
       const [first] = await ctx.loaders.stockUomsByItem.load(parent.uuid);
       return first?.uom.name ?? null;
+    },
+    onHandQty: async (parent: { uuid: string }, _: unknown, ctx: Context) =>
+      (await ctx.loaders.stockLevelByItem.load(parent.uuid)).onHand,
+    reservedQty: async (parent: { uuid: string }, _: unknown, ctx: Context) =>
+      (await ctx.loaders.stockLevelByItem.load(parent.uuid)).reserved,
+    availableQty: async (parent: { uuid: string }, _: unknown, ctx: Context) => {
+      const { onHand, reserved } = await ctx.loaders.stockLevelByItem.load(parent.uuid);
+      return onHand - reserved;
     },
   },
 

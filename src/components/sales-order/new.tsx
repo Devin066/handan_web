@@ -7,6 +7,7 @@ import size from 'lodash.size';
 // locale
 import { useMessageContext } from '@/components/common/message-context';
 import { fetchWarehouses, fetchCustomers } from '@/utils/api';
+import { formatCurrency } from '@/utils/format';
 import OrderItemForm from './order-item-form';
 
 const SalesOrderNew = (props: any) => {
@@ -97,11 +98,17 @@ const SalesOrderNew = (props: any) => {
           render: (props, doms) => {
             return [
               <div key="lineItemTotal" style={{ marginRight: '10px' }}>
-                Item Amount: <span style={{ fontSize: '20px', color: '#ab956d' }}>$ {amount.lineItemTotal}</span>{' '}
+                Item Amount:{' '}
+                <span className="tabular-figures" style={{ fontSize: 18, fontWeight: 600 }}>
+                  {formatCurrency(amount.lineItemTotal)}
+                </span>{' '}
               </div>,
               <Divider key="divider1" type="vertical" />,
               <div key="total" style={{ marginRight: '10px' }}>
-                Amount Receivable: <span style={{ fontSize: '20px', color: '#ab956d' }}>$ {amount.total}</span>{' '}
+                Amount Receivable:{' '}
+                <span className="tabular-figures" style={{ fontSize: 18, fontWeight: 600 }}>
+                  {formatCurrency(amount.total)}
+                </span>{' '}
               </div>,
               <Divider key="divider4" type="vertical" />,
               <Button type="primary" key="submit" onClick={() => props.form?.submit()}>

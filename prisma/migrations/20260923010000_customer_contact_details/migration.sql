@@ -1,0 +1,22 @@
+-- AlterTable
+ALTER TABLE "Customer" ADD COLUMN     "alternatePhone" TEXT,
+ADD COLUMN     "barangay" TEXT,
+ADD COLUMN     "city" TEXT,
+ADD COLUMN     "companyName" TEXT,
+ADD COLUMN     "customerType" TEXT NOT NULL DEFAULT 'individual',
+ADD COLUMN     "facebook" TEXT,
+ADD COLUMN     "firstName" TEXT,
+ADD COLUMN     "instagram" TEXT,
+ADD COLUMN     "landline" TEXT,
+ADD COLUMN     "lastName" TEXT,
+ADD COLUMN     "middleName" TEXT,
+ADD COLUMN     "postalCode" TEXT,
+ADD COLUMN     "province" TEXT,
+ADD COLUMN     "region" TEXT,
+ADD COLUMN     "sourcePlatform" TEXT NOT NULL DEFAULT 'direct',
+ADD COLUMN     "suffix" TEXT,
+ADD COLUMN     "telegram" TEXT,
+ADD COLUMN     "tiktok" TEXT,
+ADD COLUMN     "viber" TEXT,
+ADD COLUMN     "whatsapp" TEXT;
+
