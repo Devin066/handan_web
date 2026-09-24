@@ -137,6 +137,8 @@ export type Configuration = {
   __typename?: 'Configuration';
   currency?: Maybe<Scalars['String']['output']>;
   decimalPlaces?: Maybe<Scalars['Int']['output']>;
+  /** manager: a manager assigns production tasks. self: workers claim them. */
+  productionClaimMode?: Maybe<Scalars['String']['output']>;
   timezone?: Maybe<Scalars['String']['output']>;
 };
 
@@ -529,6 +531,18 @@ export type ModuleOption = {
   label?: Maybe<Scalars['String']['output']>;
 };
 
+export type MoveWorkOrderStageRequest = {
+  /** Pieces that passed, when passing quality check. */
+  goodQty?: InputMaybe<Scalars['Float']['input']>;
+  note?: InputMaybe<Scalars['String']['input']>;
+  /** Pieces made, when sending to quality check. */
+  reportedQty?: InputMaybe<Scalars['Float']['input']>;
+  /** Who the task goes to, when assigning or claiming. */
+  staffUuid?: InputMaybe<Scalars['ID']['input']>;
+  toStage: Scalars['String']['input'];
+  uuid: Scalars['ID']['input'];
+};
+
 export type OpeningStockArg = {
   qty?: InputMaybe<Scalars['Float']['input']>;
   warehouseUuid?: InputMaybe<Scalars['ID']['input']>;
@@ -616,6 +630,14 @@ export type Process = {
   name?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   uuid?: Maybe<Scalars['ID']['output']>;
+};
+
+export type ProductionBoard = {
+  __typename?: 'ProductionBoard';
+  /** Whether the signed-in account may pass checks and complete tasks. */
+  canSupervise?: Maybe<Scalars['Boolean']['output']>;
+  claimMode?: Maybe<Scalars['String']['output']>;
+  tasks?: Maybe<Array<Maybe<WorkOrder>>>;
 };
 
 export type PurchaseInvoice = {
@@ -846,6 +868,8 @@ export type RootMutationType = {
   finalizePayroll?: Maybe<PayrollPeriod>;
   generatePayroll?: Maybe<PayrollPeriod>;
   login?: Maybe<User>;
+  /** Moves a work order to another stage on the production board. */
+  moveWorkOrderStage?: Maybe<WorkOrder>;
   recordInvoicePayment?: Maybe<InvoiceRef>;
   reportJobCard?: Maybe<WorkOrder>;
   reviewPurchaseRequest?: Maybe<PurchaseRequest>;
@@ -997,6 +1021,12 @@ export type RootMutationTypeLoginArgs = {
 
 
 /** the root of mutaion. */
+export type RootMutationTypeMoveWorkOrderStageArgs = {
+  request: MoveWorkOrderStageRequest;
+};
+
+
+/** the root of mutaion. */
 export type RootMutationTypeRecordInvoicePaymentArgs = {
   request: RecordInvoicePaymentRequest;
 };
@@ -1109,6 +1139,8 @@ export type RootQueryType = {
   payslips?: Maybe<Array<Maybe<PayrollEntry>>>;
   process?: Maybe<Process>;
   processes?: Maybe<Array<Maybe<Process>>>;
+  /** Production office board: work orders by stage. */
+  productionBoard?: Maybe<ProductionBoard>;
   purchaseInvoice?: Maybe<PurchaseInvoice>;
   purchaseInvoices?: Maybe<Array<Maybe<PurchaseInvoice>>>;
   purchaseOrder?: Maybe<PurchaseOrder>;
@@ -1136,6 +1168,7 @@ export type RootQueryType = {
   workOrder?: Maybe<WorkOrder>;
   workOrderItem?: Maybe<WorkOrderItem>;
   workOrderItems?: Maybe<Array<Maybe<WorkOrderItem>>>;
+  workOrderStageLogs?: Maybe<Array<Maybe<WorkOrderStageLog>>>;
   workOrders?: Maybe<Array<Maybe<WorkOrder>>>;
   workstation?: Maybe<Workstation>;
   workstations?: Maybe<Array<Maybe<Workstation>>>;
@@ -1258,6 +1291,11 @@ export type RootQueryTypeWorkOrderArgs = {
 
 
 export type RootQueryTypeWorkOrderItemArgs = {
+  request: IdRequest;
+};
+
+
+export type RootQueryTypeWorkOrderStageLogsArgs = {
   request: IdRequest;
 };
 
@@ -1519,6 +1557,7 @@ export type Uom = {
 export type UpdateConfigurationRequest = {
   currency?: InputMaybe<Scalars['String']['input']>;
   decimalPlaces?: InputMaybe<Scalars['Int']['input']>;
+  productionClaimMode?: InputMaybe<Scalars['String']['input']>;
   timezone?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -1562,6 +1601,8 @@ export type WorkOrder = {
   code?: Maybe<Scalars['String']['output']>;
   dueDate?: Maybe<Scalars['DateTime']['output']>;
   endTime?: Maybe<Scalars['DateTime']['output']>;
+  /** Pieces that passed quality check. */
+  goodQty?: Maybe<Scalars['Decimal']['output']>;
   insertedAt?: Maybe<Scalars['DateTime']['output']>;
   item?: Maybe<Item>;
   itemName?: Maybe<Scalars['String']['output']>;
@@ -1575,9 +1616,15 @@ export type WorkOrder = {
   pieceRate?: Maybe<Scalars['Decimal']['output']>;
   plannedQty?: Maybe<Scalars['Decimal']['output']>;
   producedQty?: Maybe<Scalars['Decimal']['output']>;
+  rejectedQty?: Maybe<Scalars['Decimal']['output']>;
+  /** Pieces the worker reported; can exceed plannedQty. */
+  reportedQty?: Maybe<Scalars['Decimal']['output']>;
   salesOrderCode?: Maybe<Scalars['String']['output']>;
   salesOrderUuid?: Maybe<Scalars['ID']['output']>;
   scrapedQty?: Maybe<Scalars['Decimal']['output']>;
+  /** Production board stage: queued, assigned, in_progress, quality_check, final_check, completed. */
+  stage?: Maybe<Scalars['String']['output']>;
+  stageChangedAt?: Maybe<Scalars['DateTime']['output']>;
   startTime?: Maybe<Scalars['DateTime']['output']>;
   status?: Maybe<Scalars['String']['output']>;
   stockUomUuid?: Maybe<Scalars['ID']['output']>;
@@ -1631,6 +1678,20 @@ export type WorkOrderMaterialRequest = {
 
 export type WorkOrderRequest = {
   workOrderUuid?: InputMaybe<Scalars['ID']['input']>;
+};
+
+export type WorkOrderStageLog = {
+  __typename?: 'WorkOrderStageLog';
+  fromStage?: Maybe<Scalars['String']['output']>;
+  goodQty?: Maybe<Scalars['Decimal']['output']>;
+  insertedAt?: Maybe<Scalars['DateTime']['output']>;
+  movedBy?: Maybe<Scalars['String']['output']>;
+  note?: Maybe<Scalars['String']['output']>;
+  rejectedQty?: Maybe<Scalars['Decimal']['output']>;
+  reportedQty?: Maybe<Scalars['Decimal']['output']>;
+  staffName?: Maybe<Scalars['String']['output']>;
+  toStage?: Maybe<Scalars['String']['output']>;
+  uuid?: Maybe<Scalars['ID']['output']>;
 };
 
 export type WorkOrderSuggestion = {
@@ -1870,6 +1931,13 @@ export type LoginMutationVariables = Exact<{
 
 export type LoginMutation = { __typename?: 'RootMutationType', login?: { __typename?: 'User', uuid?: string | null, email?: string | null, accessToken?: string | null } | null };
 
+export type MoveWorkOrderStageMutationVariables = Exact<{
+  request: MoveWorkOrderStageRequest;
+}>;
+
+
+export type MoveWorkOrderStageMutation = { __typename?: 'RootMutationType', moveWorkOrderStage?: { __typename?: 'WorkOrder', uuid?: string | null, stage?: string | null } | null };
+
 export type RecordInvoicePaymentMutationVariables = Exact<{
   request: RecordInvoicePaymentRequest;
 }>;
@@ -1931,7 +1999,7 @@ export type UpdateConfigurationMutationVariables = Exact<{
 }>;
 
 
-export type UpdateConfigurationMutation = { __typename?: 'RootMutationType', updateConfiguration?: { __typename?: 'Configuration', currency?: string | null, timezone?: string | null, decimalPlaces?: number | null } | null };
+export type UpdateConfigurationMutation = { __typename?: 'RootMutationType', updateConfiguration?: { __typename?: 'Configuration', currency?: string | null, timezone?: string | null, decimalPlaces?: number | null, productionClaimMode?: string | null } | null };
 
 export type UpdatePaymentMethodMutationVariables = Exact<{
   request: CreatePaymentMethodRequest;
@@ -1993,7 +2061,7 @@ export type CompanyQuery = { __typename?: 'RootQueryType', company?: { __typenam
 export type ConfigurationQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ConfigurationQuery = { __typename?: 'RootQueryType', configuration?: { __typename?: 'Configuration', currency?: string | null, timezone?: string | null, decimalPlaces?: number | null } | null };
+export type ConfigurationQuery = { __typename?: 'RootQueryType', configuration?: { __typename?: 'Configuration', currency?: string | null, timezone?: string | null, decimalPlaces?: number | null, productionClaimMode?: string | null } | null };
 
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2135,6 +2203,11 @@ export type ProcessesQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type ProcessesQuery = { __typename?: 'RootQueryType', processes?: Array<{ __typename?: 'Process', uuid?: string | null, name?: string | null, code?: string | null, description?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null };
 
+export type ProductionBoardQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ProductionBoardQuery = { __typename?: 'RootQueryType', productionBoard?: { __typename?: 'ProductionBoard', claimMode?: string | null, canSupervise?: boolean | null, tasks?: Array<{ __typename?: 'WorkOrder', uuid?: string | null, code?: string | null, itemName?: string | null, uomName?: string | null, plannedQty?: any | null, reportedQty?: any | null, goodQty?: any | null, rejectedQty?: any | null, stage?: string | null, stageChangedAt?: any | null, dueDate?: any | null, assignedStaffUuid?: string | null, assignedStaffName?: string | null, salesOrderUuid?: string | null } | null> | null } | null };
+
 export type PurchaseInvoiceQueryVariables = Exact<{
   request: PurchaseInvoiceRequest;
 }>;
@@ -2198,7 +2271,7 @@ export type SalesOrderQueryVariables = Exact<{
 }>;
 
 
-export type SalesOrderQuery = { __typename?: 'RootQueryType', salesOrder?: { __typename?: 'SalesOrder', uuid?: string | null, code?: string | null, status?: string | null, billingStatus?: string | null, deliveryStatus?: string | null, customerName?: string | null, requiredDate?: any | null, notes?: string | null, deliveryRisk?: string | null, salesInvoiceCode?: string | null, totalAmount?: any | null, paidAmount?: any | null, remainingAmount?: any | null, totalQty?: any | null, deliveredQty?: any | null, remainingQty?: any | null, warehouseName?: string | null, insertedAt?: any | null, updatedAt?: any | null, items?: Array<{ __typename?: 'SalesOrderItem', uuid?: string | null, itemUuid?: string | null, itemName?: string | null, uomName?: string | null, amount?: any | null, unitPrice?: any | null, orderedQty?: any | null, deliveredQty?: any | null, remainingQty?: any | null, invoicedQty?: any | null, uninvoicedQty?: any | null } | null> | null, deliveryNotes?: Array<{ __typename?: 'DeliveryNote', uuid?: string | null, code?: string | null, status?: string | null, customerName?: string | null, totalAmount?: any | null, totalQty?: any | null, salesOrderUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null, salesInvoices?: Array<{ __typename?: 'SalesInvoice', uuid?: string | null, code?: string | null, status?: string | null, amount?: any | null, paidAmount?: any | null, balance?: any | null, customerUuid?: string | null, customerName?: string | null, salesOrderUuid?: string | null, salesOrderCode?: string | null, invoiceDate?: any | null, dueDate?: any | null, paymentTerms?: string | null, customerAddress?: string | null, customerTin?: string | null, customerReference?: string | null, vatMode?: string | null, subtotal?: any | null, discountAmount?: any | null, vatableAmount?: any | null, vatAmount?: any | null, notes?: string | null, orNumber?: string | null, paymentMethodName?: string | null, paidAt?: any | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null } | null };
+export type SalesOrderQuery = { __typename?: 'RootQueryType', salesOrder?: { __typename?: 'SalesOrder', uuid?: string | null, code?: string | null, status?: string | null, billingStatus?: string | null, deliveryStatus?: string | null, customerName?: string | null, requiredDate?: any | null, notes?: string | null, deliveryRisk?: string | null, salesInvoiceCode?: string | null, totalAmount?: any | null, paidAmount?: any | null, remainingAmount?: any | null, totalQty?: any | null, deliveredQty?: any | null, remainingQty?: any | null, warehouseName?: string | null, insertedAt?: any | null, updatedAt?: any | null, customer?: { __typename?: 'Customer', address?: string | null, barangay?: string | null, city?: string | null, province?: string | null, region?: string | null, postalCode?: string | null } | null, items?: Array<{ __typename?: 'SalesOrderItem', uuid?: string | null, itemUuid?: string | null, itemName?: string | null, uomName?: string | null, amount?: any | null, unitPrice?: any | null, orderedQty?: any | null, deliveredQty?: any | null, remainingQty?: any | null, invoicedQty?: any | null, uninvoicedQty?: any | null } | null> | null, deliveryNotes?: Array<{ __typename?: 'DeliveryNote', uuid?: string | null, code?: string | null, status?: string | null, customerName?: string | null, totalAmount?: any | null, totalQty?: any | null, salesOrderUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null, salesInvoices?: Array<{ __typename?: 'SalesInvoice', uuid?: string | null, code?: string | null, status?: string | null, amount?: any | null, paidAmount?: any | null, balance?: any | null, customerUuid?: string | null, customerName?: string | null, salesOrderUuid?: string | null, salesOrderCode?: string | null, invoiceDate?: any | null, dueDate?: any | null, paymentTerms?: string | null, customerAddress?: string | null, customerTin?: string | null, customerReference?: string | null, vatMode?: string | null, subtotal?: any | null, discountAmount?: any | null, vatableAmount?: any | null, vatAmount?: any | null, notes?: string | null, orNumber?: string | null, paymentMethodName?: string | null, paidAt?: any | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null } | null };
 
 export type SalesOrderWorkOrdersQueryVariables = Exact<{
   request: SalesOrderRequest;
@@ -2287,6 +2360,13 @@ export type WorkOrderItemsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type WorkOrderItemsQuery = { __typename?: 'RootQueryType', workOrderItems?: Array<{ __typename?: 'WorkOrderItem', uuid?: string | null, workOrderUuid?: string | null, itemName?: string | null, processName?: string | null, position?: number | null, requiredQty?: any | null, defectiveQty?: any | null, producedQty?: any | null, insertedAt?: any | null, updatedAt?: any | null, workOrder?: { __typename?: 'WorkOrder', code?: string | null } | null } | null> | null };
+
+export type WorkOrderStageLogsQueryVariables = Exact<{
+  request: IdRequest;
+}>;
+
+
+export type WorkOrderStageLogsQuery = { __typename?: 'RootQueryType', workOrderStageLogs?: Array<{ __typename?: 'WorkOrderStageLog', uuid?: string | null, fromStage?: string | null, toStage?: string | null, staffName?: string | null, movedBy?: string | null, reportedQty?: any | null, goodQty?: any | null, rejectedQty?: any | null, note?: string | null, insertedAt?: any | null } | null> | null };
 
 export type WorkOrdersQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -3537,6 +3617,40 @@ export function useLoginMutation(baseOptions?: Apollo.MutationHookOptions<LoginM
 export type LoginMutationHookResult = ReturnType<typeof useLoginMutation>;
 export type LoginMutationResult = Apollo.MutationResult<LoginMutation>;
 export type LoginMutationOptions = Apollo.BaseMutationOptions<LoginMutation, LoginMutationVariables>;
+export const MoveWorkOrderStageDocument = gql`
+    mutation MoveWorkOrderStage($request: MoveWorkOrderStageRequest!) {
+  moveWorkOrderStage(request: $request) {
+    uuid
+    stage
+  }
+}
+    `;
+export type MoveWorkOrderStageMutationFn = Apollo.MutationFunction<MoveWorkOrderStageMutation, MoveWorkOrderStageMutationVariables>;
+
+/**
+ * __useMoveWorkOrderStageMutation__
+ *
+ * To run a mutation, you first call `useMoveWorkOrderStageMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useMoveWorkOrderStageMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [moveWorkOrderStageMutation, { data, loading, error }] = useMoveWorkOrderStageMutation({
+ *   variables: {
+ *      request: // value for 'request'
+ *   },
+ * });
+ */
+export function useMoveWorkOrderStageMutation(baseOptions?: Apollo.MutationHookOptions<MoveWorkOrderStageMutation, MoveWorkOrderStageMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<MoveWorkOrderStageMutation, MoveWorkOrderStageMutationVariables>(MoveWorkOrderStageDocument, options);
+      }
+export type MoveWorkOrderStageMutationHookResult = ReturnType<typeof useMoveWorkOrderStageMutation>;
+export type MoveWorkOrderStageMutationResult = Apollo.MutationResult<MoveWorkOrderStageMutation>;
+export type MoveWorkOrderStageMutationOptions = Apollo.BaseMutationOptions<MoveWorkOrderStageMutation, MoveWorkOrderStageMutationVariables>;
 export const RecordInvoicePaymentDocument = gql`
     mutation RecordInvoicePayment($request: RecordInvoicePaymentRequest!) {
   recordInvoicePayment(request: $request) {
@@ -3812,6 +3926,7 @@ export const UpdateConfigurationDocument = gql`
     currency
     timezone
     decimalPlaces
+    productionClaimMode
   }
 }
     `;
@@ -4215,6 +4330,7 @@ export const ConfigurationDocument = gql`
     currency
     timezone
     decimalPlaces
+    productionClaimMode
   }
 }
     `;
@@ -5275,6 +5391,62 @@ export type ProcessesQueryHookResult = ReturnType<typeof useProcessesQuery>;
 export type ProcessesLazyQueryHookResult = ReturnType<typeof useProcessesLazyQuery>;
 export type ProcessesSuspenseQueryHookResult = ReturnType<typeof useProcessesSuspenseQuery>;
 export type ProcessesQueryResult = Apollo.QueryResult<ProcessesQuery, ProcessesQueryVariables>;
+export const ProductionBoardDocument = gql`
+    query ProductionBoard {
+  productionBoard {
+    claimMode
+    canSupervise
+    tasks {
+      uuid
+      code
+      itemName
+      uomName
+      plannedQty
+      reportedQty
+      goodQty
+      rejectedQty
+      stage
+      stageChangedAt
+      dueDate
+      assignedStaffUuid
+      assignedStaffName
+      salesOrderUuid
+    }
+  }
+}
+    `;
+
+/**
+ * __useProductionBoardQuery__
+ *
+ * To run a query within a React component, call `useProductionBoardQuery` and pass it any options that fit your needs.
+ * When your component renders, `useProductionBoardQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useProductionBoardQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useProductionBoardQuery(baseOptions?: Apollo.QueryHookOptions<ProductionBoardQuery, ProductionBoardQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ProductionBoardQuery, ProductionBoardQueryVariables>(ProductionBoardDocument, options);
+      }
+export function useProductionBoardLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ProductionBoardQuery, ProductionBoardQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ProductionBoardQuery, ProductionBoardQueryVariables>(ProductionBoardDocument, options);
+        }
+export function useProductionBoardSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ProductionBoardQuery, ProductionBoardQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<ProductionBoardQuery, ProductionBoardQueryVariables>(ProductionBoardDocument, options);
+        }
+export type ProductionBoardQueryHookResult = ReturnType<typeof useProductionBoardQuery>;
+export type ProductionBoardLazyQueryHookResult = ReturnType<typeof useProductionBoardLazyQuery>;
+export type ProductionBoardSuspenseQueryHookResult = ReturnType<typeof useProductionBoardSuspenseQuery>;
+export type ProductionBoardQueryResult = Apollo.QueryResult<ProductionBoardQuery, ProductionBoardQueryVariables>;
 export const PurchaseInvoiceDocument = gql`
     query PurchaseInvoice($request: PurchaseInvoiceRequest!) {
   purchaseInvoice(request: $request) {
@@ -5722,6 +5894,14 @@ export const SalesOrderDocument = gql`
     query SalesOrder($request: SalesOrderRequest!) {
   salesOrder(request: $request) {
     ...SalesOrderFields
+    customer {
+      address
+      barangay
+      city
+      province
+      region
+      postalCode
+    }
     items {
       ...SalesOrderItemFields
     }
@@ -6362,6 +6542,55 @@ export type WorkOrderItemsQueryHookResult = ReturnType<typeof useWorkOrderItemsQ
 export type WorkOrderItemsLazyQueryHookResult = ReturnType<typeof useWorkOrderItemsLazyQuery>;
 export type WorkOrderItemsSuspenseQueryHookResult = ReturnType<typeof useWorkOrderItemsSuspenseQuery>;
 export type WorkOrderItemsQueryResult = Apollo.QueryResult<WorkOrderItemsQuery, WorkOrderItemsQueryVariables>;
+export const WorkOrderStageLogsDocument = gql`
+    query WorkOrderStageLogs($request: IdRequest!) {
+  workOrderStageLogs(request: $request) {
+    uuid
+    fromStage
+    toStage
+    staffName
+    movedBy
+    reportedQty
+    goodQty
+    rejectedQty
+    note
+    insertedAt
+  }
+}
+    `;
+
+/**
+ * __useWorkOrderStageLogsQuery__
+ *
+ * To run a query within a React component, call `useWorkOrderStageLogsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useWorkOrderStageLogsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useWorkOrderStageLogsQuery({
+ *   variables: {
+ *      request: // value for 'request'
+ *   },
+ * });
+ */
+export function useWorkOrderStageLogsQuery(baseOptions: Apollo.QueryHookOptions<WorkOrderStageLogsQuery, WorkOrderStageLogsQueryVariables> & ({ variables: WorkOrderStageLogsQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<WorkOrderStageLogsQuery, WorkOrderStageLogsQueryVariables>(WorkOrderStageLogsDocument, options);
+      }
+export function useWorkOrderStageLogsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<WorkOrderStageLogsQuery, WorkOrderStageLogsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<WorkOrderStageLogsQuery, WorkOrderStageLogsQueryVariables>(WorkOrderStageLogsDocument, options);
+        }
+export function useWorkOrderStageLogsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<WorkOrderStageLogsQuery, WorkOrderStageLogsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<WorkOrderStageLogsQuery, WorkOrderStageLogsQueryVariables>(WorkOrderStageLogsDocument, options);
+        }
+export type WorkOrderStageLogsQueryHookResult = ReturnType<typeof useWorkOrderStageLogsQuery>;
+export type WorkOrderStageLogsLazyQueryHookResult = ReturnType<typeof useWorkOrderStageLogsLazyQuery>;
+export type WorkOrderStageLogsSuspenseQueryHookResult = ReturnType<typeof useWorkOrderStageLogsSuspenseQuery>;
+export type WorkOrderStageLogsQueryResult = Apollo.QueryResult<WorkOrderStageLogsQuery, WorkOrderStageLogsQueryVariables>;
 export const WorkOrdersDocument = gql`
     query WorkOrders {
   workOrders {

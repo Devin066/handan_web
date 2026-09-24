@@ -1,0 +1,22 @@
+query ProductionBoard {
+  productionBoard {
+    claimMode
+    canSupervise
+    tasks {
+      uuid
+      code
+      itemName
+      uomName
+      plannedQty
+      reportedQty
+      goodQty
+      rejectedQty
+      stage
+      stageChangedAt
+      dueDate
+      assignedStaffUuid
+      assignedStaffName
+      salesOrderUuid
+    }
+  }
+}

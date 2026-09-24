@@ -3,5 +3,6 @@ query Configuration {
     currency
     timezone
     decimalPlaces
+    productionClaimMode
   }
 }

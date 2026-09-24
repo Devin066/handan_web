@@ -1,0 +1,14 @@
+query WorkOrderStageLogs($request: IdRequest!) {
+  workOrderStageLogs(request: $request) {
+    uuid
+    fromStage
+    toStage
+    staffName
+    movedBy
+    reportedQty
+    goodQty
+    rejectedQty
+    note
+    insertedAt
+  }
+}

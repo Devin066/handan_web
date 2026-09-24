@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Card, Button, Select, Space, Typography } from 'antd';
+import { Card, Button, Radio, Select, Space, Typography } from 'antd';
 
 import { useConfigurationQuery, useUpdateConfigurationMutation } from '@/gql';
 import { useMessageContext } from '@/components/common/message-context';
@@ -95,6 +95,41 @@ const Regional = () => {
   );
 };
 
+/** Who hands out production tasks on the office board. */
+const ProductionClaiming = () => {
+  const { messageApi } = useMessageContext();
+  const { data, loading } = useConfigurationQuery({ fetchPolicy: 'cache-and-network' });
+  const [update, { loading: saving }] = useUpdateConfigurationMutation({
+    onCompleted: () => messageApi?.success('Production board setting saved'),
+    onError,
+  });
+  const mode = data?.configuration?.productionClaimMode ?? 'manager';
+
+  return (
+    <Card loading={loading} style={{ maxWidth: 720, marginTop: 12 }}>
+      <Title level={5} style={{ marginTop: 0 }}>
+        Production board
+      </Title>
+      <Text type="secondary">
+        Who moves a task out of the queue. Passing quality check, final check and completing a task always need a
+        manager or the owner.
+      </Text>
+      <div style={{ marginTop: 16 }}>
+        <Radio.Group
+          value={mode}
+          disabled={saving}
+          onChange={(e) => update({ variables: { request: { productionClaimMode: e.target.value } } })}
+        >
+          <Space direction="vertical">
+            <Radio value="manager">A manager assigns tasks to workers</Radio>
+            <Radio value="self">Workers claim tasks themselves</Radio>
+          </Space>
+        </Radio.Group>
+      </div>
+    </Card>
+  );
+};
+
 const Configuration: React.FC = () => {
   const { messageApi } = useMessageContext();
   const setCurrency = useConfigStore((state) => state.setCurrency);
@@ -179,6 +214,7 @@ const Configuration: React.FC = () => {
         </div>
       </Card>
       <Regional />
+      <ProductionClaiming />
     </>
   );
 };

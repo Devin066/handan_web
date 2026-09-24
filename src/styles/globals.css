@@ -22,7 +22,7 @@
 :root {
   color-scheme: light;
 
-  --background: #f1f5f9;
+  --background: #f4f4f5;
   --foreground: #0f172a;
   --surface: #ffffff;
   --border: #e2e8f0;
@@ -60,7 +60,7 @@ body {
 
 /* Keyboard focus must stay visible; Ant Design's default ring is easy to lose. */
 :focus-visible {
-  outline: 2px solid #1e40af;
+  outline: 2px solid #c2410c;
   outline-offset: 2px;
 }
 
@@ -88,7 +88,7 @@ body {
 
 /* Selected sidebar item: a left rule as well as the fill, so it is not colour alone. */
 .app-sider .ant-menu-item-selected {
-  box-shadow: inset 3px 0 0 #60a5fa;
+  box-shadow: inset 3px 0 0 #1c1917;
 }
 .ant-pro-sider .ant-pro-sider-logo h1 {
   color: #ffffff;
@@ -123,7 +123,7 @@ body {
   border-left: 0;
 }
 .kpi-cell:hover {
-  background: #f8fafc;
+  background: #fafafa;
   color: inherit;
 }
 .kpi-label {
@@ -178,18 +178,12 @@ body {
   background: #ffffff;
 }
 .login-aside {
-  background: #0b1b3f;
-  color: #c7d2e5;
+  background: #141414;
+  color: #d4d4d4;
   padding: 48px 56px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-}
-.login-brand {
-  color: #ffffff;
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
 }
 .login-lede {
   margin: 8px 0 32px;
@@ -201,14 +195,14 @@ body {
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid #1e3366;
+  border-top: 1px solid #2e2e2e;
 }
 .login-modules li {
   display: flex;
   justify-content: space-between;
   gap: 16px;
   padding: 12px 0;
-  border-bottom: 1px solid #1e3366;
+  border-bottom: 1px solid #2e2e2e;
   font-size: 14px;
 }
 .login-module-name {
@@ -216,7 +210,7 @@ body {
   font-weight: 500;
 }
 .login-module-docs {
-  color: #8ea0c0;
+  color: #a3a3a3;
   text-align: right;
 }
 .login-panel {
@@ -260,15 +254,15 @@ body {
 }
 .ant-pro-sider-actions .sider-action,
 .ant-pro-sider-actions .sider-action .anticon {
-  color: #c7d2e5;
+  color: #d4d4d4;
 }
 .ant-pro-sider-actions .sider-action:hover {
   color: #ffffff;
-  background: #132a5c;
+  background: #262626;
 }
 .ant-pro-sider .ant-pro-sider-actions-avatar,
 .ant-pro-sider .ant-pro-sider-actions-avatar * {
-  color: #c7d2e5;
+  color: #d4d4d4;
 }
 
 /* Sidebar footer: account on the left, collapse toggle on the right. */
@@ -278,7 +272,7 @@ body {
   gap: 8px;
   margin: 0 -8px;
   padding: 12px 8px 4px;
-  border-top: 1px solid #1e3366;
+  border-top: 1px solid #2e2e2e;
 }
 .sider-footer.is-collapsed {
   flex-direction: column;
@@ -306,7 +300,7 @@ body {
 }
 .sider-account:hover,
 .sider-toggle:hover {
-  background: #132a5c;
+  background: #262626;
 }
 .sider-account-text {
   display: flex;
@@ -324,7 +318,7 @@ body {
 }
 .sider-account-role {
   overflow: hidden;
-  color: #8ea0c0;
+  color: #a3a3a3;
   font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -338,7 +332,7 @@ body {
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: #c7d2e5;
+  color: #d4d4d4;
   cursor: pointer;
   transition:
     background-color 150ms ease-out,
@@ -406,23 +400,298 @@ body {
   height: 100%;
 }
 
-/* Journal lines inside a ledger row: debits flush left, credits indented. */
-.journal-lines {
-  border-collapse: collapse;
-  min-width: 320px;
-}
-.journal-lines td {
-  padding: 1px 8px 1px 0;
-  font-size: 13px;
-  white-space: nowrap;
-}
-.journal-lines td:nth-child(2),
-.journal-lines td:nth-child(3) {
-  min-width: 96px;
-}
-
 .login-notice {
   margin: 32px 0 0;
   font-size: 12px;
+  color: #64748b;
+}
+
+/*
+ * Journal entry lines: account, debit, credit in fixed columns so amounts line
+ * up from one entry to the next. Credit accounts are indented, as in a journal.
+ */
+.journal-lines {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+.journal-lines td {
+  padding: 2px 0;
+  font-size: 13px;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.journal-lines-amount {
+  width: 120px;
+}
+.journal-lines td:not(:first-child) {
+  padding-left: 12px;
+  text-align: right;
+  white-space: nowrap;
+}
+.journal-lines-head {
+  display: grid;
+  grid-template-columns: 1fr 108px 108px;
+  column-gap: 12px;
+}
+.journal-lines-head span:not(:first-child) {
+  text-align: right;
+}
+
+/* Brand artwork: the wordmark is drawn on black, so it keeps a small rounded frame. */
+.brand-logo {
+  display: block;
+  height: 40px;
+  width: auto;
+  border-radius: 6px;
+}
+.brand-mark {
+  display: block;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: contain;
+}
+.login-logo-mobile {
+  display: none;
+  width: 200px;
+  height: auto;
+  margin-bottom: 24px;
+  border-radius: 8px;
+}
+@media (max-width: 767px) {
+  .login-logo-mobile {
+    display: block;
+  }
+}
+.login-logo {
+  display: block;
+  width: min(320px, 100%);
+  height: auto;
+  border-radius: 10px;
+}
+/* ProLayout caps logo images at ~22px; the wordmark needs room to be read. */
+.ant-pro-sider-logo {
+  justify-content: center !important;
+  padding-block: 12px !important;
+}
+.ant-pro-sider-logo > a {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 0 !important;
+}
+.ant-pro-sider-logo > a > img.brand-logo,
+.ant-pro-sider-logo img.brand-logo {
+  height: 48px !important;
+  width: auto !important;
+}
+.ant-pro-sider-logo img.brand-mark {
+  width: 36px !important;
+  height: 36px !important;
+}
+
+/* Selected nav item: dark text on the orange fill (white would be ~2.9:1). */
+.ant-pro-sider .ant-menu-item-selected,
+.ant-pro-sider .ant-menu-item-selected a,
+.ant-pro-sider .ant-menu-item-selected .ant-pro-base-menu-inline-item-title,
+.ant-pro-sider .ant-menu-item-selected .anticon {
+  color: #1c1917 !important;
+  font-weight: 600;
+}
+
+/* Ant Design uses the fill orange for some text on white; use the readable shade. */
+.ant-pagination .ant-pagination-item-active a,
+.ant-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn,
+.ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-cell-inner {
+  color: #c2410c !important;
+}
+/* No title text sits beside the logo, so drop the gap reserved for it. */
+.ant-pro-sider-logo > a {
+  gap: 0 !important;
+}
+.ant-pro-sider-logo > a > :not(img) {
+  display: none !important;
+}
+
+/*
+ * Collapsed sidebar: a section's pages open in a white pop-out, but it
+ * inherits the sidebar's light text, which is nearly invisible on white.
+ * Give it the normal dark text colours instead.
+ */
+.ant-menu-submenu-popup .ant-menu-item,
+.ant-menu-submenu-popup .ant-menu-item a {
+  color: #334155 !important;
+}
+.ant-menu-submenu-popup .ant-menu-item:hover,
+.ant-menu-submenu-popup .ant-menu-item:hover a {
+  background: #f4f4f5 !important;
+  color: #0f172a !important;
+}
+.ant-menu-submenu-popup .ant-menu-item-selected,
+.ant-menu-submenu-popup .ant-menu-item-selected a {
+  background: #f86901 !important;
+  color: #1c1917 !important;
+  font-weight: 600;
+}
+
+/*
+ * Production board: one column per stage, read from across the office, so the
+ * type is larger than the rest of the app and every card is a big tap target.
+ */
+.board {
+  background: var(--background);
+}
+.board:fullscreen {
+  padding: 20px;
+  overflow: auto;
+}
+.board-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.board-columns {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(220px, 1fr));
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+.board-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-top: 3px solid #cbd5e1;
+  border-radius: 8px;
+}
+.board-column-in_progress {
+  border-top-color: #f86901;
+}
+.board-column-quality_check,
+.board-column-final_check {
+  border-top-color: #0369a1;
+}
+.board-column-completed {
+  border-top-color: #15803d;
+}
+.board-column-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #475569;
+}
+.board-count {
+  min-width: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #f4f4f5;
+  color: #0f172a;
+  text-align: center;
+}
+.board-column-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+}
+.board-card {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease-out, background-color 150ms ease-out;
+}
+.board-card:hover {
+  border-color: #f86901;
+  background: #fffaf5;
+}
+.board-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.board-card-item {
+  margin-top: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.board-card-qty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 15px;
+}
+.board-card-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #475569;
+}
+.board-card-due {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #64748b;
+}
+.board-flag {
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.board-flag-late {
+  background: #fef2f2;
+  color: #b42318;
+}
+.board-flag-extra {
+  background: #fff1e6;
+  color: #9a3412;
+}
+.board-detail {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+}
+
+/* A grouped address block inside a form. */
+.address-fields {
+  margin: 0 0 8px;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.address-fields > legend {
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+  border: 0;
+}
+.address-fields-extra {
+  margin-bottom: 8px;
+  font-size: 13px;
   color: #64748b;
 }

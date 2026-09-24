@@ -3,8 +3,7 @@ import { Prisma } from '@/generated/prisma/client';
 import type { Context } from '../context';
 import { requireCompany } from '../context';
 import { nextCode } from '../domain/codes';
-import { applyStockMove } from '../domain/stock';
-import { expandBom, refreshWorkOrder } from '../domain/production';
+import { expandBom, refreshWorkOrder, storeFinishedGoods } from '../domain/production';
 import { JOB_CARD_STATUS, WORK_ORDER_STATUS } from '../domain/status';
 import { manilaDay } from '../domain/time';
 
@@ -338,65 +337,8 @@ export const productionResolvers = {
       }
 
       return ctx.db.$transaction(async (tx) => {
-        const workOrder = await tx.workOrder.findFirstOrThrow({
-          where: { uuid: request.workOrderUuid, companyUuid },
-          include: { materialRequests: true },
-        });
-
-        const alreadyStored = new Prisma.Decimal(workOrder.storedQty);
-        const producible = new Prisma.Decimal(workOrder.producedQty).sub(alreadyStored);
-
-        if (storedQty.gt(producible)) {
-          throw new GraphQLError(`cannot store ${storedQty}: only ${producible} produced but not yet stored`);
-        }
-
-        if (!workOrder.stockUomUuid) {
-          throw new GraphQLError('work order item has no stock UOM, cannot store it');
-        }
-
-        // Components are consumed in proportion to what is actually being stored,
-        // so a partial store only burns its share of the material.
-        const ratio = storedQty.div(workOrder.plannedQty);
-
-        for (const material of workOrder.materialRequests) {
-          if (!material.stockUomUuid) continue;
-
-          const consumed = new Prisma.Decimal(material.actualQty).mul(ratio);
-
-          await applyStockMove(tx, {
-            companyUuid,
-            itemUuid: material.itemUuid,
-            warehouseUuid: material.warehouseUuid,
-            stockUomUuid: material.stockUomUuid,
-            qty: consumed.negated(),
-            type: 'material_consumption',
-            threadType: 'work_order',
-            threadUuid: workOrder.uuid,
-          });
-
-          await tx.workOrderMaterialRequest.update({
-            where: { uuid: material.uuid },
-            data: { receivedQty: { increment: consumed } },
-          });
-        }
-
-        await applyStockMove(tx, {
-          companyUuid,
-          itemUuid: workOrder.itemUuid,
-          warehouseUuid: workOrder.warehouseUuid,
-          stockUomUuid: workOrder.stockUomUuid,
-          qty: storedQty,
-          type: 'production',
-          threadType: 'work_order',
-          threadUuid: workOrder.uuid,
-        });
-
-        await tx.workOrder.update({
-          where: { uuid: workOrder.uuid },
-          data: { storedQty: { increment: storedQty } },
-        });
-
-        return refreshWorkOrder(tx, workOrder.uuid);
+        await storeFinishedGoods(tx, companyUuid, request.workOrderUuid!, storedQty);
+        return tx.workOrder.findUniqueOrThrow({ where: { uuid: request.workOrderUuid } });
       });
     },
   },

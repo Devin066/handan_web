@@ -740,11 +740,21 @@ model WorkOrder {
   /// Paid to the operator for each good unit reported on this work order.
   pieceRate         Decimal   @default(0) @db.Decimal(18, 4)
   machineHours      Decimal   @default(0) @db.Decimal(10, 2)
+  /// Production board stage: queued | assigned | in_progress | quality_check |
+  /// final_check | completed. See domain/production-stage.ts.
+  stage             String    @default("queued")
+  stageChangedAt    DateTime  @default(now())
+  /// Pieces the worker says they made, which can exceed plannedQty.
+  reportedQty       Decimal   @default(0) @db.Decimal(18, 4)
+  /// Pieces that passed quality check; what gets stocked and paid.
+  goodQty           Decimal   @default(0) @db.Decimal(18, 4)
+  rejectedQty       Decimal   @default(0) @db.Decimal(18, 4)
   warehouseUuid     String
   companyUuid       String
   insertedAt        DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
+  stageLogs        WorkOrderStageLog[]
   item             Item                       @relation(fields: [itemUuid], references: [uuid])
   bom              Bom?                       @relation(fields: [bomUuid], references: [uuid])
   warehouse        Warehouse                  @relation(fields: [warehouseUuid], references: [uuid])
@@ -755,6 +765,29 @@ model WorkOrder {
 
   @@index([companyUuid])
   @@index([companyUuid, status, priority])
+  @@index([companyUuid, stage])
+}
+
+/// One move on the production board: who moved it, where, and the counts then.
+model WorkOrderStageLog {
+  uuid          String   @id @default(uuid())
+  workOrderUuid String
+  fromStage     String?
+  toStage       String
+  /// The employee the task is with after this move.
+  staffUuid     String?
+  /// The signed-in account that made the move.
+  userUuid      String?
+  reportedQty   Decimal? @db.Decimal(18, 4)
+  goodQty       Decimal? @db.Decimal(18, 4)
+  rejectedQty   Decimal? @db.Decimal(18, 4)
+  note          String?
+  companyUuid   String
+  insertedAt    DateTime @default(now())
+
+  workOrder WorkOrder @relation(fields: [workOrderUuid], references: [uuid], onDelete: Cascade)
+
+  @@index([workOrderUuid])
 }
 
 model WorkOrderItem {

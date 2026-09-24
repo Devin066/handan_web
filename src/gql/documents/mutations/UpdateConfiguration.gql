@@ -3,5 +3,6 @@ mutation UpdateConfiguration($request: UpdateConfigurationRequest!) {
 		currency
 		timezone
 		decimalPlaces
+		productionClaimMode
 	}
 }

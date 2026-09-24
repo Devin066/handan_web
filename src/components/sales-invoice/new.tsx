@@ -18,6 +18,8 @@ import {
   Table,
   Typography,
 } from 'antd';
+import AddressFields from '@/components/shared/address-fields';
+import { addressFromCustomer, composeAddress } from '@/config/address';
 
 import { useMessageContext } from '@/components/common/message-context';
 import { tokens } from '@/components/common/theme';
@@ -117,7 +119,7 @@ const SalesInvoiceNew = ({ open, onClose, onCreated, salesOrderUuid }: Props) =>
           discount: 0,
         })),
     );
-    form.setFieldsValue({ customerName: loaded.customerName });
+    form.setFieldsValue({ customerName: loaded.customerName, billTo: addressFromCustomer(loaded.customer) });
   }, [loaded, orderUuid, form]);
 
   const totals = computeInvoiceTotals(lines, vatMode);
@@ -143,7 +145,7 @@ const SalesInvoiceNew = ({ open, onClose, onCreated, salesOrderUuid }: Props) =>
           invoiceDate: values.invoiceDate?.startOf('day').toISOString(),
           paymentTerms: values.paymentTerms,
           dueDate: values.dueDate?.startOf('day').toISOString(),
-          customerAddress: values.customerAddress,
+          customerAddress: composeAddress(values.billTo) || null,
           customerTin: values.customerTin,
           customerReference: values.customerReference,
           vatMode: values.vatMode,
@@ -259,11 +261,7 @@ const SalesInvoiceNew = ({ open, onClose, onCreated, salesOrderUuid }: Props) =>
               <Input disabled placeholder="From the sales order" />
             </Form.Item>
           </Col>
-          <Col xs={24} md={10}>
-            <Form.Item label="Billing address" name="customerAddress" extra="Leave blank to use the address on file.">
-              <Input />
-            </Form.Item>
-          </Col>
+
           <Col xs={24} md={6}>
             <Form.Item
               label="Customer TIN"
@@ -281,6 +279,11 @@ const SalesInvoiceNew = ({ open, onClose, onCreated, salesOrderUuid }: Props) =>
             </Form.Item>
           </Col>
         </Row>
+        <AddressFields
+          name="billTo"
+          label="Billing address"
+          extra="Filled from the customer's address on file. Printed on the invoice."
+        />
 
         <Text strong style={{ display: 'block', margin: '4px 0 12px' }}>
           Lines

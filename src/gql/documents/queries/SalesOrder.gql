@@ -1,6 +1,14 @@
 query SalesOrder($request: SalesOrderRequest!) {
 	salesOrder(request: $request) {
 		...SalesOrderFields
+		customer {
+			address
+			barangay
+			city
+			province
+			region
+			postalCode
+		}
 		items {
 			...SalesOrderItemFields
 		}

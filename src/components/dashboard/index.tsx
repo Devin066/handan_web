@@ -249,7 +249,7 @@ const Dashboard = () => {
                 </div>
               }
             >
-              <span>at standard cost, {plural(low.length, 'item')} low</span>
+              <span>at cost, {plural(low.length, 'item')} low</span>
             </Tooltip>
           }
           attention={low.length > 0}
@@ -290,7 +290,7 @@ const Dashboard = () => {
       <Row gutter={[12, 12]}>
         <Col xs={24} lg={12}>
           <WorkList
-            title="Out of stock"
+            title="Out of Stock"
             href="/setup/items"
             items={out}
             loading={busy}
@@ -305,7 +305,7 @@ const Dashboard = () => {
         </Col>
         <Col xs={24} lg={12}>
           <WorkList
-            title="Low stock"
+            title="Low Stock"
             href="/setup/items"
             items={low}
             loading={busy}
@@ -324,14 +324,14 @@ const Dashboard = () => {
       <Row gutter={[12, 12]}>
         <Col xs={24} md={12}>
           <Aging
-            title="Accounts receivable"
+            title="Accounts Receivable"
             href="/finance/sales-invoices"
             data={d.accountsReceivable}
             loading={busy}
           />
         </Col>
         <Col xs={24} md={12}>
-          <Aging title="Accounts payable" href="/finance/purchase-invoices" data={d.accountsPayable} loading={busy} />
+          <Aging title="Accounts Payable" href="/finance/purchase-invoices" data={d.accountsPayable} loading={busy} />
         </Col>
       </Row>
 

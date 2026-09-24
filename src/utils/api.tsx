@@ -107,7 +107,7 @@ export const fetchCustomers = async (params?: any) => {
     return {
       value: item.uuid,
       label: item.name,
-      address: item.address,
+      customer: item,
     };
   });
 

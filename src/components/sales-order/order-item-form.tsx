@@ -153,7 +153,7 @@ const OrderItemForm = (props: any) => {
       // width: '15%',
     },
     {
-      title: 'Custom spec',
+      title: 'Custom Spec',
       dataIndex: 'customSpec',
       tooltip: 'Finish, fitment or dimensions for a made-to-order part. A line with a spec always gets a work order.',
       fieldProps: { placeholder: 'Optional' },

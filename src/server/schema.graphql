@@ -545,6 +545,14 @@ type WorkOrder {
   warehouse: Warehouse
   items: [WorkOrderItem]
   materialRequests: [WorkOrderMaterialRequest]
+  "Production board stage: queued, assigned, in_progress, quality_check, final_check, completed."
+  stage: String
+  stageChangedAt: DateTime
+  "Pieces the worker reported; can exceed plannedQty."
+  reportedQty: Decimal
+  "Pieces that passed quality check."
+  goodQty: Decimal
+  rejectedQty: Decimal
   insertedAt: DateTime
   updatedAt: DateTime
 }
@@ -1042,12 +1050,47 @@ type Configuration {
   currency: String
   timezone: String
   decimalPlaces: Int
+  "manager: a manager assigns production tasks. self: workers claim them."
+  productionClaimMode: String
 }
 
 input UpdateConfigurationRequest {
   currency: String
   timezone: String
   decimalPlaces: Int
+  productionClaimMode: String
+}
+
+type ProductionBoard {
+  claimMode: String
+  "Whether the signed-in account may pass checks and complete tasks."
+  canSupervise: Boolean
+  tasks: [WorkOrder]
+}
+
+type WorkOrderStageLog {
+  uuid: ID
+  fromStage: String
+  toStage: String
+  staffName: String
+  movedBy: String
+  reportedQty: Decimal
+  goodQty: Decimal
+  rejectedQty: Decimal
+  note: String
+  insertedAt: DateTime
+}
+
+input MoveWorkOrderStageRequest {
+  uuid: ID!
+  toStage: String!
+  "Who the task goes to, when assigning or claiming."
+  staffUuid: ID
+  "Pieces made, when sending to quality check."
+  reportedQty: Float
+  "Pieces that passed, when passing quality check."
+  goodQty: Float
+  note: String
 }
 
 type RootQueryType {
@@ -1105,6 +1148,9 @@ type RootQueryType {
 
   "Executive dashboard widgets (SRS 3)."
   dashboard: JSON
+  "Production office board: work orders by stage."
+  productionBoard: ProductionBoard
+  workOrderStageLogs(request: IdRequest!): [WorkOrderStageLog]
   purchaseRequests: [PurchaseRequest]
   openPurchaseRequestItems: [PurchaseRequestItem]
   "Last known prices from one supplier (uuid = supplier)."
@@ -1173,4 +1219,6 @@ type RootMutationType {
   finalizePayroll(request: IdRequest!): PayrollPeriod
   updateRolePermissions(request: RolePermissionRequest!): RolePermission
   setUserRole(request: UserRoleRequest!): Staff
+  "Moves a work order to another stage on the production board."
+  moveWorkOrderStage(request: MoveWorkOrderStageRequest!): WorkOrder
 }

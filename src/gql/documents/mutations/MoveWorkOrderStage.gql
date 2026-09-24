@@ -1,0 +1,6 @@
+mutation MoveWorkOrderStage($request: MoveWorkOrderStageRequest!) {
+  moveWorkOrderStage(request: $request) {
+    uuid
+    stage
+  }
+}

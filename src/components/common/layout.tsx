@@ -113,8 +113,14 @@ const GlobalLayout: FC<LayoutProps> = ({ children }) => {
           collapsedButtonRender: false,
           menuFooterRender: () => <SiderFooter collapsed={collapsed} onToggle={() => handleCollapse(!collapsed)} />,
           ...menuProps,
-          logo: '/logo.png',
-          title: brand.name,
+          // The full wordmark already spells the name, so no title text beside it.
+          // Collapsed, the rail is too narrow for it; the lathe mark stands in.
+          logo: collapsed ? (
+            <img src="/handlathe-icon.png" alt={brand.name} className="brand-mark" />
+          ) : (
+            <img src="/handlathe-logo.jpg" alt={brand.name} className="brand-logo" />
+          ),
+          title: false,
           layout: 'side',
           onMenuHeaderClick: handleLogoClick,
           // Chrome stays quiet so the data carries the visual weight. The
@@ -122,7 +128,7 @@ const GlobalLayout: FC<LayoutProps> = ({ children }) => {
           // tables for attention and cost a blur pass on every scroll.
           token: {
             colorBgCollapsedButton: tokens.surface,
-            colorTextCollapsedButtonHover: tokens.primary,
+            colorTextCollapsedButtonHover: tokens.primaryText,
             colorTextCollapsedButton: tokens.textTertiary,
             sider: {
               colorMenuBackground: tokens.chrome,
@@ -131,7 +137,7 @@ const GlobalLayout: FC<LayoutProps> = ({ children }) => {
               colorTextMenuTitle: '#FFFFFF',
               colorTextMenu: tokens.chromeText,
               colorTextMenuSecondary: tokens.chromeTextMuted,
-              colorTextMenuSelected: '#FFFFFF',
+              colorTextMenuSelected: tokens.onPrimary,
               colorTextMenuActive: '#FFFFFF',
               colorTextMenuItemHover: '#FFFFFF',
               colorBgMenuItemHover: tokens.chromeHover,

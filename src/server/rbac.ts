@@ -67,6 +67,9 @@ const GUARDED: Record<string, Module> = {
   reportJobCard: 'production',
   storeFinishItem: 'production',
   createWorkstation: 'production',
+  productionBoard: 'production',
+  workOrderStageLogs: 'production',
+  moveWorkOrderStage: 'production',
   updateWorkstation: 'production',
 
   createReceiptNote: 'inventory',

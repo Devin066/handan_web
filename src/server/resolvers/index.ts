@@ -8,6 +8,7 @@ import { financeResolvers } from './finance';
 import { configurationResolvers } from './configuration';
 import { hrResolvers } from './hr';
 import { dashboardResolvers } from './dashboard';
+import { productionBoardResolvers } from './production-board';
 import { guardRootFields } from '../rbac';
 
 type ResolverMap = Record<string, Record<string, unknown>>;
@@ -40,6 +41,7 @@ const merged = mergeResolvers(
   configurationResolvers as unknown as ResolverMap,
   hrResolvers as unknown as ResolverMap,
   dashboardResolvers as unknown as ResolverMap,
+  productionBoardResolvers as unknown as ResolverMap,
 );
 
 export const resolvers: ResolverMap = {

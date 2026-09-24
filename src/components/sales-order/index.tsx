@@ -142,7 +142,7 @@ const SalesOrderList: React.FC = () => {
         <>
           {record.status !== 'cancelled' && record.deliveryStatus != 'fully_delivered' && (
             <Button key="work-orders" size="small" type="link" onClick={() => setWorkOrdersFor(record.uuid)}>
-              Work orders
+              Work Orders
             </Button>
           )}
         </>,
@@ -186,7 +186,7 @@ const SalesOrderList: React.FC = () => {
         }}
         toolBarRender={() => [
           <Link key="delivery-notes" href="/stock/delivery-notes">
-            <Button size="small">Delivery notes</Button>
+            <Button size="small">Delivery Notes</Button>
           </Link>,
           <SalesOrderNew key="sales-order-new" onCreate={(values: any) => handleCreate(values)} />,
         ]}

@@ -44,10 +44,24 @@ const AccountingLedger = () => {
     },
     { title: 'Description', dataIndex: 'description' },
     {
-      title: 'Lines',
+      title: (
+        <div className="journal-lines-head">
+          <span>Account</span>
+          <span>Debit</span>
+          <span>Credit</span>
+        </div>
+      ),
       dataIndex: 'lines',
+      width: 460,
+      // Every entry is its own small table, so the columns are fixed widths:
+      // sized by content, each row's amounts would start at a different place.
       render: (_, r) => (
         <table className="journal-lines">
+          <colgroup>
+            <col />
+            <col className="journal-lines-amount" />
+            <col className="journal-lines-amount" />
+          </colgroup>
           <tbody>
             {(r.lines ?? []).map((l: any) => (
               <tr key={l.uuid}>

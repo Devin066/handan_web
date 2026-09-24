@@ -74,7 +74,7 @@ const SiderFooter = ({ collapsed, onToggle }: { collapsed: boolean; onToggle: ()
       }}
     >
       <button type="button" className="sider-account" aria-label={`Account menu for ${name}`}>
-        <Avatar size={32} style={{ backgroundColor: tokens.primary, flexShrink: 0 }}>
+        <Avatar size={32} style={{ backgroundColor: tokens.primary, color: tokens.onPrimary, flexShrink: 0 }}>
           {name.charAt(0).toUpperCase()}
         </Avatar>
         {collapsed ? null : (

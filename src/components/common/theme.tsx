@@ -5,19 +5,25 @@ import type { ThemeConfig } from 'antd';
  * these, so this file is the single place to change the look — components should
  * not carry their own colours.
  *
- * Direction: "data-dense dashboard" — navy for structure and primary actions,
- * amber reserved for things that need an operator's attention, generous data
- * density over decorative whitespace.
+ * Direction: "data-dense dashboard" — Handlathe orange for primary actions and
+ * the current location, a near-black sidebar matching the logo, red reserved
+ * for things that need an operator's attention, data density over whitespace.
  */
 
 export const tokens = {
-  // Navy carries structure and primary actions.
-  primary: '#1E40AF',
-  primaryHover: '#1D4ED8',
-  primaryActive: '#1E3A8A',
+  // Handlathe orange (brand) carries primary actions and the current location.
+  // White on this orange is only ~2.9:1, so anything filled with it uses dark
+  // text (onPrimary, ~5.7:1), and orange *text* on white uses the deeper
+  // primaryText shade (~5.2:1).
+  primary: '#F86901',
+  primaryHover: '#FF7F1F',
+  primaryActive: '#D95B00',
+  primaryText: '#C2410C',
+  onPrimary: '#1C1917',
 
-  // Amber is reserved for "needs attention". Used sparingly so it keeps meaning.
-  accent: '#D97706',
+  // "Needs attention" can no longer be amber: next to an orange brand it would
+  // read as decoration. It is a restrained red, used sparingly.
+  accent: '#B42318',
 
   success: '#15803D',
   warning: '#B45309',
@@ -26,18 +32,18 @@ export const tokens = {
 
   // Surfaces. The app background is a cool grey so white cards and tables lift
   // off it without needing heavy shadows.
-  background: '#F1F5F9',
+  background: '#F4F4F5',
   surface: '#FFFFFF',
-  surfaceMuted: '#F8FAFC',
-  primarySubtle: '#EFF6FF',
+  surfaceMuted: '#FAFAFA',
+  primarySubtle: '#FFF1E6',
 
-  // Sidebar chrome. A deep navy rail gives the shell a fixed identity and
-  // separates navigation from the white working surface without shadows.
-  chrome: '#0B1B3F',
-  chromeHover: '#132A5C',
-  chromeSelected: '#1E3A8A',
-  chromeText: '#C7D2E5',
-  chromeTextMuted: '#8EA0C0',
+  // Sidebar chrome: near-black, matching the logo's own black ground, so the
+  // wordmark sits in the rail instead of on a badge.
+  chrome: '#141414',
+  chromeHover: '#262626',
+  chromeSelected: '#F86901',
+  chromeText: '#D4D4D4',
+  chromeTextMuted: '#A3A3A3',
 
   text: '#0F172A',
   textSecondary: '#475569',
@@ -54,6 +60,11 @@ const fontStack =
 const theme: ThemeConfig = {
   token: {
     colorPrimary: tokens.primary,
+    colorPrimaryText: tokens.primaryText,
+    colorPrimaryTextHover: tokens.primaryActive,
+    colorLink: tokens.primaryText,
+    colorLinkHover: tokens.primaryActive,
+    colorLinkActive: tokens.primaryActive,
     colorSuccess: tokens.success,
     colorWarning: tokens.warning,
     colorError: tokens.danger,
@@ -92,7 +103,7 @@ const theme: ThemeConfig = {
       itemBg: tokens.surface,
       subMenuItemBg: tokens.surface,
       itemSelectedBg: tokens.primarySubtle,
-      itemSelectedColor: tokens.primary,
+      itemSelectedColor: tokens.primaryText,
       itemHeight: 38,
       iconSize: 16,
     },
@@ -128,6 +139,7 @@ const theme: ThemeConfig = {
 
     Button: {
       primaryShadow: 'none',
+      primaryColor: tokens.onPrimary,
       defaultShadow: 'none',
 
       fontWeight: 500,

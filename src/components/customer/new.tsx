@@ -193,7 +193,7 @@ const CustomerNew = (props: any) => {
                         placeholder="(02) 8123 4567"
                         rules={[format(isValidLandline, LANDLINE_HINT)]}
                       />
-                      <ProFormText width="sm" name="facebook" label="Facebook" placeholder="Profile or page" />
+                      <ProFormText width="sm" name="facebook" label="Facebook" placeholder="Profile or Page" />
                       <ProFormText width="sm" name="whatsapp" label="WhatsApp" placeholder="optional" />
                     </ProForm.Group>
 

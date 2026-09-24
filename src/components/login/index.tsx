@@ -61,7 +61,7 @@ const Login = () => {
     <main className="login-page">
       {/* Names the real modules so the screen says what this system is for. */}
       <section className="login-aside">
-        <div className="login-brand">{brand.name}</div>
+        <img src="/handlathe-logo.jpg" alt={brand.name} className="login-logo" />
         <p className="login-lede">Orders, production and stock for the shop floor, in one place.</p>
         <ul className="login-modules">
           {MODULES.map((module) => (
@@ -75,6 +75,8 @@ const Login = () => {
 
       <section className="login-panel">
         <div className="login-form">
+          {/* The navy panel with the logo is hidden on phones. */}
+          <img src="/handlathe-logo.jpg" alt={brand.name} className="login-logo-mobile" />
           <Title level={3} style={{ margin: 0 }}>
             Sign in
           </Title>
@@ -105,7 +107,6 @@ const Login = () => {
               Sign in
             </Button>
           </Form>
-          <p className="login-notice">Built on the MIT-licensed Handan project. See NOTICE for attribution.</p>
         </div>
       </section>
     </main>

@@ -1,16 +1,11 @@
 import { useState } from 'react';
 import { Space, Button, Divider } from 'antd';
-import {
-  ModalForm,
-  ProForm,
-  ProFormText,
-  ProFormTextArea,
-  ProFormSelect,
-  ProFormDatePicker,
-} from '@ant-design/pro-components';
+import { ModalForm, ProForm, ProFormTextArea, ProFormSelect, ProFormDatePicker } from '@ant-design/pro-components';
 import dayjs from 'dayjs';
 import round from 'lodash.round';
 import size from 'lodash.size';
+import AddressFields from '@/components/shared/address-fields';
+import { addressFromCustomer, composeAddress } from '@/config/address';
 
 // locale
 import { useMessageContext } from '@/components/common/message-context';
@@ -54,7 +49,7 @@ const SalesOrderNew = (props: any) => {
     const request = {
       customerUuid: values.customerUuid,
       warehouseUuid: values.warehouseUuid,
-      customerAddress: values.customerAddress,
+      customerAddress: composeAddress(values.shipTo) || null,
       requiredDate: values.requiredDate ? dayjs(values.requiredDate).startOf('day').toISOString() : null,
       notes: values.notes,
       salesItems: updatedLineItems,
@@ -79,7 +74,7 @@ const SalesOrderNew = (props: any) => {
   };
 
   const handleSelctCustomer = (value: any, opt: any) => {
-    form.setFieldValue('customerAddress', opt.address);
+    form.setFieldValue('shipTo', addressFromCustomer(opt.customer));
   };
 
   return (
@@ -90,7 +85,7 @@ const SalesOrderNew = (props: any) => {
           setModalVisible(true);
         }}
       >
-        New sales order
+        New Sales Order
       </Button>
 
       <ModalForm
@@ -142,13 +137,6 @@ const SalesOrderNew = (props: any) => {
             placeholder="Select customer"
           />
 
-          <ProFormText
-            width="sm"
-            name="customerAddress"
-            label="Customer Address"
-            placeholder="Enter customer address"
-          />
-
           <ProFormSelect
             width="sm"
             name="warehouseUuid"
@@ -164,6 +152,12 @@ const SalesOrderNew = (props: any) => {
             tooltip="Orders due within 3 days or past this date are flagged on the dashboard."
           />
         </ProForm.Group>
+
+        <AddressFields
+          name="shipTo"
+          label="Delivery address"
+          extra="Filled from the customer's address on file; change it if this order goes elsewhere."
+        />
 
         <ProFormTextArea
           name="notes"

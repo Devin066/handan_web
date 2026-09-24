@@ -42,7 +42,10 @@ const menuProps = {
         name: 'Production',
         module: 'production',
         icon: <RocketOutlined />,
-        routes: [{ path: '/production/work-orders', name: 'Work Orders' }],
+        routes: [
+          { path: '/production/board', name: 'Production Board' },
+          { path: '/production/work-orders', name: 'Work Orders' },
+        ],
       },
       {
         path: '/stock',

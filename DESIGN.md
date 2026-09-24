@@ -21,16 +21,21 @@ a screen, it belongs in `theme.tsx`.
 
 ## Colour
 
-Navy carries structure and primary actions. Amber is reserved for *needs
-attention* and is used sparingly so it keeps that meaning.
+Handlathe orange (from the logo) marks primary actions and where you are.
+The sidebar is near-black to match the logo's own background. A restrained
+red is reserved for *needs attention* and used sparingly so it keeps that
+meaning.
 
 | Role | Value |
 | --- | --- |
-| Primary | `#1E40AF` |
-| Attention / accent | `#D97706` |
+| Primary (fills: buttons, selected nav) | `#F86901` |
+| Text on primary fills | `#1C1917` (white on this orange is only ~2.9:1) |
+| Primary as text on white (links, active tabs) | `#C2410C` (~5.2:1) |
+| Attention | `#B42318` |
 | Success | `#15803D` |
 | Danger | `#DC2626` |
-| Page background | `#F1F5F9` |
+| Sidebar | `#141414`, text `#D4D4D4` |
+| Page background | `#F4F4F5` |
 | Surface | `#FFFFFF` |
 | Text / secondary / tertiary | `#0F172A` / `#475569` / `#64748B` |
 
@@ -94,7 +99,7 @@ than a toggle.
 
 ## Accessibility
 
-- Focus is visible (`:focus-visible`, 2px navy ring); do not remove it.
+- Focus is visible (`:focus-visible`, 2px `#C2410C` ring); do not remove it.
 - `prefers-reduced-motion` is respected globally.
 - Status, movement direction and payment state are conveyed by text or sign as
   well as colour.

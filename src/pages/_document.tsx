@@ -5,7 +5,10 @@ import type { DocumentContext } from 'next/document';
 
 const MyDocument = () => (
   <Html lang="en">
-    <Head />
+    <Head>
+      <link rel="icon" type="image/png" href="/handlathe-icon.png" />
+      <link rel="apple-touch-icon" href="/handlathe-icon.png" />
+    </Head>
     <body>
       <Main />
       <NextScript />
