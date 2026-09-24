@@ -38,12 +38,13 @@ const WorkOrderNew = (props: any) => {
   return (
     <>
       <Button
+        type="primary"
         size="small"
         onClick={() => {
           setModalVisible(true);
         }}
       >
-        New work order
+        New Work Order
       </Button>
 
       <ModalForm

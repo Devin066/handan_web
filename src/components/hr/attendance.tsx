@@ -167,7 +167,7 @@ const Attendance = () => {
                         })
                       }
                     >
-                      {r.record?.timeIn ? 'Clock out' : 'Clock in'}
+                      {r.record?.timeIn ? 'Clock Out' : 'Clock in'}
                     </Button>
                   ) : null}
                   <Button size="small" type="link" onClick={() => openEdit(r)}>

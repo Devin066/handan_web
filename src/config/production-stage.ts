@@ -35,17 +35,17 @@ export type Move = {
 export const MOVES: Record<Stage, Move[]> = {
   queued: [{ to: 'assigned', label: 'Assign', supervisorOnly: false }],
   assigned: [
-    { to: 'in_progress', label: 'Start work', supervisorOnly: false },
-    { to: 'queued', label: 'Return to queue', supervisorOnly: false },
+    { to: 'in_progress', label: 'Start Work', supervisorOnly: false },
+    { to: 'queued', label: 'Return to Queue', supervisorOnly: false },
   ],
-  in_progress: [{ to: 'quality_check', label: 'Send to quality check', supervisorOnly: false }],
+  in_progress: [{ to: 'quality_check', label: 'Send to Quality Check', supervisorOnly: false }],
   quality_check: [
-    { to: 'final_check', label: 'Pass quality check', supervisorOnly: true },
-    { to: 'in_progress', label: 'Send back for rework', supervisorOnly: true, needsNote: true },
+    { to: 'final_check', label: 'Pass Quality Check', supervisorOnly: true },
+    { to: 'in_progress', label: 'Send Back for Rework', supervisorOnly: true, needsNote: true },
   ],
   final_check: [
-    { to: 'completed', label: 'Complete and stock', supervisorOnly: true },
-    { to: 'quality_check', label: 'Back to quality check', supervisorOnly: true, needsNote: true },
+    { to: 'completed', label: 'Complete and Stock', supervisorOnly: true },
+    { to: 'quality_check', label: 'Back to Quality Check', supervisorOnly: true, needsNote: true },
   ],
   completed: [],
 };

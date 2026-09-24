@@ -113,7 +113,7 @@ const Benefits = () => {
         </Col>
       </Row>
       <Button type="primary" htmlType="submit" loading={saving} style={{ marginTop: 12 }}>
-        Save rates
+        Save Rates
       </Button>
     </Form>
   );

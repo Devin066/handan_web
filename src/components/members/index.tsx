@@ -62,7 +62,7 @@ const MemberForm = ({ member, open, onClose, onSaved }: any) => {
       open={open}
       onCancel={onClose}
       onOk={() => form.submit()}
-      okText={editing ? 'Save changes' : 'Add member'}
+      okText={editing ? 'Save Changes' : 'Add Member'}
       confirmLoading={loading}
       width="min(640px, 100vw)"
       destroyOnClose
@@ -278,7 +278,7 @@ const Members: React.FC = () => {
         }
         toolBarRender={() => [
           <Button key="add" type="primary" size="small" onClick={() => setEditing({})}>
-            Add member
+            Add Member
           </Button>,
         ]}
       />

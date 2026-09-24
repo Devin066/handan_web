@@ -23,12 +23,12 @@ const ProcessNew = ({ onCreate }: { onCreate: (values: any) => Promise<unknown> 
   return (
     <>
       <Button type="primary" size="small" onClick={() => setOpen(true)}>
-        New process
+        New Process
       </Button>
       <Modal
         open={open}
         title="New process"
-        okText="Add process"
+        okText="Add Process"
         onOk={() => form.submit()}
         onCancel={() => setOpen(false)}
         confirmLoading={saving}

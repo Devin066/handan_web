@@ -56,7 +56,7 @@ const Payroll = () => {
     <Space direction="vertical" size={12} style={{ width: '100%' }}>
       <Space wrap>
         <Button type="primary" size="small" onClick={() => setOpen(true)}>
-          Run payroll
+          Run Payroll
         </Button>
         <Text type="secondary">
           Pay is hours times the hourly rate, overtime at the Benefits multiplier, plus piece rate for each good unit

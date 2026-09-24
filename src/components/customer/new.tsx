@@ -59,6 +59,7 @@ const CustomerNew = (props: any) => {
   return (
     <>
       <Button
+        type="primary"
         size="small"
         onClick={() => {
           setModalVisible(true);

@@ -94,7 +94,7 @@ const WorkOrderPrompt = ({ salesOrderUuid, onClose }: { salesOrderUuid?: string;
       onCancel={onClose}
       onOk={submit}
       okText={chosen.length ? `Create ${chosen.length} work order${chosen.length === 1 ? '' : 's'}` : 'Close'}
-      cancelText="Not now"
+      cancelText="Not Now"
       confirmLoading={saving}
       width="min(900px, 100vw)"
       destroyOnClose

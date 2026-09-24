@@ -164,7 +164,7 @@ const SalesInvoiceNew = ({ open, onClose, onCreated, salesOrderUuid }: Props) =>
 
   return (
     <Drawer
-      title="New sales invoice"
+      title="New Sales Invoice"
       width="min(1040px, 100vw)"
       open={open}
       onClose={onClose}
@@ -178,7 +178,7 @@ const SalesInvoiceNew = ({ open, onClose, onCreated, salesOrderUuid }: Props) =>
             disabled={!orderUuid || !billed.length || overBilled}
             onClick={() => form.submit()}
           >
-            Create invoice
+            Create Invoice
           </Button>
         </Space>
       }

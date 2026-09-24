@@ -54,7 +54,7 @@ const RecordPayment = ({
       title={`Record payment on ${invoice?.code ?? ''}`}
       onCancel={onClose}
       onOk={() => form.submit()}
-      okText="Record payment"
+      okText="Record Payment"
       confirmLoading={loading}
       destroyOnClose
       width="min(480px, 100vw)"

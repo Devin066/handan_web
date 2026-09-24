@@ -149,12 +149,13 @@ const ItemNew = (props: any) => {
   return (
     <>
       <Button
+        type="primary"
         size="small"
         onClick={() => {
           setModalVisible(true);
         }}
       >
-        New material
+        New Material
       </Button>
 
       <ModalForm

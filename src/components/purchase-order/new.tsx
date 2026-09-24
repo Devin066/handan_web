@@ -108,7 +108,7 @@ const PurchaseOrderNew = ({ onCreate }: { onCreate: (request: any) => Promise<un
   return (
     <>
       <Button size="small" type="primary" onClick={openModal}>
-        New purchase order
+        New Purchase Order
       </Button>
       <Modal
         title="New purchase order"
@@ -133,7 +133,7 @@ const PurchaseOrderNew = ({ onCreate }: { onCreate: (request: any) => Promise<un
             <Space>
               <Button onClick={() => setOpen(false)}>Cancel</Button>
               <Button type="primary" loading={saving} onClick={() => form.submit()}>
-                Create purchase order
+                Create Purchase Order
               </Button>
             </Space>
           </Space>
@@ -258,7 +258,7 @@ const PurchaseOrderNew = ({ onCreate }: { onCreate: (request: any) => Promise<un
                   <Alert type="info" showIcon style={{ marginBottom: 12 }} message="No lines yet." />
                 ) : null}
                 <Button type="dashed" icon={<PlusOutlined />} onClick={() => add({})}>
-                  Add item
+                  Add Item
                 </Button>
               </>
             )}

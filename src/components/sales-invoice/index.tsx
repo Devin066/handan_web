@@ -107,7 +107,7 @@ const SalesInvoiceList: React.FC = () => {
         if (record.status === 'paid' || record.status === 'cancelled') return [];
         return [
           <Button key="pay" size="small" type="link" onClick={() => setPaying(record)}>
-            Record payment
+            Record Payment
           </Button>,
         ];
       },
@@ -142,10 +142,10 @@ const SalesInvoiceList: React.FC = () => {
         }
         toolBarRender={() => [
           <Link key="payments" href="/finance/payment-entries">
-            <Button size="small">Payment history</Button>
+            <Button size="small">Payment History</Button>
           </Link>,
           <Button key="new" type="primary" size="small" onClick={() => setCreating(true)}>
-            New invoice
+            New Invoice
           </Button>,
         ]}
       />

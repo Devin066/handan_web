@@ -127,25 +127,25 @@ const GlobalLayout: FC<LayoutProps> = ({ children }) => {
           // previous warm-beige palette and blurred, rounded panels fought the
           // tables for attention and cost a blur pass on every scroll.
           token: {
-            colorBgCollapsedButton: tokens.surface,
+            colorBgCollapsedButton: tokens.background,
             colorTextCollapsedButtonHover: tokens.primaryText,
             colorTextCollapsedButton: tokens.textTertiary,
             sider: {
               colorMenuBackground: tokens.chrome,
               colorBgMenuItemCollapsedElevated: tokens.chrome,
               colorMenuItemDivider: tokens.chromeHover,
-              colorTextMenuTitle: '#FFFFFF',
+              colorTextMenuTitle: tokens.text,
               colorTextMenu: tokens.chromeText,
               colorTextMenuSecondary: tokens.chromeTextMuted,
-              colorTextMenuSelected: tokens.onPrimary,
-              colorTextMenuActive: '#FFFFFF',
-              colorTextMenuItemHover: '#FFFFFF',
+              colorTextMenuSelected: tokens.onPrimaryContainer,
+              colorTextMenuActive: tokens.text,
+              colorTextMenuItemHover: tokens.text,
               colorBgMenuItemHover: tokens.chromeHover,
               colorBgMenuItemSelected: tokens.chromeSelected,
-              colorTextSubMenuSelected: '#FFFFFF',
+              colorTextSubMenuSelected: tokens.text,
             },
             header: {
-              colorBgHeader: tokens.surface,
+              colorBgHeader: tokens.background,
             },
             pageContainer: {
               paddingBlockPageContainerContent: 0,
@@ -154,7 +154,7 @@ const GlobalLayout: FC<LayoutProps> = ({ children }) => {
           },
           header: {
             style: {
-              borderBottom: `1px solid ${tokens.border}`,
+              borderBottom: 'none',
               boxShadow: 'none',
             },
           },

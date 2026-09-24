@@ -38,7 +38,7 @@ const ReportJobCard = (props: any) => {
   return (
     <>
       <Button size="small" type={props.primary ? 'primary' : 'default'} onClick={() => setModalVisible(true)}>
-        Report progress
+        Report Progress
       </Button>
 
       <ModalForm

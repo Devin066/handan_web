@@ -91,7 +91,7 @@ const SupplierList: React.FC = () => {
       width: 140,
       render: (_, record) => [
         <Button key="ledger" size="small" type="link" onClick={() => setLedgerFor(record)}>
-          Purchase history
+          Purchase History
         </Button>,
       ],
     },

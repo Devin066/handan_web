@@ -72,14 +72,14 @@ const PurchaseRequestNew = ({ onCreated }: { onCreated: () => void }) => {
   return (
     <>
       <Button size="small" type="primary" onClick={() => setOpen(true)}>
-        New purchase request
+        New Purchase Request
       </Button>
       <Modal
-        title="New purchase request"
+        title="New Purchase Request"
         open={open}
         onCancel={() => setOpen(false)}
         onOk={() => form.submit()}
-        okText="Submit for approval"
+        okText="Submit for Approval"
         confirmLoading={loading}
         width="min(720px, 100vw)"
         destroyOnClose
@@ -130,7 +130,7 @@ const PurchaseRequestNew = ({ onCreated }: { onCreated: () => void }) => {
                   </Space>
                 ))}
                 <Button type="dashed" icon={<PlusOutlined />} onClick={() => add({})} style={{ marginBottom: 16 }}>
-                  Add item
+                  Add Item
                 </Button>
               </>
             )}

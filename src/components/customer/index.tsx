@@ -119,7 +119,7 @@ const CustomerList: React.FC = () => {
       width: 140,
       render: (_, record) => [
         <Button key="ledger" size="small" type="link" onClick={() => setLedgerFor(record)}>
-          Sales ledger
+          Sales Ledger
         </Button>,
       ],
     },

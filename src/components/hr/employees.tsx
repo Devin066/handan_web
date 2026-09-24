@@ -56,7 +56,7 @@ const EmployeeForm = ({ employee, onClose, onSaved }: { employee: any; onClose: 
       title={editing ? `Edit ${employee.name ?? employee.email}` : 'Add employee'}
       onCancel={onClose}
       onOk={() => form.submit()}
-      okText={editing ? 'Save changes' : 'Add employee'}
+      okText={editing ? 'Save Changes' : 'Add Employee'}
       confirmLoading={loading}
       width="min(640px, 100vw)"
       destroyOnClose
@@ -352,7 +352,7 @@ const EmployeeList = () => {
         }}
         toolBarRender={() => [
           <Button key="add" type="primary" size="small" onClick={() => setEditing({})}>
-            Add employee
+            Add Employee
           </Button>,
         ]}
       />

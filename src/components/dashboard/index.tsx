@@ -229,7 +229,7 @@ const Dashboard = () => {
             .concat(out.length > 6 ? ` and ${out.length - 6} more` : '')}
           action={
             <Link href="/purchasing/purchase-requests">
-              <Button size="small">Raise a purchase request</Button>
+              <Button size="small">Raise a Purchase Request</Button>
             </Link>
           }
         />

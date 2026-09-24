@@ -58,7 +58,7 @@ const PaymentMethodForm = ({ method, onClose, onSaved }: { method: any; onClose:
     <Modal
       open={!!method}
       title={editing ? `Edit ${method.name}` : 'New payment method'}
-      okText={editing ? 'Save changes' : 'Add payment method'}
+      okText={editing ? 'Save Changes' : 'Add Payment Method'}
       onOk={() => form.submit()}
       onCancel={onClose}
       confirmLoading={creating || updating}
@@ -250,7 +250,7 @@ const PaymentMethodList: React.FC = () => {
         }}
         toolBarRender={() => [
           <Button key="new" type="primary" size="small" onClick={() => setEditing({})}>
-            New payment method
+            New Payment Method
           </Button>,
         ]}
       />

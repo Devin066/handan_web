@@ -65,7 +65,7 @@ const PurchaseInvoiceList: React.FC = () => {
         if (r.status === 'paid' || r.status === 'cancelled') return [];
         return [
           <Button key="pay" size="small" type="link" onClick={() => setPaying(r)}>
-            Record payment
+            Record Payment
           </Button>,
         ];
       },

@@ -43,7 +43,7 @@ const WorkstationForm = ({ station, onClose, onSaved }: { station: any; onClose:
     <Modal
       open={!!station}
       title={editing ? `Edit ${station.name}` : 'New workstation'}
-      okText={editing ? 'Save changes' : 'Add workstation'}
+      okText={editing ? 'Save Changes' : 'Add Workstation'}
       onOk={() => form.submit()}
       onCancel={onClose}
       confirmLoading={creating || updating}
@@ -199,7 +199,7 @@ const WorkstationList: React.FC = () => {
         }}
         toolBarRender={() => [
           <Button key="new" type="primary" size="small" onClick={() => setEditing({})}>
-            New workstation
+            New Workstation
           </Button>,
         ]}
       />

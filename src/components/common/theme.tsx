@@ -5,9 +5,10 @@ import type { ThemeConfig } from 'antd';
  * these, so this file is the single place to change the look — components should
  * not carry their own colours.
  *
- * Direction: "data-dense dashboard" — Handlathe orange for primary actions and
- * the current location, a near-black sidebar matching the logo, red reserved
- * for things that need an operator's attention, data density over whitespace.
+ * Direction: Google (Material 3) — a light navigation drawer that shares the
+ * page background, a tonal orange pill for the current location, pill buttons,
+ * outlined fields, white 16px-radius surfaces without borders or shadows, and
+ * Handlathe orange kept for primary actions. Red is reserved for attention.
  */
 
 export const tokens = {
@@ -32,30 +33,33 @@ export const tokens = {
 
   // Surfaces. The app background is a cool grey so white cards and tables lift
   // off it without needing heavy shadows.
-  background: '#F4F4F5',
+  background: '#F8F9FA',
   surface: '#FFFFFF',
-  surfaceMuted: '#FAFAFA',
+  surfaceMuted: '#F1F3F4',
   primarySubtle: '#FFF1E6',
+  // M3 primary container: the tonal fill behind the current nav item.
+  primaryContainer: '#FFDBC9',
+  onPrimaryContainer: '#331200',
 
-  // Sidebar chrome: near-black, matching the logo's own black ground, so the
-  // wordmark sits in the rail instead of on a badge.
-  chrome: '#141414',
-  chromeHover: '#262626',
-  chromeSelected: '#F86901',
-  chromeText: '#D4D4D4',
-  chromeTextMuted: '#A3A3A3',
+  // Navigation drawer: same ground as the page, as in Gmail and Drive, with a
+  // grey state layer on hover and the tonal container for the current item.
+  chrome: '#F8F9FA',
+  chromeHover: '#E8EAED',
+  chromeSelected: '#FFDBC9',
+  chromeText: '#444746',
+  chromeTextMuted: '#5E5E5E',
 
-  text: '#0F172A',
-  textSecondary: '#475569',
-  textTertiary: '#64748B',
-  border: '#E2E8F0',
-  borderStrong: '#CBD5E1',
+  text: '#1F1F1F',
+  textSecondary: '#444746',
+  textTertiary: '#5E5E5E',
+  border: '#E3E3E3',
+  borderStrong: '#747775',
 } as const;
 
-export const monoStack = "'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace";
+export const monoStack = "'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
 
 const fontStack =
-  "'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+  "'Google Sans Text', 'Google Sans', Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
 
 const theme: ThemeConfig = {
   token: {
@@ -85,8 +89,13 @@ const theme: ThemeConfig = {
     fontSize: 14,
     lineHeight: 1.5715,
 
-    borderRadius: 6,
-    controlHeight: 34,
+    borderRadius: 8,
+    borderRadiusLG: 16,
+    borderRadiusSM: 6,
+    controlHeight: 40,
+    controlHeightSM: 32,
+    boxShadow: 'none',
+    boxShadowSecondary: '0 1px 2px rgba(60,64,67,0.3), 0 2px 6px 2px rgba(60,64,67,0.15)',
     wireframe: false,
   },
 
@@ -102,25 +111,28 @@ const theme: ThemeConfig = {
     Menu: {
       itemBg: tokens.surface,
       subMenuItemBg: tokens.surface,
-      itemSelectedBg: tokens.primarySubtle,
-      itemSelectedColor: tokens.primaryText,
-      itemHeight: 38,
-      iconSize: 16,
+      itemSelectedBg: tokens.primaryContainer,
+      itemSelectedColor: tokens.onPrimaryContainer,
+      itemHoverBg: tokens.chromeHover,
+      itemBorderRadius: 100,
+      itemHeight: 40,
+      iconSize: 18,
     },
 
     Table: {
-      headerBg: tokens.surfaceMuted,
+      headerBg: tokens.surface,
       headerColor: tokens.textSecondary,
       headerSplitColor: 'transparent',
-      rowHoverBg: '#F8FAFC',
-      cellPaddingBlock: 10,
-      cellPaddingInline: 12,
+      rowHoverBg: tokens.surfaceMuted,
+      cellPaddingBlock: 12,
+      cellPaddingInline: 16,
       borderColor: tokens.border,
     },
 
     Card: {
       headerBg: 'transparent',
-      paddingLG: 20,
+      paddingLG: 24,
+      headerFontSize: 16,
     },
 
     Statistic: {
@@ -143,7 +155,19 @@ const theme: ThemeConfig = {
       defaultShadow: 'none',
 
       fontWeight: 500,
+      // Material buttons are full pills.
+      borderRadius: 20,
+      borderRadiusLG: 24,
+      borderRadiusSM: 16,
+      paddingInline: 24,
     },
+
+    Input: { activeShadow: 'none', paddingBlock: 8, paddingInline: 12 },
+    Select: { optionSelectedBg: tokens.primaryContainer, optionSelectedColor: tokens.onPrimaryContainer },
+    Modal: { borderRadiusLG: 28, titleFontSize: 22, contentBg: tokens.surface },
+    Drawer: { colorBgElevated: tokens.surface },
+    Tabs: { inkBarColor: tokens.primary, itemSelectedColor: tokens.primaryText, titleFontSize: 14 },
+    Segmented: { itemSelectedBg: tokens.primaryContainer, itemSelectedColor: tokens.onPrimaryContainer },
   },
 };
 

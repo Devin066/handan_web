@@ -42,7 +42,7 @@ const SupplierNew = (props: any) => {
 
   return (
     <>
-      <Button size="small" onClick={() => setModalVisible(true)}>
+      <Button type="primary" size="small" onClick={() => setModalVisible(true)}>
         New Supplier
       </Button>
 
@@ -57,7 +57,7 @@ const SupplierNew = (props: any) => {
         autoFocusFirstInput
         open={modalVisible}
         onFinish={onFinish}
-        submitter={{ searchConfig: { submitText: 'Create supplier' } }}
+        submitter={{ searchConfig: { submitText: 'Create Supplier' } }}
       >
         <SectionTitle>Business</SectionTitle>
         <Row gutter={16}>
