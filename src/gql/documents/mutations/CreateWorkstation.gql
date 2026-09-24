@@ -1,5 +1,5 @@
 mutation CreateWorkstation($request: CreateWorkstationRequest!) {
-	createWorkstation(request: $request) {
-		name
-	}
+  createWorkstation(request: $request) {
+    ...WorkstationFields
+  }
 }

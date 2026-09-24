@@ -202,6 +202,11 @@ type Process {
 type Workstation {
   uuid: ID
   name: String
+  code: String
+  location: String
+  description: String
+  capacityHours: Decimal
+  isActive: Boolean
   adminUuid: String
   members: [Staff]
   insertedAt: DateTime
@@ -211,6 +216,14 @@ type Workstation {
 type PaymentMethod {
   uuid: ID
   name: String
+  kind: String
+  provider: String
+  accountName: String
+  accountNumber: String
+  currency: String
+  requiresReference: Boolean
+  isActive: Boolean
+  notes: String
   insertedAt: DateTime
   updatedAt: DateTime
 }
@@ -616,6 +629,8 @@ type PaymentEntry {
   paymentMethodUuid: ID
   paymentMethod: PaymentMethod
   totalAmount: Decimal
+  referenceNo: String
+  paidOn: DateTime
   memo: String
   attachments: [String]
   purchaseInvoiceIds: [String]
@@ -777,6 +792,10 @@ input RecordInvoicePaymentRequest {
   paymentMethodUuid: ID!
   "Official Receipt number; required for sales invoices."
   orNumber: String
+  "Transfer reference, check number or wallet id; required when the method asks for one."
+  referenceNo: String
+  "Date the money was paid; defaults to today."
+  paidOn: DateTime
 }
 input SaveAttendanceRequest {
   staffUuid: ID!
@@ -850,8 +869,27 @@ input CreateSupplierRequest {
   notes: String
 }
 input CreateProcessRequest { name: String, code: String, description: String }
-input CreateWorkstationRequest { name: String, description: String }
-input CreatePaymentMethodRequest { name: String }
+input CreateWorkstationRequest {
+  uuid: ID
+  name: String
+  code: String
+  location: String
+  description: String
+  capacityHours: Float
+  isActive: Boolean
+}
+input CreatePaymentMethodRequest {
+  uuid: ID
+  name: String
+  kind: String
+  provider: String
+  accountName: String
+  accountNumber: String
+  currency: String
+  requiresReference: Boolean
+  isActive: Boolean
+  notes: String
+}
 
 input StockUomArg { uomUuid: ID, conversionFactor: Int, sequence: Int }
 input OpeningStockArg { warehouseUuid: ID, qty: Float }
@@ -991,6 +1029,8 @@ input CreatePaymentEntryRequest {
   partyUuid: ID!
   paymentMethodUuid: ID!
   totalAmount: Float
+  referenceNo: String
+  paidOn: DateTime
   memo: String
   attachments: [String]
   salesInvoiceIds: [ID]
@@ -1100,6 +1140,10 @@ type RootMutationType {
   createProcess(request: CreateProcessRequest!): Process
   createWorkstation(request: CreateWorkstationRequest!): Workstation
   createPaymentMethod(request: CreatePaymentMethodRequest!): PaymentMethod
+  "Updates the method named by request.uuid."
+  updatePaymentMethod(request: CreatePaymentMethodRequest!): PaymentMethod
+  "Updates the workstation named by request.uuid."
+  updateWorkstation(request: CreateWorkstationRequest!): Workstation
   createBom(request: CreateBomRequest!): Bom
 
   createSalesOrder(request: CreateSalesOrderRequest!): SalesOrder

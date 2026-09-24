@@ -7,6 +7,17 @@ import brand from '@/config/brand';
 
 const { Title, Text } = Typography;
 
+/**
+ * Only a rejected password is the user's to fix. Anything else (server or
+ * database down, network) says so, instead of sending them to retype a correct
+ * password.
+ */
+const signInErrorMessage = (error: any) => {
+  const codes = (error?.graphQLErrors ?? []).map((e: any) => e?.extensions?.code);
+  if (codes.includes('UNAUTHENTICATED')) return "That email and password don't match an account.";
+  return "Couldn't reach the server to sign in. Try again in a moment; if it keeps failing, the server or its database may be down.";
+};
+
 const MODULES = [
   { name: 'Sales', docs: 'Sales orders, invoices' },
   { name: 'Purchasing', docs: 'Purchase orders, suppliers' },
@@ -28,6 +39,12 @@ const Login = () => {
   // Redirect as an effect, not during render, so it runs once per sign-in.
   useEffect(() => {
     if (!isLogin) return;
+    // "Signed in" without a stored session is left over from an expired one.
+    const token = localStorage.getItem('accessToken');
+    if (!token || token === 'undefined') {
+      useAuthUserStore.getState().logout();
+      return;
+    }
     // Only same-site paths: "//host" would send the user off-site.
     const { next } = router.query;
     const isLocalPath = typeof next === 'string' && next.startsWith('/') && !next.startsWith('//');
@@ -64,12 +81,7 @@ const Login = () => {
           <Text type="secondary">Use your company account.</Text>
 
           {error && !submitting ? (
-            <Alert
-              type="error"
-              showIcon
-              message="That email and password don't match an account."
-              style={{ marginTop: 20 }}
-            />
+            <Alert type="error" showIcon message={signInErrorMessage(error)} style={{ marginTop: 20 }} />
           ) : null}
 
           <Form layout="vertical" requiredMark={false} onFinish={onFinish} style={{ marginTop: 20 }}>
@@ -93,6 +105,7 @@ const Login = () => {
               Sign in
             </Button>
           </Form>
+          <p className="login-notice">Built on the MIT-licensed Handan project. See NOTICE for attribution.</p>
         </div>
       </section>
     </main>

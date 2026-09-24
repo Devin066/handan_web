@@ -1,0 +1,5 @@
+mutation UpdateWorkstation($request: CreateWorkstationRequest!) {
+  updateWorkstation(request: $request) {
+    ...WorkstationFields
+  }
+}

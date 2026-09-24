@@ -1,5 +1,5 @@
 mutation CreatePaymentMethod($request: CreatePaymentMethodRequest!) {
-	createPaymentMethod(request: $request) {
-		uuid
-	}
+  createPaymentMethod(request: $request) {
+    ...PaymentMethodsFields
+  }
 }

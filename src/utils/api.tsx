@@ -20,12 +20,14 @@ export const fetchPaymentMethods = async (params?: any) => {
     variables: { request },
   });
 
-  const result = data?.paymentMethods?.map((item: any) => {
-    return {
+  // Inactive methods stay on old payments but are not offered for new ones.
+  const result = data?.paymentMethods
+    ?.filter((item: any) => item.isActive !== false)
+    .map((item: any) => ({
       value: item.uuid,
       label: item.name,
-    };
-  });
+      requiresReference: !!item.requiresReference,
+    }));
 
   return result;
 };

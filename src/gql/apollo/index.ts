@@ -92,6 +92,9 @@ const authLink = new ApolloLink((operation, forward) => {
 // leaving each screen to render against null data.
 const redirectToLogin = () => {
   clearStorage();
+  // The persisted auth store would otherwise still say "signed in", and the
+  // login page would bounce straight back here in a loop.
+  localStorage.removeItem('auth-user-storage');
   if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
     window.location.assign(`/login?next=${encodeURIComponent(window.location.pathname)}`);
   }

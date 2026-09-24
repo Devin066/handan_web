@@ -35,9 +35,21 @@ const ProcessList: React.FC = () => {
 
   const columns: ProColumns<any>[] = [
     {
+      title: 'Code',
+      dataIndex: 'code',
+      width: 100,
+      render: (_, r) => <span className="doc-code">{r.code ?? '—'}</span>,
+    },
+    {
       title: 'Name',
       key: 'name',
       dataIndex: 'name',
+    },
+    {
+      title: 'Description',
+      dataIndex: 'description',
+      ellipsis: true,
+      render: (_, r) => r.description ?? '—',
     },
     {
       title: 'Created At',

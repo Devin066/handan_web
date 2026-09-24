@@ -67,6 +67,7 @@ const GUARDED: Record<string, Module> = {
   reportJobCard: 'production',
   storeFinishItem: 'production',
   createWorkstation: 'production',
+  updateWorkstation: 'production',
 
   createReceiptNote: 'inventory',
   completeReceiptNote: 'inventory',
@@ -98,16 +99,23 @@ const GUARDED: Record<string, Module> = {
 
   updateConfiguration: 'settings',
   createPaymentMethod: 'settings',
+  updatePaymentMethod: 'settings',
   createProcess: 'settings',
   updateRolePermissions: 'settings',
   setUserRole: 'settings',
 };
 
 export async function allowedModules(ctx: Context): Promise<Module[]> {
-  if (!ctx.userUuid || !ctx.companyUuid) return [];
-  const user = await ctx.loaders.user.load(ctx.userUuid);
-  if (!user) return [];
-  const permissions = await loadPermissions(ctx.db, ctx.companyUuid);
+  // No valid session (missing, expired or re-signed token), or a valid token
+  // for a user that no longer exists (e.g. after a database reset), is a dead
+  // session, not a user without permissions. Say so, so the client sends them
+  // to sign in instead of showing an empty menu.
+  const { userUuid, companyUuid } = ctx;
+  const user = userUuid && companyUuid ? await ctx.loaders.user.load(userUuid) : null;
+  if (!user || !companyUuid) {
+    throw new GraphQLError('unauthenticated', { extensions: { code: 'UNAUTHENTICATED' } });
+  }
+  const permissions = await loadPermissions(ctx.db, companyUuid);
   return permissions[user.role] ?? [];
 }
 

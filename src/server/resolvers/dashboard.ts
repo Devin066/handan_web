@@ -2,6 +2,7 @@ import { Prisma } from '@/generated/prisma/client';
 import type { Context } from '../context';
 import { requireCompany } from '../context';
 import { fiscalYear } from '../domain/codes';
+import { unitCostsByItem } from '../domain/costing';
 import { deliveryRisk, UNSETTLED_INVOICE_STATUSES } from '../domain/status';
 import { manilaDay } from '../domain/time';
 
@@ -112,9 +113,10 @@ export const dashboardResolvers = {
       const outOfStock = tracked.filter((r) => r.onHandQty <= 0);
       const lowStock = tracked.filter((r) => r.onHandQty > 0 && r.onHandQty <= r.minStockThreshold);
 
+      const unitCosts = await unitCostsByItem(ctx.db, companyUuid);
       const valuation = { rawMaterial: 0, manufacturedPart: 0, finishedGood: 0, total: 0 };
       for (const item of items) {
-        const value = (onHand.get(item.uuid) ?? 0) * Number(item.standardCost);
+        const value = (onHand.get(item.uuid) ?? 0) * (unitCosts.get(item.uuid) ?? 0);
         if (item.itemType === 'manufactured_part') valuation.manufacturedPart += value;
         else if (item.itemType === 'finished_good') valuation.finishedGood += value;
         else valuation.rawMaterial += value;

@@ -1,6 +1,14 @@
 fragment PaymentMethodsFields on PaymentMethod {
   uuid
   name
+  kind
+  provider
+  accountName
+  accountNumber
+  currency
+  requiresReference
+  isActive
+  notes
   insertedAt
   updatedAt
 }

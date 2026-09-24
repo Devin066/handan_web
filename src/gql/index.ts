@@ -203,17 +203,28 @@ export type CreateItemRequest = {
 export type CreatePaymentEntryRequest = {
   attachments?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   memo?: InputMaybe<Scalars['String']['input']>;
+  paidOn?: InputMaybe<Scalars['DateTime']['input']>;
   partyType: Scalars['String']['input'];
   partyUuid: Scalars['ID']['input'];
   paymentMethodUuid: Scalars['ID']['input'];
   purchaseInvoiceIds?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  referenceNo?: InputMaybe<Scalars['String']['input']>;
   salesInvoiceIds?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
   totalAmount?: InputMaybe<Scalars['Float']['input']>;
   type: Scalars['String']['input'];
 };
 
 export type CreatePaymentMethodRequest = {
+  accountName?: InputMaybe<Scalars['String']['input']>;
+  accountNumber?: InputMaybe<Scalars['String']['input']>;
+  currency?: InputMaybe<Scalars['String']['input']>;
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
+  kind?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
+  notes?: InputMaybe<Scalars['String']['input']>;
+  provider?: InputMaybe<Scalars['String']['input']>;
+  requiresReference?: InputMaybe<Scalars['Boolean']['input']>;
+  uuid?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type CreateProcessRequest = {
@@ -296,8 +307,13 @@ export type CreateWorkOrderRequest = {
 };
 
 export type CreateWorkstationRequest = {
+  capacityHours?: InputMaybe<Scalars['Float']['input']>;
+  code?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
+  location?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
+  uuid?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type Customer = {
@@ -524,12 +540,14 @@ export type PaymentEntry = {
   code?: Maybe<Scalars['String']['output']>;
   insertedAt?: Maybe<Scalars['DateTime']['output']>;
   memo?: Maybe<Scalars['String']['output']>;
+  paidOn?: Maybe<Scalars['DateTime']['output']>;
   partyName?: Maybe<Scalars['String']['output']>;
   partyType?: Maybe<Scalars['String']['output']>;
   partyUuid?: Maybe<Scalars['ID']['output']>;
   paymentMethod?: Maybe<PaymentMethod>;
   paymentMethodUuid?: Maybe<Scalars['ID']['output']>;
   purchaseInvoiceIds?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  referenceNo?: Maybe<Scalars['String']['output']>;
   salesInvoiceIds?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   totalAmount?: Maybe<Scalars['Decimal']['output']>;
   type?: Maybe<Scalars['String']['output']>;
@@ -539,8 +557,16 @@ export type PaymentEntry = {
 
 export type PaymentMethod = {
   __typename?: 'PaymentMethod';
+  accountName?: Maybe<Scalars['String']['output']>;
+  accountNumber?: Maybe<Scalars['String']['output']>;
+  currency?: Maybe<Scalars['String']['output']>;
   insertedAt?: Maybe<Scalars['DateTime']['output']>;
+  isActive?: Maybe<Scalars['Boolean']['output']>;
+  kind?: Maybe<Scalars['String']['output']>;
   name?: Maybe<Scalars['String']['output']>;
+  notes?: Maybe<Scalars['String']['output']>;
+  provider?: Maybe<Scalars['String']['output']>;
+  requiresReference?: Maybe<Scalars['Boolean']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   uuid?: Maybe<Scalars['ID']['output']>;
 };
@@ -761,7 +787,11 @@ export type RecordInvoicePaymentRequest = {
   invoiceUuid: Scalars['ID']['input'];
   /** Official Receipt number; required for sales invoices. */
   orNumber?: InputMaybe<Scalars['String']['input']>;
+  /** Date the money was paid; defaults to today. */
+  paidOn?: InputMaybe<Scalars['DateTime']['input']>;
   paymentMethodUuid: Scalars['ID']['input'];
+  /** Transfer reference, check number or wallet id; required when the method asks for one. */
+  referenceNo?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ReportJobCardRequest = {
@@ -826,7 +856,11 @@ export type RootMutationType = {
   storeFinishItem?: Maybe<WorkOrder>;
   updateBenefits?: Maybe<Benefits>;
   updateConfiguration?: Maybe<Configuration>;
+  /** Updates the method named by request.uuid. */
+  updatePaymentMethod?: Maybe<PaymentMethod>;
   updateRolePermissions?: Maybe<RolePermission>;
+  /** Updates the workstation named by request.uuid. */
+  updateWorkstation?: Maybe<Workstation>;
 };
 
 
@@ -1023,8 +1057,20 @@ export type RootMutationTypeUpdateConfigurationArgs = {
 
 
 /** the root of mutaion. */
+export type RootMutationTypeUpdatePaymentMethodArgs = {
+  request: CreatePaymentMethodRequest;
+};
+
+
+/** the root of mutaion. */
 export type RootMutationTypeUpdateRolePermissionsArgs = {
   request: RolePermissionRequest;
+};
+
+
+/** the root of mutaion. */
+export type RootMutationTypeUpdateWorkstationArgs = {
+  request: CreateWorkstationRequest;
 };
 
 export type RootQueryType = {
@@ -1602,7 +1648,12 @@ export type WorkOrderSuggestion = {
 export type Workstation = {
   __typename?: 'Workstation';
   adminUuid?: Maybe<Scalars['String']['output']>;
+  capacityHours?: Maybe<Scalars['Decimal']['output']>;
+  code?: Maybe<Scalars['String']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
   insertedAt?: Maybe<Scalars['DateTime']['output']>;
+  isActive?: Maybe<Scalars['Boolean']['output']>;
+  location?: Maybe<Scalars['String']['output']>;
   members?: Maybe<Array<Maybe<Staff>>>;
   name?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -1625,13 +1676,13 @@ export type JobCardFieldsFragment = { __typename?: 'JobCard', uuid?: string | nu
 
 export type MaterialRequestFieldsFragment = { __typename?: 'WorkOrderMaterialRequest', uuid?: string | null, itemName?: string | null, actualQty?: any | null, remainingQty?: any | null, receivedQty?: any | null, uomName?: string | null, stockUomUuid?: string | null, bomUuid?: string | null, warehouseUuid?: string | null, itemUuid?: string | null, workOrderUuid?: string | null, warehouse?: { __typename?: 'Warehouse', name?: string | null } | null };
 
-export type PaymentEntryFieldsFragment = { __typename?: 'PaymentEntry', uuid?: string | null, code?: string | null, type?: string | null, partyName?: string | null, partyType?: string | null, partyUuid?: string | null, paymentMethodUuid?: string | null, totalAmount?: any | null, insertedAt?: any | null, updatedAt?: any | null, paymentMethod?: { __typename?: 'PaymentMethod', name?: string | null } | null };
+export type PaymentEntryFieldsFragment = { __typename?: 'PaymentEntry', uuid?: string | null, code?: string | null, type?: string | null, partyName?: string | null, partyType?: string | null, partyUuid?: string | null, paymentMethodUuid?: string | null, totalAmount?: any | null, referenceNo?: string | null, paidOn?: any | null, memo?: string | null, insertedAt?: any | null, updatedAt?: any | null, paymentMethod?: { __typename?: 'PaymentMethod', name?: string | null } | null };
 
-export type PaymentMethodsFieldsFragment = { __typename?: 'PaymentMethod', uuid?: string | null, name?: string | null, insertedAt?: any | null, updatedAt?: any | null };
+export type PaymentMethodsFieldsFragment = { __typename?: 'PaymentMethod', uuid?: string | null, name?: string | null, kind?: string | null, provider?: string | null, accountName?: string | null, accountNumber?: string | null, currency?: string | null, requiresReference?: boolean | null, isActive?: boolean | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null };
 
 export type PayrollEntryFieldsFragment = { __typename?: 'PayrollEntry', uuid?: string | null, staffUuid?: string | null, staffName?: string | null, periodName?: string | null, employmentType?: string | null, hourlyRate?: any | null, daysPresent?: number | null, regularHours?: any | null, overtimeHours?: any | null, unitsProduced?: any | null, basePay?: any | null, overtimePay?: any | null, incentivePay?: any | null, grossPay?: any | null, sssDeduction?: any | null, philhealthDeduction?: any | null, pagibigDeduction?: any | null, taxDeduction?: any | null, netPay?: any | null, insertedAt?: any | null };
 
-export type ProcessFieldsFragment = { __typename?: 'Process', uuid?: string | null, name?: string | null, description?: string | null, insertedAt?: any | null, updatedAt?: any | null };
+export type ProcessFieldsFragment = { __typename?: 'Process', uuid?: string | null, name?: string | null, code?: string | null, description?: string | null, insertedAt?: any | null, updatedAt?: any | null };
 
 export type PurchaseInvoiceFieldsFragment = { __typename?: 'PurchaseInvoice', uuid?: string | null, code?: string | null, status?: string | null, paidAmount?: any | null, balance?: any | null, receiptNoteCode?: string | null, purchaseOrderCode?: string | null, referenceNo?: string | null, paymentMethodName?: string | null, paidAt?: any | null, amount?: any | null, supplierName?: string | null, supplierUuid?: string | null, purchaseOrderUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null };
 
@@ -1663,7 +1714,7 @@ export type WorkOrderFieldsFragment = { __typename?: 'WorkOrder', uuid?: string 
 
 export type WorkOrderItemFieldsFragment = { __typename?: 'WorkOrderItem', uuid?: string | null, workOrderUuid?: string | null, itemName?: string | null, processName?: string | null, position?: number | null, requiredQty?: any | null, defectiveQty?: any | null, producedQty?: any | null, insertedAt?: any | null, updatedAt?: any | null };
 
-export type WorkstationFieldsFragment = { __typename?: 'Workstation', uuid?: string | null, name?: string | null, insertedAt?: any | null, updatedAt?: any | null };
+export type WorkstationFieldsFragment = { __typename?: 'Workstation', uuid?: string | null, name?: string | null, code?: string | null, location?: string | null, description?: string | null, capacityHours?: any | null, isActive?: boolean | null, insertedAt?: any | null, updatedAt?: any | null };
 
 export type ClockAttendanceMutationVariables = Exact<{
   request: IdRequest;
@@ -1726,7 +1777,7 @@ export type CreatePaymentMethodMutationVariables = Exact<{
 }>;
 
 
-export type CreatePaymentMethodMutation = { __typename?: 'RootMutationType', createPaymentMethod?: { __typename?: 'PaymentMethod', uuid?: string | null } | null };
+export type CreatePaymentMethodMutation = { __typename?: 'RootMutationType', createPaymentMethod?: { __typename?: 'PaymentMethod', uuid?: string | null, name?: string | null, kind?: string | null, provider?: string | null, accountName?: string | null, accountNumber?: string | null, currency?: string | null, requiresReference?: boolean | null, isActive?: boolean | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null };
 
 export type CreateProcessMutationVariables = Exact<{
   request: CreateProcessRequest;
@@ -1796,7 +1847,7 @@ export type CreateWorkstationMutationVariables = Exact<{
 }>;
 
 
-export type CreateWorkstationMutation = { __typename?: 'RootMutationType', createWorkstation?: { __typename?: 'Workstation', name?: string | null } | null };
+export type CreateWorkstationMutation = { __typename?: 'RootMutationType', createWorkstation?: { __typename?: 'Workstation', uuid?: string | null, name?: string | null, code?: string | null, location?: string | null, description?: string | null, capacityHours?: any | null, isActive?: boolean | null, insertedAt?: any | null, updatedAt?: any | null } | null };
 
 export type FinalizePayrollMutationVariables = Exact<{
   request: IdRequest;
@@ -1882,12 +1933,26 @@ export type UpdateConfigurationMutationVariables = Exact<{
 
 export type UpdateConfigurationMutation = { __typename?: 'RootMutationType', updateConfiguration?: { __typename?: 'Configuration', currency?: string | null, timezone?: string | null, decimalPlaces?: number | null } | null };
 
+export type UpdatePaymentMethodMutationVariables = Exact<{
+  request: CreatePaymentMethodRequest;
+}>;
+
+
+export type UpdatePaymentMethodMutation = { __typename?: 'RootMutationType', updatePaymentMethod?: { __typename?: 'PaymentMethod', uuid?: string | null, name?: string | null, kind?: string | null, provider?: string | null, accountName?: string | null, accountNumber?: string | null, currency?: string | null, requiresReference?: boolean | null, isActive?: boolean | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null };
+
 export type UpdateRolePermissionsMutationVariables = Exact<{
   request: RolePermissionRequest;
 }>;
 
 
 export type UpdateRolePermissionsMutation = { __typename?: 'RootMutationType', updateRolePermissions?: { __typename?: 'RolePermission', role?: string | null, modules?: Array<string | null> | null } | null };
+
+export type UpdateWorkstationMutationVariables = Exact<{
+  request: CreateWorkstationRequest;
+}>;
+
+
+export type UpdateWorkstationMutation = { __typename?: 'RootMutationType', updateWorkstation?: { __typename?: 'Workstation', uuid?: string | null, name?: string | null, code?: string | null, location?: string | null, description?: string | null, capacityHours?: any | null, isActive?: boolean | null, insertedAt?: any | null, updatedAt?: any | null } | null };
 
 export type AttendanceQueryVariables = Exact<{
   request?: InputMaybe<DateRequest>;
@@ -2025,26 +2090,26 @@ export type OpenPurchaseRequestItemsQuery = { __typename?: 'RootQueryType', open
 export type PaymentEntriesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type PaymentEntriesQuery = { __typename?: 'RootQueryType', paymentEntries?: Array<{ __typename?: 'PaymentEntry', uuid?: string | null, code?: string | null, type?: string | null, partyName?: string | null, partyType?: string | null, partyUuid?: string | null, paymentMethodUuid?: string | null, totalAmount?: any | null, insertedAt?: any | null, updatedAt?: any | null, paymentMethod?: { __typename?: 'PaymentMethod', name?: string | null } | null } | null> | null };
+export type PaymentEntriesQuery = { __typename?: 'RootQueryType', paymentEntries?: Array<{ __typename?: 'PaymentEntry', uuid?: string | null, code?: string | null, type?: string | null, partyName?: string | null, partyType?: string | null, partyUuid?: string | null, paymentMethodUuid?: string | null, totalAmount?: any | null, referenceNo?: string | null, paidOn?: any | null, memo?: string | null, insertedAt?: any | null, updatedAt?: any | null, paymentMethod?: { __typename?: 'PaymentMethod', name?: string | null } | null } | null> | null };
 
 export type PaymentEntryQueryVariables = Exact<{
   request: IdRequest;
 }>;
 
 
-export type PaymentEntryQuery = { __typename?: 'RootQueryType', paymentEntry?: { __typename?: 'PaymentEntry', uuid?: string | null, code?: string | null, type?: string | null, partyName?: string | null, partyType?: string | null, partyUuid?: string | null, paymentMethodUuid?: string | null, totalAmount?: any | null, insertedAt?: any | null, updatedAt?: any | null, paymentMethod?: { __typename?: 'PaymentMethod', name?: string | null } | null } | null };
+export type PaymentEntryQuery = { __typename?: 'RootQueryType', paymentEntry?: { __typename?: 'PaymentEntry', uuid?: string | null, code?: string | null, type?: string | null, partyName?: string | null, partyType?: string | null, partyUuid?: string | null, paymentMethodUuid?: string | null, totalAmount?: any | null, referenceNo?: string | null, paidOn?: any | null, memo?: string | null, insertedAt?: any | null, updatedAt?: any | null, paymentMethod?: { __typename?: 'PaymentMethod', name?: string | null } | null } | null };
 
 export type PaymentMethodQueryVariables = Exact<{
   request: IdRequest;
 }>;
 
 
-export type PaymentMethodQuery = { __typename?: 'RootQueryType', paymentMethod?: { __typename?: 'PaymentMethod', uuid?: string | null, name?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null };
+export type PaymentMethodQuery = { __typename?: 'RootQueryType', paymentMethod?: { __typename?: 'PaymentMethod', uuid?: string | null, name?: string | null, kind?: string | null, provider?: string | null, accountName?: string | null, accountNumber?: string | null, currency?: string | null, requiresReference?: boolean | null, isActive?: boolean | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null };
 
 export type PaymentMethodsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type PaymentMethodsQuery = { __typename?: 'RootQueryType', paymentMethods?: Array<{ __typename?: 'PaymentMethod', uuid?: string | null, name?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null };
+export type PaymentMethodsQuery = { __typename?: 'RootQueryType', paymentMethods?: Array<{ __typename?: 'PaymentMethod', uuid?: string | null, name?: string | null, kind?: string | null, provider?: string | null, accountName?: string | null, accountNumber?: string | null, currency?: string | null, requiresReference?: boolean | null, isActive?: boolean | null, notes?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null };
 
 export type PayrollPeriodsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2068,7 +2133,7 @@ export type ProcessQuery = { __typename?: 'RootQueryType', process?: { __typenam
 export type ProcessesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ProcessesQuery = { __typename?: 'RootQueryType', processes?: Array<{ __typename?: 'Process', uuid?: string | null, name?: string | null, description?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null };
+export type ProcessesQuery = { __typename?: 'RootQueryType', processes?: Array<{ __typename?: 'Process', uuid?: string | null, name?: string | null, code?: string | null, description?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null };
 
 export type PurchaseInvoiceQueryVariables = Exact<{
   request: PurchaseInvoiceRequest;
@@ -2238,7 +2303,7 @@ export type WorkstationQuery = { __typename?: 'RootQueryType', workstation?: { _
 export type WorkstationsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type WorkstationsQuery = { __typename?: 'RootQueryType', workstations?: Array<{ __typename?: 'Workstation', uuid?: string | null, name?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null };
+export type WorkstationsQuery = { __typename?: 'RootQueryType', workstations?: Array<{ __typename?: 'Workstation', uuid?: string | null, name?: string | null, code?: string | null, location?: string | null, description?: string | null, capacityHours?: any | null, isActive?: boolean | null, insertedAt?: any | null, updatedAt?: any | null } | null> | null };
 
 export const BomFieldsFragmentDoc = gql`
     fragment BOMFields on Bom {
@@ -2390,6 +2455,9 @@ export const PaymentEntryFieldsFragmentDoc = gql`
     name
   }
   totalAmount
+  referenceNo
+  paidOn
+  memo
   insertedAt
   updatedAt
 }
@@ -2398,6 +2466,14 @@ export const PaymentMethodsFieldsFragmentDoc = gql`
     fragment PaymentMethodsFields on PaymentMethod {
   uuid
   name
+  kind
+  provider
+  accountName
+  accountNumber
+  currency
+  requiresReference
+  isActive
+  notes
   insertedAt
   updatedAt
 }
@@ -2430,6 +2506,7 @@ export const ProcessFieldsFragmentDoc = gql`
     fragment ProcessFields on Process {
   uuid
   name
+  code
   description
   insertedAt
   updatedAt
@@ -2697,6 +2774,11 @@ export const WorkstationFieldsFragmentDoc = gql`
     fragment WorkstationFields on Workstation {
   uuid
   name
+  code
+  location
+  description
+  capacityHours
+  isActive
   insertedAt
   updatedAt
 }
@@ -2979,10 +3061,10 @@ export type CreatePaymentEntryMutationOptions = Apollo.BaseMutationOptions<Creat
 export const CreatePaymentMethodDocument = gql`
     mutation CreatePaymentMethod($request: CreatePaymentMethodRequest!) {
   createPaymentMethod(request: $request) {
-    uuid
+    ...PaymentMethodsFields
   }
 }
-    `;
+    ${PaymentMethodsFieldsFragmentDoc}`;
 export type CreatePaymentMethodMutationFn = Apollo.MutationFunction<CreatePaymentMethodMutation, CreatePaymentMethodMutationVariables>;
 
 /**
@@ -3323,10 +3405,10 @@ export type CreateWorkOrderMutationOptions = Apollo.BaseMutationOptions<CreateWo
 export const CreateWorkstationDocument = gql`
     mutation CreateWorkstation($request: CreateWorkstationRequest!) {
   createWorkstation(request: $request) {
-    name
+    ...WorkstationFields
   }
 }
-    `;
+    ${WorkstationFieldsFragmentDoc}`;
 export type CreateWorkstationMutationFn = Apollo.MutationFunction<CreateWorkstationMutation, CreateWorkstationMutationVariables>;
 
 /**
@@ -3759,6 +3841,39 @@ export function useUpdateConfigurationMutation(baseOptions?: Apollo.MutationHook
 export type UpdateConfigurationMutationHookResult = ReturnType<typeof useUpdateConfigurationMutation>;
 export type UpdateConfigurationMutationResult = Apollo.MutationResult<UpdateConfigurationMutation>;
 export type UpdateConfigurationMutationOptions = Apollo.BaseMutationOptions<UpdateConfigurationMutation, UpdateConfigurationMutationVariables>;
+export const UpdatePaymentMethodDocument = gql`
+    mutation UpdatePaymentMethod($request: CreatePaymentMethodRequest!) {
+  updatePaymentMethod(request: $request) {
+    ...PaymentMethodsFields
+  }
+}
+    ${PaymentMethodsFieldsFragmentDoc}`;
+export type UpdatePaymentMethodMutationFn = Apollo.MutationFunction<UpdatePaymentMethodMutation, UpdatePaymentMethodMutationVariables>;
+
+/**
+ * __useUpdatePaymentMethodMutation__
+ *
+ * To run a mutation, you first call `useUpdatePaymentMethodMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdatePaymentMethodMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updatePaymentMethodMutation, { data, loading, error }] = useUpdatePaymentMethodMutation({
+ *   variables: {
+ *      request: // value for 'request'
+ *   },
+ * });
+ */
+export function useUpdatePaymentMethodMutation(baseOptions?: Apollo.MutationHookOptions<UpdatePaymentMethodMutation, UpdatePaymentMethodMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdatePaymentMethodMutation, UpdatePaymentMethodMutationVariables>(UpdatePaymentMethodDocument, options);
+      }
+export type UpdatePaymentMethodMutationHookResult = ReturnType<typeof useUpdatePaymentMethodMutation>;
+export type UpdatePaymentMethodMutationResult = Apollo.MutationResult<UpdatePaymentMethodMutation>;
+export type UpdatePaymentMethodMutationOptions = Apollo.BaseMutationOptions<UpdatePaymentMethodMutation, UpdatePaymentMethodMutationVariables>;
 export const UpdateRolePermissionsDocument = gql`
     mutation UpdateRolePermissions($request: RolePermissionRequest!) {
   updateRolePermissions(request: $request) {
@@ -3793,6 +3908,39 @@ export function useUpdateRolePermissionsMutation(baseOptions?: Apollo.MutationHo
 export type UpdateRolePermissionsMutationHookResult = ReturnType<typeof useUpdateRolePermissionsMutation>;
 export type UpdateRolePermissionsMutationResult = Apollo.MutationResult<UpdateRolePermissionsMutation>;
 export type UpdateRolePermissionsMutationOptions = Apollo.BaseMutationOptions<UpdateRolePermissionsMutation, UpdateRolePermissionsMutationVariables>;
+export const UpdateWorkstationDocument = gql`
+    mutation UpdateWorkstation($request: CreateWorkstationRequest!) {
+  updateWorkstation(request: $request) {
+    ...WorkstationFields
+  }
+}
+    ${WorkstationFieldsFragmentDoc}`;
+export type UpdateWorkstationMutationFn = Apollo.MutationFunction<UpdateWorkstationMutation, UpdateWorkstationMutationVariables>;
+
+/**
+ * __useUpdateWorkstationMutation__
+ *
+ * To run a mutation, you first call `useUpdateWorkstationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateWorkstationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateWorkstationMutation, { data, loading, error }] = useUpdateWorkstationMutation({
+ *   variables: {
+ *      request: // value for 'request'
+ *   },
+ * });
+ */
+export function useUpdateWorkstationMutation(baseOptions?: Apollo.MutationHookOptions<UpdateWorkstationMutation, UpdateWorkstationMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateWorkstationMutation, UpdateWorkstationMutationVariables>(UpdateWorkstationDocument, options);
+      }
+export type UpdateWorkstationMutationHookResult = ReturnType<typeof useUpdateWorkstationMutation>;
+export type UpdateWorkstationMutationResult = Apollo.MutationResult<UpdateWorkstationMutation>;
+export type UpdateWorkstationMutationOptions = Apollo.BaseMutationOptions<UpdateWorkstationMutation, UpdateWorkstationMutationVariables>;
 export const AttendanceDocument = gql`
     query Attendance($request: DateRequest) {
   attendance(request: $request) {

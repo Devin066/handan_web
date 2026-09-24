@@ -1,10 +1,13 @@
 import { GraphQLError } from 'graphql';
+
+import { normalisePaymentMethod, type PaymentMethodInput } from '@/config/payment-method';
 import { Prisma } from '@/generated/prisma/client';
 import { nextCode } from '../domain/codes';
 import type { Context } from '../context';
 import { requireCompany } from '../context';
 import { ITEM_TYPE, ITEM_TYPE_PREFIX, UNSETTLED_INVOICE_STATUSES } from '../domain/status';
 import { applyStockMove } from '../domain/stock';
+import { unitCostsByItem } from '../domain/costing';
 import { assertCustomerValid, customerDisplayName, normalizeCustomerInput } from '../domain/customer';
 import { normaliseSupplier, type SupplierInput } from '../domain/supplier';
 
@@ -46,6 +49,74 @@ type CustomerInput = {
   notes?: string;
   buildSpecs?: string;
 };
+
+type PaymentMethodRequest = PaymentMethodInput & { uuid?: string | null };
+
+type WorkstationInput = {
+  uuid?: string | null;
+  name?: string | null;
+  code?: string | null;
+  location?: string | null;
+  description?: string | null;
+  capacityHours?: number | null;
+  isActive?: boolean | null;
+};
+
+const tidy = (value?: string | null) => value?.trim() || null;
+
+/** The record with this id in the caller's company, or a "not found" error. */
+async function ownedOrThrow<T>(
+  model: { findFirst: (args: any) => Promise<T | null> },
+  uuid: string | null | undefined,
+  companyUuid: string,
+  label: string,
+): Promise<T> {
+  const record = uuid ? await model.findFirst({ where: { uuid, companyUuid } }) : null;
+  if (!record) throw new GraphQLError(`${label} not found.`);
+  return record;
+}
+
+/** Drops keys the caller did not send, so an update only touches what it names. */
+const defined = <T extends object>(request: T) =>
+  Object.fromEntries(Object.entries(request).filter(([, value]) => value !== undefined)) as Partial<T>;
+
+/** Field problems are reported together, the same wording the form shows. */
+async function checkPaymentMethod(ctx: Context, companyUuid: string, request: PaymentMethodRequest) {
+  const { errors, data } = normalisePaymentMethod(request);
+  let duplicate = null;
+  if (data.name) {
+    duplicate = await ctx.db.paymentMethod.findFirst({
+      where: {
+        companyUuid,
+        name: { equals: data.name, mode: 'insensitive' },
+        ...(request.uuid ? { uuid: { not: request.uuid } } : {}),
+      },
+    });
+  }
+  if (duplicate) errors.name = `A payment method named "${data.name}" already exists.`;
+  const messages = Object.values(errors);
+  if (messages.length) throw new GraphQLError(messages.join(' '), { extensions: { code: 'BAD_USER_INPUT', errors } });
+  return data;
+}
+
+function normaliseWorkstation(request: WorkstationInput) {
+  const name = tidy(request.name);
+  if (!name) throw new GraphQLError('Enter a workstation name.', { extensions: { code: 'BAD_USER_INPUT' } });
+  const capacity = request.capacityHours;
+  if (capacity != null && (Number.isNaN(Number(capacity)) || capacity < 0 || capacity > 24)) {
+    throw new GraphQLError('Capacity must be between 0 and 24 hours a day.', {
+      extensions: { code: 'BAD_USER_INPUT' },
+    });
+  }
+  return {
+    name,
+    code: tidy(request.code)?.toUpperCase() ?? null,
+    location: tidy(request.location),
+    description: tidy(request.description),
+    capacityHours: capacity ?? null,
+    isActive: request.isActive ?? true,
+  };
+}
 
 export const setupResolvers = {
   RootQueryType: {
@@ -326,28 +397,47 @@ export const setupResolvers = {
       ctx: Context,
     ) => {
       const companyUuid = requireCompany(ctx);
+      const name = tidy(request.name);
+      const code = tidy(request.code)?.toUpperCase() ?? null;
+      if (!name) throw new GraphQLError('Enter a process name.', { extensions: { code: 'BAD_USER_INPUT' } });
+      if (!code || !/^[A-Z0-9-]{1,12}$/.test(code)) {
+        throw new GraphQLError('Enter a code of up to 12 letters, numbers or dashes.', {
+          extensions: { code: 'BAD_USER_INPUT' },
+        });
+      }
+      if (await ctx.db.process.findFirst({ where: { companyUuid, code } })) {
+        throw new GraphQLError(`Process code ${code} is already used.`, { extensions: { code: 'BAD_USER_INPUT' } });
+      }
       return ctx.db.process.create({
-        data: {
-          companyUuid,
-          name: request.name ?? 'Untitled process',
-          code: request.code,
-          description: request.description,
-        },
+        data: { companyUuid, name, code, description: tidy(request.description) },
       });
     },
 
-    createWorkstation: async (_: unknown, { request }: { request: { name?: string } }, ctx: Context) => {
+    createWorkstation: async (_: unknown, { request }: { request: WorkstationInput }, ctx: Context) => {
       const companyUuid = requireCompany(ctx);
-      return ctx.db.workstation.create({
-        data: { companyUuid, name: request.name ?? 'Untitled workstation' },
-      });
+      return ctx.db.workstation.create({ data: { ...normaliseWorkstation(request), companyUuid } });
     },
 
-    createPaymentMethod: async (_: unknown, { request }: { request: { name?: string } }, ctx: Context) => {
+    updateWorkstation: async (_: unknown, { request }: { request: WorkstationInput }, ctx: Context) => {
       const companyUuid = requireCompany(ctx);
-      return ctx.db.paymentMethod.create({
-        data: { companyUuid, name: request.name ?? 'Untitled method' },
-      });
+      const current = await ownedOrThrow(ctx.db.workstation, request.uuid, companyUuid, 'Workstation');
+      // Fields left out of the request keep their stored values.
+      const merged = { ...current, capacityHours: current.capacityHours?.toNumber() ?? null, ...defined(request) };
+      return ctx.db.workstation.update({ where: { uuid: request.uuid! }, data: normaliseWorkstation(merged) });
+    },
+
+    createPaymentMethod: async (_: unknown, { request }: { request: PaymentMethodRequest }, ctx: Context) => {
+      const companyUuid = requireCompany(ctx);
+      const data = await checkPaymentMethod(ctx, companyUuid, request);
+      return ctx.db.paymentMethod.create({ data: { ...data, companyUuid } });
+    },
+
+    updatePaymentMethod: async (_: unknown, { request }: { request: PaymentMethodRequest }, ctx: Context) => {
+      const companyUuid = requireCompany(ctx);
+      const current = await ownedOrThrow(ctx.db.paymentMethod, request.uuid, companyUuid, 'Payment method');
+      // Fields left out of the request keep their stored values.
+      const data = await checkPaymentMethod(ctx, companyUuid, { ...current, ...defined(request) });
+      return ctx.db.paymentMethod.update({ where: { uuid: request.uuid! }, data });
     },
   },
 
@@ -361,9 +451,11 @@ export const setupResolvers = {
       const names = new Map(suppliers.map((s) => [s.uuid, s.name]));
       return prices.map((p) => ({ ...p, supplierName: names.get(p.supplierUuid) ?? '' }));
     },
-    /** On-hand valued at standard cost, in the default stock UOM. */
-    stockValue: async (parent: { uuid: string; standardCost: Prisma.Decimal }, _: unknown, ctx: Context) =>
-      (await ctx.loaders.stockLevelByItem.load(parent.uuid)).onHand * Number(parent.standardCost),
+    /** On-hand in the default stock UOM, valued as the dashboard values it (see domain/costing). */
+    stockValue: async (parent: { uuid: string; companyUuid: string }, _: unknown, ctx: Context) => {
+      const costs = await (ctx.unitCosts ??= unitCostsByItem(ctx.db, parent.companyUuid));
+      return (await ctx.loaders.stockLevelByItem.load(parent.uuid)).onHand * (costs.get(parent.uuid) ?? 0);
+    },
     // All three UOM fields share one batched lookup per request.
     stockUoms: (parent: { uuid: string }, _: unknown, ctx: Context) => ctx.loaders.stockUomsByItem.load(parent.uuid),
     stockItems: (parent: { uuid: string }, _: unknown, ctx: Context) =>

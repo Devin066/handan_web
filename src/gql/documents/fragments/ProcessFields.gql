@@ -1,6 +1,7 @@
 fragment ProcessFields on Process {
   uuid
   name
+  code
   description
   insertedAt
   updatedAt

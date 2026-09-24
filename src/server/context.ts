@@ -8,6 +8,8 @@ export type Context = {
   loaders: Loaders;
   userUuid: string | null;
   companyUuid: string | null;
+  /** Per-request cache of item unit costs, filled on first use. */
+  unitCosts?: Promise<Map<string, number>>;
 };
 
 export async function createContext({ request }: { request: Request }): Promise<Context> {

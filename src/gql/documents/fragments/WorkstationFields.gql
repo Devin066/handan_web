@@ -1,7 +1,11 @@
 fragment WorkstationFields on Workstation {
   uuid
   name
+  code
+  location
+  description
+  capacityHours
+  isActive
   insertedAt
   updatedAt
 }
-

@@ -7,6 +7,32 @@ import { allocatePayment } from '../domain/invoicing';
 import { refreshSalesOrder } from '../domain/sales';
 import { refreshPurchaseOrder } from '../domain/purchasing';
 
+/**
+ * A payment may only use an active method of this company, must carry a
+ * reference when the method asks for one, and can't be dated in the future.
+ */
+async function checkPaymentMethodUse(
+  ctx: Context,
+  companyUuid: string,
+  request: { paymentMethodUuid: string; referenceNo?: string | null; paidOn?: Date | string | null },
+) {
+  const method = await ctx.db.paymentMethod.findFirst({ where: { uuid: request.paymentMethodUuid, companyUuid } });
+  if (!method) throw new GraphQLError('Payment method not found.');
+  if (!method.isActive) throw new GraphQLError(`${method.name} is inactive. Choose another payment method.`);
+
+  const referenceNo = request.referenceNo?.trim() || null;
+  if (method.requiresReference && !referenceNo) {
+    throw new GraphQLError(`${method.name} payments need a reference number.`);
+  }
+
+  const paidOn = request.paidOn ? new Date(request.paidOn) : new Date();
+  if (Number.isNaN(paidOn.getTime())) throw new GraphQLError('Enter a valid payment date.');
+  if (paidOn.getTime() > Date.now() + 24 * 60 * 60 * 1000) {
+    throw new GraphQLError('Payment date can’t be in the future.');
+  }
+  return { referenceNo, paidOn };
+}
+
 export const financeResolvers = {
   RootQueryType: {
     journalEntries: async (_: unknown, __: unknown, ctx: Context) => {
@@ -63,6 +89,8 @@ export const financeResolvers = {
           amount: number;
           paymentMethodUuid: string;
           orNumber?: string;
+          referenceNo?: string | null;
+          paidOn?: Date | null;
         };
       },
       ctx: Context,
@@ -73,10 +101,9 @@ export const financeResolvers = {
 
       if (amount.lte(0)) throw new GraphQLError('Enter an amount greater than zero.');
       if (request.invoiceType === 'sales' && !orNumber) throw new GraphQLError('Enter the Official Receipt number.');
+      const { referenceNo, paidOn } = await checkPaymentMethodUse(ctx, companyUuid, request);
 
       return ctx.db.$transaction(async (tx) => {
-        await tx.paymentMethod.findFirstOrThrow({ where: { uuid: request.paymentMethodUuid, companyUuid } });
-
         const isSales = request.invoiceType === 'sales';
         const invoice = isSales
           ? await tx.salesInvoice.findFirst({ where: { uuid: request.invoiceUuid, companyUuid } })
@@ -112,6 +139,8 @@ export const financeResolvers = {
               : (invoice as { supplierName: string }).supplierName,
             paymentMethodUuid: request.paymentMethodUuid,
             totalAmount: amount,
+            referenceNo,
+            paidOn,
             memo: orNumber ? `OR ${orNumber}` : null,
             salesInvoiceIds: isSales ? [invoice.uuid] : [],
             purchaseInvoiceIds: isSales ? [] : [invoice.uuid],
@@ -133,6 +162,8 @@ export const financeResolvers = {
           partyUuid: string;
           paymentMethodUuid: string;
           totalAmount?: number;
+          referenceNo?: string | null;
+          paidOn?: Date | null;
           memo?: string;
           attachments?: string[];
           salesInvoiceIds?: string[];
@@ -145,8 +176,10 @@ export const financeResolvers = {
       const amount = new Prisma.Decimal(request.totalAmount ?? 0);
 
       if (amount.lte(0)) {
-        throw new GraphQLError('totalAmount must be greater than zero');
+        throw new GraphQLError('Enter an amount greater than zero.');
       }
+
+      const { referenceNo, paidOn } = await checkPaymentMethodUse(ctx, companyUuid, request);
 
       return ctx.db.$transaction(async (tx) => {
         // partyType decides which master table the payer/payee lives in.
@@ -181,7 +214,9 @@ export const financeResolvers = {
             partyName,
             paymentMethodUuid: request.paymentMethodUuid,
             totalAmount: amount,
-            memo: request.memo,
+            referenceNo,
+            paidOn,
+            memo: request.memo?.trim() || null,
             attachments: request.attachments?.filter(Boolean) as string[] | undefined,
             salesInvoiceIds,
             purchaseInvoiceIds,

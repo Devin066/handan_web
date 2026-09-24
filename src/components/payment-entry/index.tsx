@@ -26,13 +26,19 @@ const PaymentEntryList: React.FC = () => {
     },
     moneyColumn('Amount', 'totalAmount'),
     {
-      title: 'Payment Methods',
+      title: 'Method',
       dataIndex: ['paymentMethod', 'name'],
     },
     {
-      title: 'Created At',
-      valueType: 'dateTime',
-      dataIndex: 'insertedAt',
+      title: 'Reference',
+      dataIndex: 'referenceNo',
+      render: (_, r) => r.referenceNo || r.memo || '—',
+    },
+    {
+      title: 'Date paid',
+      dataIndex: 'paidOn',
+      valueType: 'date',
+      render: (_, r) => (r.paidOn ?? r.insertedAt ?? '').slice(0, 10) || '—',
     },
   ];
 

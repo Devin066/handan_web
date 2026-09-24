@@ -10,6 +10,9 @@ fragment PaymentEntryFields on PaymentEntry {
 		name
 	}
   totalAmount
+  referenceNo
+  paidOn
+  memo
   insertedAt
   updatedAt
 }

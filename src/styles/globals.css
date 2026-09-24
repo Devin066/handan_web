@@ -420,3 +420,9 @@ body {
 .journal-lines td:nth-child(3) {
   min-width: 96px;
 }
+
+.login-notice {
+  margin: 32px 0 0;
+  font-size: 12px;
+  color: #64748b;
+}

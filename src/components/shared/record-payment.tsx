@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Form, Input, InputNumber, Modal, Select, Typography } from 'antd';
+import dayjs from 'dayjs';
+import { DatePicker, Form, Input, InputNumber, Modal, Select, Typography } from 'antd';
 
 import { useRecordInvoicePaymentMutation } from '@/gql';
 import { fetchPaymentMethods } from '@/utils/api';
@@ -31,6 +32,8 @@ const RecordPayment = ({
   const balance = Number(invoice?.balance ?? 0);
   const sales = type === 'sales';
   const orRules = sales ? [{ required: true, whitespace: true, message: 'Enter the OR number' }] : [];
+  const methodUuid = Form.useWatch('paymentMethodUuid', form);
+  const method = methods.find((m) => m.value === methodUuid);
 
   useEffect(() => {
     if (invoice) fetchPaymentMethods({}).then((m) => setMethods(m ?? []));
@@ -63,7 +66,7 @@ const RecordPayment = ({
         form={form}
         layout="vertical"
         preserve={false}
-        initialValues={{ amount: balance }}
+        initialValues={{ amount: balance, paidOn: dayjs() }}
         onFinish={(values) =>
           record({
             variables: {
@@ -73,6 +76,8 @@ const RecordPayment = ({
                 amount: Number(values.amount),
                 paymentMethodUuid: values.paymentMethodUuid,
                 orNumber: values.orNumber,
+                referenceNo: values.referenceNo,
+                paidOn: values.paidOn ? values.paidOn.startOf('day').toISOString() : null,
               },
             },
           })
@@ -91,6 +96,23 @@ const RecordPayment = ({
           rules={[{ required: true, message: 'Choose how it was paid' }]}
         >
           <Select options={methods} placeholder="Cash, bank transfer, cheque" />
+        </Form.Item>
+        <Form.Item
+          name="referenceNo"
+          label="Reference number"
+          extra={
+            method?.requiresReference ? `Required for ${method.label}.` : 'Transfer reference, check or wallet ID.'
+          }
+          rules={
+            method?.requiresReference
+              ? [{ required: true, whitespace: true, message: `Enter the ${method.label} reference` }]
+              : []
+          }
+        >
+          <Input autoComplete="off" placeholder={method?.requiresReference ? undefined : 'Optional'} />
+        </Form.Item>
+        <Form.Item name="paidOn" label="Date paid" rules={[{ required: true, message: 'Choose the date paid' }]}>
+          <DatePicker style={{ width: '100%' }} disabledDate={(d) => d.isAfter(dayjs(), 'day')} format="YYYY-MM-DD" />
         </Form.Item>
         <Form.Item
           name="amount"

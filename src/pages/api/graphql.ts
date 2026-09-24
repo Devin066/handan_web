@@ -13,6 +13,9 @@ export const config = {
 
 const isProduction = process.env.NODE_ENV === 'production';
 
+/** Names that don't read right when simply lower-cased. */
+const MODEL_LABELS: Record<string, string> = { Bom: 'BOM', Uom: 'unit of measure' };
+
 export default createYoga<{ req: NextApiRequest; res: NextApiResponse }>({
   schema,
   context: createContext,
@@ -39,7 +42,13 @@ export default createYoga<{ req: NextApiRequest; res: NextApiResponse }>({
       // record belonging to another company — not a server fault, so it gets a
       // clean message instead of being masked as an internal error.
       if ((original as { code?: string }).code === 'P2025') {
-        return new GraphQLError('not found', { extensions: { code: 'NOT_FOUND' } });
+        const model = (original as { meta?: { modelName?: string } }).meta?.modelName;
+        const label = model
+          ? (MODEL_LABELS[model] ?? model.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase())
+          : 'record';
+        return new GraphQLError(`That ${label} no longer exists or isn't in your company. Refresh and try again.`, {
+          extensions: { code: 'NOT_FOUND', model },
+        });
       }
 
       if (!isProduction) {

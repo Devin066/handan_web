@@ -344,12 +344,18 @@ model Process {
 }
 
 model Workstation {
-  uuid        String   @id @default(uuid())
-  name        String
-  adminUuid   String?
-  companyUuid String
-  insertedAt  DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  uuid          String   @id @default(uuid())
+  name          String
+  code          String?
+  location      String?
+  description   String?
+  /// Productive hours available per day, used for capacity planning.
+  capacityHours Decimal? @db.Decimal(6, 2)
+  isActive      Boolean  @default(true)
+  adminUuid     String?
+  companyUuid   String
+  insertedAt    DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   members Staff[] @relation("WorkstationMembers")
 
@@ -357,11 +363,22 @@ model Workstation {
 }
 
 model PaymentMethod {
-  uuid        String   @id @default(uuid())
-  name        String
-  companyUuid String
-  insertedAt  DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  uuid              String   @id @default(uuid())
+  name              String
+  /// cash | bank_transfer | e_wallet | check | card | other
+  kind              String   @default("cash")
+  /// Bank or wallet provider, e.g. BDO, GCash.
+  provider          String?
+  accountName       String?
+  accountNumber     String?
+  currency          String   @default("PHP")
+  /// Payments by this method must carry a reference (transfer ref, check no.).
+  requiresReference Boolean  @default(false)
+  isActive          Boolean  @default(true)
+  notes             String?
+  companyUuid       String
+  insertedAt        DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   paymentEntries PaymentEntry[]
 
@@ -822,21 +839,24 @@ model JobCard {
 }
 
 model PaymentEntry {
-  uuid               String   @id @default(uuid())
+  uuid               String    @id @default(uuid())
   code               String
   type               String
   partyType          String
   partyUuid          String
   partyName          String
   paymentMethodUuid  String
-  totalAmount        Decimal  @default(0) @db.Decimal(18, 4)
+  totalAmount        Decimal   @default(0) @db.Decimal(18, 4)
+  /// Transfer reference, check number or wallet transaction id.
+  referenceNo        String?
+  paidOn             DateTime?
   memo               String?
   attachments        String[]
   salesInvoiceIds    String[]
   purchaseInvoiceIds String[]
   companyUuid        String
-  insertedAt         DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  insertedAt         DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   paymentMethod PaymentMethod @relation(fields: [paymentMethodUuid], references: [uuid])
 
