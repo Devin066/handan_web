@@ -1,0 +1,5 @@
+mutation SaveAttendance($request: SaveAttendanceRequest!) {
+  saveAttendance(request: $request) {
+    uuid
+  }
+}

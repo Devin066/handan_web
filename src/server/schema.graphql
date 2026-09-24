@@ -1,5 +1,6 @@
 scalar DateTime
 scalar Decimal
+scalar JSON
 
 schema {
   query: RootQueryType
@@ -20,6 +21,7 @@ type User {
   nickname: String
   bio: String
   avatarUrl: String
+  role: String
   accessToken: String
   insertedAt: DateTime
   updatedAt: DateTime
@@ -41,6 +43,8 @@ type Staff {
   hasLogin: Boolean
   "The login account's role, when there is one."
   role: String
+  "Hourly rate used by payroll."
+  baseRate: Decimal
   user: User
   company: Company
   insertedAt: DateTime
@@ -63,9 +67,23 @@ type StockUom {
   item: Item
 }
 
+type SupplierPrice {
+  uuid: ID
+  supplierUuid: ID
+  supplierName: String
+  unitPrice: Decimal
+  updatedAt: DateTime
+}
+
 type Item {
   uuid: ID
   name: String
+  "raw_material (RM), manufactured_part (MP) or finished_good (FG)."
+  itemType: String
+  standardCost: Decimal
+  "onHandQty valued at standardCost."
+  stockValue: Decimal
+  supplierPrices: [SupplierPrice]
   spec: String
   description: String
   sellingPrice: Decimal
@@ -194,9 +212,20 @@ type PaymentMethod {
   updatedAt: DateTime
 }
 
+type BomLevel {
+  level: Int
+  itemName: String
+  itemType: String
+  qty: Decimal
+  bomCode: String
+}
+
 type Bom {
   uuid: ID
+  code: String
   name: String
+  "The assembly flattened by level; level 0 is the finished part."
+  levels: [BomLevel]
   itemName: String
   item: Item
   bomItems: [BomItem]
@@ -245,6 +274,13 @@ type SalesOrder {
   totalQty: Decimal
   deliveredQty: Decimal
   remainingQty: Decimal
+  requiredDate: DateTime
+  notes: String
+  "overdue, at_risk, on_track, or null."
+  deliveryRisk: String
+  salesInvoiceCode: String
+  workOrders: [WorkOrder]
+  workOrderSuggestions: [WorkOrderSuggestion]
   items: [SalesOrderItem]
   deliveryNotes: [DeliveryNote]
   salesInvoices: [SalesInvoice]
@@ -252,8 +288,20 @@ type SalesOrder {
   updatedAt: DateTime
 }
 
+type WorkOrderSuggestion {
+  salesOrderItemUuid: ID
+  itemUuid: ID
+  itemName: String
+  bomUuid: ID
+  bomName: String
+  availableQty: Decimal
+  suggestedQty: Decimal
+  reason: String
+}
+
 type SalesOrderItem {
   uuid: ID
+  customSpec: String
   itemUuid: ID
   itemName: String
   item: Item
@@ -345,6 +393,11 @@ type SalesInvoice {
   vatableAmount: Decimal
   vatAmount: Decimal
   notes: String
+  "Official Receipt number, set when payment is confirmed."
+  orNumber: String
+  paymentMethodUuid: ID
+  paymentMethodName: String
+  paidAt: DateTime
   items: [SalesInvoiceItem]
   insertedAt: DateTime
   updatedAt: DateTime
@@ -369,6 +422,7 @@ type PurchaseOrder {
   totalQty: Decimal
   receivedQty: Decimal
   remainingQty: Decimal
+  expectedDate: DateTime
   items: [PurchaseOrderItem]
   purchaseInvoices: [PurchaseInvoice]
   receiptNotes: [ReceiptNote]
@@ -379,6 +433,7 @@ type PurchaseOrder {
 type PurchaseOrderItem {
   uuid: ID
   itemName: String
+  purchaseRequestItemUuid: ID
   uomName: String
   stockUomUuid: ID
   unitPrice: Decimal
@@ -396,6 +451,8 @@ type ReceiptNote {
   status: String
   supplierName: String
   purchaseOrderUuid: ID
+  purchaseOrderCode: String
+  purchaseInvoiceCode: String
   warehouse: Warehouse
   totalAmount: Decimal
   totalQty: Decimal
@@ -421,6 +478,14 @@ type PurchaseInvoice {
   code: String
   status: String
   amount: Decimal
+  paidAmount: Decimal
+  balance: Decimal
+  receiptNoteUuid: ID
+  receiptNoteCode: String
+  purchaseOrderCode: String
+  referenceNo: String
+  paymentMethodName: String
+  paidAt: DateTime
   supplierUuid: ID
   supplierName: String
   supplier: Supplier
@@ -452,6 +517,11 @@ type WorkOrder {
   supplierUuid: ID
   supplierName: String
   salesOrderUuid: ID
+  salesOrderCode: String
+  dueDate: DateTime
+  assignedStaffUuid: ID
+  assignedStaffName: String
+  pieceRate: Decimal
   warehouse: Warehouse
   items: [WorkOrderItem]
   materialRequests: [WorkOrderMaterialRequest]
@@ -545,7 +615,180 @@ type PaymentEntry {
   updatedAt: DateTime
 }
 
+type PurchaseRequest {
+  uuid: ID
+  code: String
+  "pending, approved, partly_ordered, ordered or rejected."
+  status: String
+  requestedBy: String
+  requiredDate: DateTime
+  notes: String
+  approvedAt: DateTime
+  purchaseOrderCodes: [String]
+  items: [PurchaseRequestItem]
+  insertedAt: DateTime
+}
+
+type PurchaseRequestItem {
+  uuid: ID
+  purchaseRequestUuid: ID
+  purchaseRequestCode: String
+  itemUuid: ID
+  itemName: String
+  uomName: String
+  stockUomUuid: ID
+  requestedQty: Decimal
+  orderedQty: Decimal
+  remainingQty: Decimal
+  estimatedUnitPrice: Decimal
+}
+
+type ManufacturedGood {
+  uuid: ID
+  itemName: String
+  qty: Decimal
+  workOrderCode: String
+  storedAt: DateTime
+}
+
+type JournalLine {
+  uuid: ID
+  account: String
+  debit: Decimal
+  credit: Decimal
+}
+
+type JournalEntry {
+  uuid: ID
+  entryDate: DateTime
+  description: String
+  sourceType: String
+  sourceUuid: ID
+  sourceCode: String
+  lines: [JournalLine]
+}
+
+type AccountBalance {
+  account: String
+  debit: Decimal
+  credit: Decimal
+  "Debits minus credits."
+  balance: Decimal
+}
+
+type AttendanceRecord {
+  uuid: ID
+  staffUuid: ID
+  staffName: String
+  workDate: DateTime
+  timeIn: DateTime
+  timeOut: DateTime
+  "present, late, absent or on_leave."
+  status: String
+  regularHours: Decimal
+  overtimeHours: Decimal
+  notes: String
+}
+
+type Benefits {
+  overtimeMultiplier: Float
+  defaultPieceRate: Float
+  sssRate: Float
+  philhealthRate: Float
+  pagibigRate: Float
+  withholdingTaxRate: Float
+  standardHoursPerDay: Float
+}
+
+type PayrollEntry {
+  uuid: ID
+  staffUuid: ID
+  staffName: String
+  periodName: String
+  employmentType: String
+  hourlyRate: Decimal
+  daysPresent: Int
+  regularHours: Decimal
+  overtimeHours: Decimal
+  unitsProduced: Decimal
+  basePay: Decimal
+  overtimePay: Decimal
+  incentivePay: Decimal
+  grossPay: Decimal
+  sssDeduction: Decimal
+  philhealthDeduction: Decimal
+  pagibigDeduction: Decimal
+  taxDeduction: Decimal
+  netPay: Decimal
+  insertedAt: DateTime
+}
+
+type PayrollPeriod {
+  uuid: ID
+  name: String
+  startDate: DateTime
+  endDate: DateTime
+  payDate: DateTime
+  "draft or finalized."
+  status: String
+  totalNetPay: Decimal
+  entries: [PayrollEntry]
+}
+
+type RolePermission {
+  role: String
+  modules: [String]
+}
+
+type ModuleOption {
+  key: String
+  label: String
+}
+
+type InvoiceRef {
+  uuid: ID
+  code: String
+}
+
 input IdRequest { uuid: ID }
+input DateRequest { date: String }
+input PurchaseRequestItemArg { itemUuid: ID, requestedQty: Float, stockUomUuid: ID, uomName: String }
+input CreatePurchaseRequestRequest {
+  requestedBy: String
+  requiredDate: DateTime
+  notes: String
+  items: [PurchaseRequestItemArg]
+}
+input ReviewPurchaseRequestRequest { uuid: ID!, approve: Boolean! }
+input RecordInvoicePaymentRequest {
+  "sales or purchase."
+  invoiceType: String!
+  invoiceUuid: ID!
+  amount: Float!
+  paymentMethodUuid: ID!
+  "Official Receipt number; required for sales invoices."
+  orNumber: String
+}
+input SaveAttendanceRequest {
+  staffUuid: ID!
+  workDate: String
+  timeIn: DateTime
+  timeOut: DateTime
+  status: String
+  notes: String
+}
+input BenefitsRequest {
+  overtimeMultiplier: Float
+  defaultPieceRate: Float
+  sssRate: Float
+  philhealthRate: Float
+  pagibigRate: Float
+  withholdingTaxRate: Float
+  standardHoursPerDay: Float
+}
+input GeneratePayrollRequest { uuid: ID, name: String, startDate: String!, endDate: String!, payDate: String }
+input RolePermissionRequest { role: String!, modules: [String]! }
+input UserRoleRequest { staffUuid: ID!, role: String! }
 input LoginRequest { email: String, password: String }
 input CreateCustomerRequest {
   """Optional: derived from the name parts when omitted."""
@@ -604,6 +847,11 @@ input StockUomArg { uomUuid: ID, conversionFactor: Int, sequence: Int }
 input OpeningStockArg { warehouseUuid: ID, qty: Float }
 input CreateItemRequest {
   name: String!
+  itemType: String
+  sku: String
+  category: String
+  standardCost: Float
+  minStockThreshold: Float
   spec: String
   description: String
   sellingPrice: Decimal!
@@ -621,6 +869,7 @@ input CreateBomRequest {
 }
 
 input SalesOrderItemArg {
+  customSpec: String
   itemUuid: ID
   orderedQty: Float
   unitPrice: Float
@@ -631,6 +880,8 @@ input CreateSalesOrderRequest {
   customerUuid: ID
   customerAddress: String
   warehouseUuid: ID
+  requiredDate: DateTime
+  notes: String
   salesItems: [SalesOrderItemArg]
 }
 input SalesOrderRequest { salesOrderUuid: ID }
@@ -650,6 +901,7 @@ input StaffRequest {
   shift: String
   hiredAt: DateTime
   status: String
+  baseRate: Float
 }
 
 input SalesInvoiceItemArg {
@@ -677,6 +929,7 @@ input CreateSalesInvoiceRequest {
 input SalesInvoiceRequest { salesInvoiceUuid: ID, salesOrderUuid: ID }
 
 input PurchaseOrderItemArg {
+  purchaseRequestItemUuid: ID
   itemUuid: ID
   orderedQty: Decimal
   unitPrice: Decimal
@@ -686,6 +939,7 @@ input PurchaseOrderItemArg {
 input CreatePurchaseOrderRequest {
   supplierUuid: ID
   warehouseUuid: ID
+  expectedDate: DateTime
   purchaseItems: [PurchaseOrderItemArg]
 }
 input PurchaseOrderRequest { purchaseOrderUuid: ID }
@@ -703,6 +957,10 @@ input CreateWorkOrderRequest {
   plannedQty: Decimal
   startTime: DateTime
   endTime: DateTime
+  salesOrderUuid: ID
+  assignedStaffUuid: ID
+  pieceRate: Float
+  dueDate: DateTime
 }
 input WorkOrderRequest { workOrderUuid: ID }
 input ReportJobCardRequest {
@@ -731,10 +989,14 @@ input CreatePaymentEntryRequest {
 "the root of query."
 type Configuration {
   currency: String
+  timezone: String
+  decimalPlaces: Int
 }
 
 input UpdateConfigurationRequest {
   currency: String
+  timezone: String
+  decimalPlaces: Int
 }
 
 type RootQueryType {
@@ -789,6 +1051,25 @@ type RootQueryType {
 
   unpaidSalesInvoicesByCustomer(request: IdRequest!): [SalesInvoice]
   unpaidPurchaseInvoicesBySupplier(request: IdRequest!): [PurchaseInvoice]
+
+  "Executive dashboard widgets (SRS 3)."
+  dashboard: JSON
+  purchaseRequests: [PurchaseRequest]
+  openPurchaseRequestItems: [PurchaseRequestItem]
+  "Last known prices from one supplier (uuid = supplier)."
+  supplierPrices(request: IdRequest!): [SupplierPrice]
+  manufacturedGoods(request: DateRequest): [ManufacturedGood]
+  journalEntries: [JournalEntry]
+  accountBalances: [AccountBalance]
+  attendance(request: DateRequest): [AttendanceRecord]
+  benefits: Benefits
+  payrollPeriods: [PayrollPeriod]
+  "Payslips for one employee (uuid = staff)."
+  payslips(request: IdRequest!): [PayrollEntry]
+  staffPerformance(request: IdRequest!): [JobCard]
+  rolePermissions: [RolePermission]
+  modules: [ModuleOption]
+  myModules: [String]
 }
 
 "the root of mutaion."
@@ -822,4 +1103,15 @@ type RootMutationType {
   storeFinishItem(request: StoreFinishItemRequest!): WorkOrder
 
   createPaymentEntry(request: CreatePaymentEntryRequest!): PaymentEntry
+
+  createPurchaseRequest(request: CreatePurchaseRequestRequest!): PurchaseRequest
+  reviewPurchaseRequest(request: ReviewPurchaseRequestRequest!): PurchaseRequest
+  recordInvoicePayment(request: RecordInvoicePaymentRequest!): InvoiceRef
+  saveAttendance(request: SaveAttendanceRequest!): AttendanceRecord
+  clockAttendance(request: IdRequest!): AttendanceRecord
+  updateBenefits(request: BenefitsRequest!): Benefits
+  generatePayroll(request: GeneratePayrollRequest!): PayrollPeriod
+  finalizePayroll(request: IdRequest!): PayrollPeriod
+  updateRolePermissions(request: RolePermissionRequest!): RolePermission
+  setUserRole(request: UserRoleRequest!): Staff
 }

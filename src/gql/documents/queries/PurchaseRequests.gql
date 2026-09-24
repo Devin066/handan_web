@@ -1,0 +1,16 @@
+query PurchaseRequests {
+  purchaseRequests {
+    uuid
+    code
+    status
+    requestedBy
+    requiredDate
+    notes
+    approvedAt
+    purchaseOrderCodes
+    insertedAt
+    items {
+      ...PurchaseRequestItemFields
+    }
+  }
+}

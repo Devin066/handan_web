@@ -1,0 +1,5 @@
+mutation GeneratePayroll($request: GeneratePayrollRequest!) {
+  generatePayroll(request: $request) {
+    uuid
+  }
+}

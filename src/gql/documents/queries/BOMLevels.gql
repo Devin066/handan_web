@@ -1,0 +1,13 @@
+query BOMLevels($request: IdRequest!) {
+  bom(request: $request) {
+    uuid
+    code
+    levels {
+      level
+      itemName
+      itemType
+      qty
+      bomCode
+    }
+  }
+}

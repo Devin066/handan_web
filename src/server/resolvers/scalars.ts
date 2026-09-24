@@ -1,5 +1,5 @@
 import { GraphQLScalarType, Kind } from 'graphql';
-import { DateTimeResolver } from 'graphql-scalars';
+import { DateTimeResolver, JSONResolver } from 'graphql-scalars';
 
 /**
  * Prisma hands back Decimal objects. The UI renders these straight into tables and
@@ -26,4 +26,5 @@ export const DecimalResolver = new GraphQLScalarType({
 export const scalarResolvers = {
   DateTime: DateTimeResolver,
   Decimal: DecimalResolver,
+  JSON: JSONResolver,
 };

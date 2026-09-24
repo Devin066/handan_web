@@ -1,0 +1,14 @@
+query PayrollPeriods {
+  payrollPeriods {
+    uuid
+    name
+    startDate
+    endDate
+    payDate
+    status
+    totalNetPay
+    entries {
+      ...PayrollEntryFields
+    }
+  }
+}

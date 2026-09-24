@@ -2,5 +2,6 @@ query CurrentUser{
 	currentUser {
 		email
 		uuid
+		role
 	}
 }

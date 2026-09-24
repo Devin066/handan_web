@@ -47,7 +47,8 @@ export const CURRENCIES: CurrencyOption[] = [
  * Existing installs formatted everything as USD, so that stays the default —
  * changing it would silently re-label every historical figure in the system.
  */
-export const DEFAULT_CURRENCY = 'USD';
+/** SRS 4.8: base currency is PHP. */
+export const DEFAULT_CURRENCY = 'PHP';
 
 /** The AppSetting key the company-wide currency lives under. */
 export const CURRENCY_SETTING_KEY = 'general.currency';

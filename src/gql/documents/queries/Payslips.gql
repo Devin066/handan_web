@@ -1,0 +1,20 @@
+query Payslips($request: IdRequest!) {
+  payslips(request: $request) {
+    ...PayrollEntryFields
+  }
+  staffPerformance(request: $request) {
+    uuid
+    producedQty
+    defectiveQty
+    insertedAt
+    workOrder {
+      uuid
+      code
+      itemName
+    }
+    workOrderItem {
+      uuid
+      processName
+    }
+  }
+}

@@ -1,0 +1,9 @@
+fragment BenefitsFields on Benefits {
+  overtimeMultiplier
+  defaultPieceRate
+  sssRate
+  philhealthRate
+  pagibigRate
+  withholdingTaxRate
+  standardHoursPerDay
+}

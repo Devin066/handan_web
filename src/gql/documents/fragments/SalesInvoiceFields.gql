@@ -21,6 +21,9 @@ fragment SalesInvoiceFields on SalesInvoice {
   vatableAmount
   vatAmount
   notes
+  orNumber
+  paymentMethodName
+  paidAt
   insertedAt
   updatedAt
 }

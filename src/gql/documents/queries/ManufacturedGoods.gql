@@ -1,0 +1,9 @@
+query ManufacturedGoods($request: DateRequest) {
+  manufacturedGoods(request: $request) {
+    uuid
+    itemName
+    qty
+    workOrderCode
+    storedAt
+  }
+}

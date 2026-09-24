@@ -23,6 +23,9 @@ async function main() {
     prisma.expense.deleteMany(),
     prisma.expenseCategory.deleteMany(),
     prisma.appSetting.deleteMany(),
+    prisma.journalLine.deleteMany(),
+    prisma.journalEntry.deleteMany(),
+    prisma.supplierPrice.deleteMany(),
     prisma.jobCard.deleteMany(),
     prisma.workOrderMaterialRequest.deleteMany(),
     prisma.workOrderItem.deleteMany(),
@@ -37,6 +40,8 @@ async function main() {
     prisma.purchaseInvoice.deleteMany(),
     prisma.purchaseOrderItem.deleteMany(),
     prisma.purchaseOrder.deleteMany(),
+    prisma.purchaseRequestItem.deleteMany(),
+    prisma.purchaseRequest.deleteMany(),
     prisma.paymentEntry.deleteMany(),
     prisma.paymentMethod.deleteMany(),
     prisma.inventoryEntry.deleteMany(),
@@ -101,12 +106,23 @@ async function main() {
     data: { companyUuid, name: 'Finished Goods Store', address: '2 Factory Road' },
   });
 
-  const makeItem = async (name: string, spec: string, sellingPrice: number, uomUuid: string, openingQty: number) => {
+  const makeItem = async (
+    name: string,
+    spec: string,
+    sellingPrice: number,
+    uomUuid: string,
+    openingQty: number,
+    master: { itemType: string; sku: string; standardCost: number; minStockThreshold?: number },
+  ) => {
     const item = await prisma.item.create({
       data: {
         companyUuid,
         name,
         spec,
+        itemType: master.itemType,
+        sku: master.sku,
+        standardCost: new Prisma.Decimal(master.standardCost),
+        minStockThreshold: new Prisma.Decimal(master.minStockThreshold ?? 0),
         sellingPrice: new Prisma.Decimal(sellingPrice),
         stockUoms: { create: [{ uomUuid, conversionFactor: 1, sequence: 0 }] },
       },
@@ -145,10 +161,29 @@ async function main() {
     return item;
   };
 
-  const steelPlate = await makeItem('Steel Plate 5mm', '1200x600mm', 45, kg.uuid, 500);
-  const bearing = await makeItem('Bearing 6204', 'Sealed, 20mm bore', 12, pcs.uuid, 300);
-  const boltSet = await makeItem('Bolt Set M8', 'Zinc plated, 50pc', 8, box.uuid, 120);
-  const gearbox = await makeItem('Gearbox Housing', 'Cast, machined', 380, pcs.uuid, 0);
+  const steelPlate = await makeItem('Steel Plate 5mm', '1200x600mm', 45, kg.uuid, 500, {
+    itemType: 'raw_material',
+    sku: 'RM-000001',
+    standardCost: 38,
+    minStockThreshold: 100,
+  });
+  const bearing = await makeItem('Bearing 6204', 'Sealed, 20mm bore', 12, pcs.uuid, 300, {
+    itemType: 'raw_material',
+    sku: 'RM-000002',
+    standardCost: 9,
+    minStockThreshold: 50,
+  });
+  const boltSet = await makeItem('Bolt Set M8', 'Zinc plated, 50pc', 8, box.uuid, 120, {
+    itemType: 'raw_material',
+    sku: 'RM-000003',
+    standardCost: 6,
+    minStockThreshold: 20,
+  });
+  const gearbox = await makeItem('Gearbox Housing', 'Cast, machined', 380, pcs.uuid, 0, {
+    itemType: 'finished_good',
+    sku: 'FG-000001',
+    standardCost: 250,
+  });
 
   const [cutting, machining, assembly, inspection] = await Promise.all([
     prisma.process.create({ data: { companyUuid, name: 'Cutting', code: 'CUT' } }),
@@ -171,6 +206,7 @@ async function main() {
   await prisma.bom.create({
     data: {
       companyUuid,
+      code: 'BOM-000001',
       name: 'Gearbox Housing BOM',
       itemUuid: gearbox.uuid,
       bomItems: {
@@ -302,6 +338,9 @@ async function main() {
   await prisma.counter.createMany({
     data: [
       { companyUuid, name: 'salesOrder', value: 1 },
+      { companyUuid, name: 'rawMaterial', value: 3 },
+      { companyUuid, name: 'finishedGood', value: 1 },
+      { companyUuid, name: 'bom', value: 1 },
       { companyUuid, name: 'inventoryEntry', value: 4 },
     ],
   });

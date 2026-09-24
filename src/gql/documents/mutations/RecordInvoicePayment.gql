@@ -1,0 +1,6 @@
+mutation RecordInvoicePayment($request: RecordInvoicePaymentRequest!) {
+  recordInvoicePayment(request: $request) {
+    uuid
+    code
+  }
+}

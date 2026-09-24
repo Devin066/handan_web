@@ -1,5 +1,6 @@
 import { Prisma } from '@/generated/prisma/client';
 import { invoiceStatus } from './status';
+import { ACCOUNT, postJournal } from './ledger';
 
 /**
  * Allocates a payment across the invoices it names, oldest first, stopping when the
@@ -12,6 +13,9 @@ export async function allocatePayment(
     amount: Prisma.Decimal;
     salesInvoiceIds: string[];
     purchaseInvoiceIds: string[];
+    /** Official Receipt number and method, stamped on each invoice this payment touches. */
+    orNumber?: string | null;
+    paymentMethodUuid?: string | null;
   },
 ) {
   let remaining = new Prisma.Decimal(args.amount);
@@ -40,7 +44,22 @@ export async function allocatePayment(
         data: {
           paidAmount,
           status: invoiceStatus(paidAmount, invoice.amount),
+          paidAt: new Date(),
+          ...(args.orNumber ? { orNumber: args.orNumber } : {}),
+          ...(args.paymentMethodUuid ? { paymentMethodUuid: args.paymentMethodUuid } : {}),
         },
+      });
+
+      await postJournal(tx, {
+        companyUuid: invoice.companyUuid,
+        description: `Payment from ${invoice.customerName}${args.orNumber ? ` (OR ${args.orNumber})` : ''}`,
+        sourceType: 'sales_payment',
+        sourceUuid: invoice.uuid,
+        sourceCode: invoice.code,
+        lines: [
+          { account: ACCOUNT.cash, debit: applied },
+          { account: ACCOUNT.accountsReceivable, credit: applied },
+        ],
       });
 
       touchedSalesOrders.add(invoice.salesOrderUuid);
@@ -69,7 +88,22 @@ export async function allocatePayment(
         data: {
           paidAmount,
           status: invoiceStatus(paidAmount, invoice.amount),
+          paidAt: new Date(),
+          ...(args.orNumber ? { referenceNo: args.orNumber } : {}),
+          ...(args.paymentMethodUuid ? { paymentMethodUuid: args.paymentMethodUuid } : {}),
         },
+      });
+
+      await postJournal(tx, {
+        companyUuid: invoice.companyUuid,
+        description: `Payment to ${invoice.supplierName}`,
+        sourceType: 'purchase_payment',
+        sourceUuid: invoice.uuid,
+        sourceCode: invoice.code,
+        lines: [
+          { account: ACCOUNT.accountsPayable, debit: applied },
+          { account: ACCOUNT.cash, credit: applied },
+        ],
       });
 
       touchedPurchaseOrders.add(invoice.purchaseOrderUuid);

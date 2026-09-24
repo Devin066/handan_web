@@ -1,7 +1,7 @@
 import { GraphQLError } from 'graphql';
 
 import { isValidEmail, isValidMobile } from '@/config/ph-contact';
-import { EMPLOYMENT_TYPES, STAFF_STATUSES } from '@/config/staff';
+import { EMPLOYMENT_TYPES, LEGACY_EMPLOYMENT_TYPES, STAFF_STATUSES } from '@/config/staff';
 
 export type StaffInput = {
   uuid?: string | null;
@@ -13,6 +13,7 @@ export type StaffInput = {
   shift?: string | null;
   hiredAt?: Date | null;
   status?: string | null;
+  baseRate?: number | null;
 };
 
 const clean = (value?: string | null) => value?.trim().replace(/\s+/g, ' ') || null;
@@ -28,7 +29,7 @@ export function normaliseStaff(request: StaffInput) {
   if (phone && !isValidMobile(phone)) throw new GraphQLError('Mobile number is not valid.');
 
   const employmentType = request.employmentType ?? 'regular';
-  if (!(employmentType in EMPLOYMENT_TYPES)) throw new GraphQLError(`Unknown employment type: ${employmentType}`);
+  if (!(employmentType in EMPLOYMENT_TYPES) && !LEGACY_EMPLOYMENT_TYPES.includes(employmentType)) throw new GraphQLError(`Unknown employment type: ${employmentType}`);
   const status = request.status ?? 'active';
   if (!(status in STAFF_STATUSES)) throw new GraphQLError(`Unknown status: ${status}`);
 
@@ -41,5 +42,6 @@ export function normaliseStaff(request: StaffInput) {
     shift: clean(request.shift),
     hiredAt: request.hiredAt ? new Date(request.hiredAt) : null,
     status,
+    ...(request.baseRate != null ? { baseRate: Math.max(Number(request.baseRate) || 0, 0) } : {}),
   };
 }

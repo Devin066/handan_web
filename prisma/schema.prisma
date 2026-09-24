@@ -115,6 +115,8 @@ model Item {
   receiptNoteItems   ReceiptNoteItem[]
   workOrders         WorkOrder[]
   materialRequests   WorkOrderMaterialRequest[]
+  supplierPrices     SupplierPrice[]
+  purchaseRequestItems PurchaseRequestItem[]
   defaultSupplier    Supplier?                  @relation(fields: [defaultSupplierUuid], references: [uuid])
 
   @@unique([companyUuid, sku])
@@ -367,6 +369,7 @@ model PaymentMethod {
 model Bom {
   uuid        String   @id @default(uuid())
   name        String
+  code        String?
   itemUuid    String
   companyUuid String
   insertedAt  DateTime @default(now())
@@ -543,6 +546,10 @@ model SalesInvoice {
   vatableAmount  Decimal @default(0) @db.Decimal(18, 4)
   vatAmount      Decimal @default(0) @db.Decimal(18, 4)
   notes          String?
+  /// Official Receipt number, filled in once finance confirms payment.
+  orNumber          String?
+  paymentMethodUuid String?
+  paidAt            DateTime?
 
   customer   Customer           @relation(fields: [customerUuid], references: [uuid])
   salesOrder SalesOrder         @relation(fields: [salesOrderUuid], references: [uuid], onDelete: Cascade)
@@ -587,6 +594,7 @@ model PurchaseOrder {
   paidAmount      Decimal  @default(0) @db.Decimal(18, 4)
   totalQty        Decimal  @default(0) @db.Decimal(18, 4)
   receivedQty     Decimal  @default(0) @db.Decimal(18, 4)
+  expectedDate    DateTime?
   companyUuid     String
   insertedAt      DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -610,12 +618,14 @@ model PurchaseOrderItem {
   unitPrice         Decimal  @default(0) @db.Decimal(18, 4)
   orderedQty        Decimal  @default(0) @db.Decimal(18, 4)
   receivedQty       Decimal  @default(0) @db.Decimal(18, 4)
+  purchaseRequestItemUuid String?
   insertedAt        DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
   purchaseOrder    PurchaseOrder     @relation(fields: [purchaseOrderUuid], references: [uuid], onDelete: Cascade)
   item             Item              @relation(fields: [itemUuid], references: [uuid])
   receiptNoteItems ReceiptNoteItem[]
+  purchaseRequestItem PurchaseRequestItem? @relation(fields: [purchaseRequestItemUuid], references: [uuid])
 
   @@index([purchaseOrderUuid])
 }
@@ -671,6 +681,10 @@ model PurchaseInvoice {
   supplierUuid      String
   supplierName      String
   purchaseOrderUuid String
+  receiptNoteUuid   String?
+  referenceNo       String?
+  paymentMethodUuid String?
+  paidAt            DateTime?
   companyUuid       String
   insertedAt        DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -703,6 +717,10 @@ model WorkOrder {
   supplierUuid   String?
   supplierName   String?
   salesOrderUuid String?
+  assignedStaffUuid String?
+  /// Paid to the operator for each good unit reported on this work order.
+  pieceRate      Decimal   @default(0) @db.Decimal(18, 4)
+  machineHours   Decimal   @default(0) @db.Decimal(10, 2)
   warehouseUuid  String
   companyUuid    String
   insertedAt     DateTime  @default(now())
@@ -1024,6 +1042,12 @@ model PayrollEntry {
   incentivePay        Decimal  @default(0) @db.Decimal(18, 4)
   sssDeduction        Decimal  @default(0) @db.Decimal(18, 4)
   philhealthDeduction Decimal  @default(0) @db.Decimal(18, 4)
+  pagibigDeduction    Decimal  @default(0) @db.Decimal(18, 4)
+  taxDeduction        Decimal  @default(0) @db.Decimal(18, 4)
+  hourlyRate          Decimal  @default(0) @db.Decimal(18, 4)
+  daysPresent         Int      @default(0)
+  unitsProduced       Decimal  @default(0) @db.Decimal(18, 4)
+  employmentType      String   @default("regular")
   otherDeductions     Decimal  @default(0) @db.Decimal(18, 4)
   netPay              Decimal  @default(0) @db.Decimal(18, 4)
   companyUuid         String
@@ -1050,4 +1074,88 @@ model AppSetting {
   updatedAt   DateTime @updatedAt
 
   @@id([companyUuid, key])
+}
+
+/// Purchase Request (SRS 4.2): an internal ask for stock. Approved lines with
+/// quantity left to order can be pulled into a purchase order.
+model PurchaseRequest {
+  uuid          String    @id @default(uuid())
+  code          String
+  /// pending, approved, partly_ordered, ordered, rejected
+  status        String    @default("pending")
+  requestedBy   String?
+  requiredDate  DateTime?
+  notes         String?
+  approvedAt    DateTime?
+  companyUuid   String
+  insertedAt    DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  items PurchaseRequestItem[]
+
+  @@index([companyUuid, status])
+}
+
+model PurchaseRequestItem {
+  uuid                String   @id @default(uuid())
+  purchaseRequestUuid String
+  itemUuid            String
+  itemName            String
+  uomName             String?
+  stockUomUuid        String?
+  requestedQty        Decimal  @default(0) @db.Decimal(18, 4)
+  orderedQty          Decimal  @default(0) @db.Decimal(18, 4)
+  estimatedUnitPrice  Decimal  @default(0) @db.Decimal(18, 4)
+  insertedAt          DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  purchaseRequest    PurchaseRequest     @relation(fields: [purchaseRequestUuid], references: [uuid], onDelete: Cascade)
+  item               Item                @relation(fields: [itemUuid], references: [uuid])
+  purchaseOrderItems PurchaseOrderItem[]
+
+  @@index([purchaseRequestUuid])
+}
+
+/// Last price a supplier charged for an item; refreshed on every purchase order.
+model SupplierPrice {
+  uuid         String   @id @default(uuid())
+  itemUuid     String
+  supplierUuid String
+  unitPrice    Decimal  @default(0) @db.Decimal(18, 4)
+  companyUuid  String
+  updatedAt    DateTime @updatedAt
+
+  item Item @relation(fields: [itemUuid], references: [uuid], onDelete: Cascade)
+
+  @@unique([itemUuid, supplierUuid])
+  @@index([companyUuid])
+}
+
+/// Double-entry journal (SRS 4.5). Every entry's debits equal its credits.
+model JournalEntry {
+  uuid        String   @id @default(uuid())
+  entryDate   DateTime @default(now())
+  description String
+  sourceType  String
+  sourceUuid  String?
+  sourceCode  String?
+  companyUuid String
+  insertedAt  DateTime @default(now())
+
+  lines JournalLine[]
+
+  @@index([companyUuid, entryDate])
+}
+
+model JournalLine {
+  uuid             String  @id @default(uuid())
+  journalEntryUuid String
+  account          String
+  debit            Decimal @default(0) @db.Decimal(18, 4)
+  credit           Decimal @default(0) @db.Decimal(18, 4)
+
+  journalEntry JournalEntry @relation(fields: [journalEntryUuid], references: [uuid], onDelete: Cascade)
+
+  @@index([journalEntryUuid])
+  @@index([account])
 }

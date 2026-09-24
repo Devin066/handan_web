@@ -1,0 +1,7 @@
+mutation ClockAttendance($request: IdRequest!) {
+  clockAttendance(request: $request) {
+    uuid
+    timeIn
+    timeOut
+  }
+}

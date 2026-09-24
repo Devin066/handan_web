@@ -16,6 +16,11 @@ fragment WorkOrderFields on WorkOrder {
   supplierName
   supplierUuid
   salesOrderUuid
+  salesOrderCode
+  dueDate
+  assignedStaffUuid
+  assignedStaffName
+  pieceRate
   stockUomUuid
   insertedAt
   updatedAt

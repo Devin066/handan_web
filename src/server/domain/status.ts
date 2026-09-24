@@ -71,12 +71,19 @@ export const FULFILLMENT_MODEL = {
   makeToStock: 'make_to_stock',
 } as const;
 
-/** What the master record is for (PRD 6) — raw material master vs finished goods. */
+/** What the master record is for (SRS 4.4): raw materials, manufactured parts, finished goods. */
 export const ITEM_TYPE = {
   rawMaterial: 'raw_material',
+  manufacturedPart: 'manufactured_part',
   finishedGood: 'finished_good',
-  consumable: 'consumable',
 } as const;
+
+/** Material Master code prefix per class (SRS 2): RM, MP, FG. */
+export const ITEM_TYPE_PREFIX: Record<string, 'rawMaterial' | 'manufacturedPart' | 'finishedGood'> = {
+  raw_material: 'rawMaterial',
+  manufactured_part: 'manufacturedPart',
+  finished_good: 'finishedGood',
+};
 
 /**
  * Roles (PRD 20, BR-08). Ordered least to most privileged; access checks compare
@@ -193,4 +200,19 @@ export function orderProductionStatus(produced: Prisma.Decimal | number, total: 
   if (done.lte(0)) return 'not_started';
   if (done.gte(all)) return 'produced';
   return 'in_production';
+}
+
+/** Days before the target date at which an open order is flagged at risk. */
+export const DELIVERY_RISK_DAYS = 3;
+
+/** Delivery Date Risk Warning (SRS 3): overdue, at_risk, on_track, or null. */
+export function deliveryRisk(order: { requiredDate: Date | null; deliveryStatus: string; status: string }) {
+  if (!order.requiredDate) return null;
+  if (order.deliveryStatus === 'fully_delivered' || order.status === 'completed' || order.status === 'cancelled') {
+    return null;
+  }
+  const msLeft = new Date(order.requiredDate).getTime() - Date.now();
+  if (msLeft < 0) return 'overdue';
+  if (msLeft <= DELIVERY_RISK_DAYS * 24 * 60 * 60 * 1000) return 'at_risk';
+  return 'on_track';
 }

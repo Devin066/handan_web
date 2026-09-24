@@ -1,0 +1,5 @@
+mutation SetUserRole($request: UserRoleRequest!) {
+  setUserRole(request: $request) {
+    uuid
+  }
+}

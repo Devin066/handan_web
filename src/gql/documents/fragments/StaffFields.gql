@@ -8,6 +8,7 @@ fragment StaffFields on Staff {
   shift
   hiredAt
   status
+  baseRate
   hasLogin
   role
   insertedAt

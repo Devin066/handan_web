@@ -6,7 +6,7 @@ import { requireCompany } from '../context';
 import { nextCode } from '../domain/codes';
 import { applyStockMove } from '../domain/stock';
 import { refreshSalesOrder } from '../domain/sales';
-import { DELIVERY_NOTE_STATUS, UNSETTLED_INVOICE_STATUSES } from '../domain/status';
+import { DELIVERY_NOTE_STATUS, UNSETTLED_INVOICE_STATUSES, deliveryRisk } from '../domain/status';
 
 export const sellingResolvers = {
   RootQueryType: {
@@ -92,7 +92,10 @@ export const sellingResolvers = {
           customerUuid?: string;
           customerAddress?: string;
           warehouseUuid?: string;
+          requiredDate?: string;
+          notes?: string;
           salesItems?: Array<{
+            customSpec?: string;
             itemUuid?: string;
             orderedQty?: number;
             unitPrice?: number;
@@ -135,6 +138,8 @@ export const sellingResolvers = {
             customerName: customer.name,
             customerAddress: request.customerAddress ?? customer.address,
             warehouseUuid: request.warehouseUuid as string,
+            requiredDate: request.requiredDate ? new Date(request.requiredDate) : null,
+            notes: request.notes?.trim() || null,
             items: {
               create: lines.map((line) => {
                 const item = itemsByUuid.get(line.itemUuid as string);
@@ -150,13 +155,20 @@ export const sellingResolvers = {
                   stockUomUuid: line.stockUomUuid,
                   unitPrice: new Prisma.Decimal(line.unitPrice ?? item.sellingPrice),
                   orderedQty: new Prisma.Decimal(line.orderedQty ?? 0),
+                  customSpec: line.customSpec?.trim() || null,
                 };
               }),
             },
           },
         });
 
-        return refreshSalesOrder(tx, order.uuid);
+        await refreshSalesOrder(tx, order.uuid);
+
+        // Custom Sales Order Created (SRS 5): the fiscal-year invoice (SO-INV)
+        // is issued with the order, so AR reflects it straight away.
+        await createSalesInvoice(tx, companyUuid, { salesOrderUuid: order.uuid });
+
+        return tx.salesOrder.findUniqueOrThrow({ where: { uuid: order.uuid } });
       });
     },
 
@@ -312,6 +324,49 @@ export const sellingResolvers = {
   },
 
   SalesOrder: {
+    workOrders: (parent: { uuid: string }, _: unknown, ctx: Context) =>
+      ctx.db.workOrder.findMany({ where: { salesOrderUuid: parent.uuid }, orderBy: { insertedAt: 'asc' } }),
+    /** overdue, at_risk (due within 3 days), on_track, or null when fulfilled or undated. */
+    deliveryRisk: (parent: { requiredDate: Date | null; deliveryStatus: string; status: string }) =>
+      deliveryRisk(parent),
+    /**
+     * Lines the shop has to make (SRS 4.1): the item has a BOM and finished stock
+     * does not cover the order, or the line carries a custom spec.
+     */
+    workOrderSuggestions: async (parent: { uuid: string }, _: unknown, ctx: Context) => {
+      const lines = await ctx.db.salesOrderItem.findMany({ where: { salesOrderUuid: parent.uuid } });
+      const planned = await ctx.db.workOrder.groupBy({
+        by: ['itemUuid'],
+        where: { salesOrderUuid: parent.uuid, status: { not: 'cancelled' } },
+        _sum: { plannedQty: true },
+      });
+      const plannedByItem = new Map(planned.map((p) => [p.itemUuid, Number(p._sum.plannedQty ?? 0)]));
+      const suggestions = [];
+      for (const line of lines) {
+        const bom = await ctx.db.bom.findFirst({ where: { itemUuid: line.itemUuid }, orderBy: { insertedAt: 'desc' } });
+        if (!bom) continue;
+        const { onHand, reserved } = await ctx.loaders.stockLevelByItem.load(line.itemUuid);
+        const available = Math.max(onHand - reserved, 0);
+        const outstanding = Number(line.orderedQty) - Number(line.deliveredQty);
+        const shortfall = line.customSpec ? outstanding : outstanding - available;
+        const toMake = shortfall - (plannedByItem.get(line.itemUuid) ?? 0);
+        if (toMake <= 0) continue;
+        suggestions.push({
+          salesOrderItemUuid: line.uuid,
+          itemUuid: line.itemUuid,
+          itemName: line.itemName,
+          bomUuid: bom.uuid,
+          bomName: bom.name,
+          availableQty: available,
+          suggestedQty: toMake,
+          reason: line.customSpec ? 'Custom spec' : 'Not enough finished stock',
+        });
+      }
+      return suggestions;
+    },
+    salesInvoiceCode: async (parent: { uuid: string }, _: unknown, ctx: Context) =>
+      (await ctx.db.salesInvoice.findFirst({ where: { salesOrderUuid: parent.uuid }, orderBy: { insertedAt: 'asc' } }))
+        ?.code,
     items: (parent: { uuid: string }, _: unknown, ctx: Context) => ctx.loaders.salesOrderItems.load(parent.uuid),
     deliveryNotes: (parent: { uuid: string }, _: unknown, ctx: Context) =>
       ctx.db.deliveryNote.findMany({ where: { salesOrderUuid: parent.uuid } }),
@@ -366,6 +421,10 @@ export const sellingResolvers = {
   },
 
   SalesInvoice: {
+    paymentMethodName: async (parent: { paymentMethodUuid: string | null }, _: unknown, ctx: Context) =>
+      parent.paymentMethodUuid
+        ? (await ctx.db.paymentMethod.findUnique({ where: { uuid: parent.paymentMethodUuid } }))?.name
+        : null,
     items: (parent: { uuid: string }, _: unknown, ctx: Context) =>
       ctx.db.salesInvoiceItem.findMany({ where: { salesInvoiceUuid: parent.uuid } }),
     balance: (parent: { amount: Prisma.Decimal; paidAmount: Prisma.Decimal }) =>

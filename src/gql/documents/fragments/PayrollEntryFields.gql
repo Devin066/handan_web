@@ -1,0 +1,22 @@
+fragment PayrollEntryFields on PayrollEntry {
+  uuid
+  staffUuid
+  staffName
+  periodName
+  employmentType
+  hourlyRate
+  daysPresent
+  regularHours
+  overtimeHours
+  unitsProduced
+  basePay
+  overtimePay
+  incentivePay
+  grossPay
+  sssDeduction
+  philhealthDeduction
+  pagibigDeduction
+  taxDeduction
+  netPay
+  insertedAt
+}

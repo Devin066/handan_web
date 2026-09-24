@@ -32,3 +32,17 @@ export async function refreshPurchaseOrder(tx: Prisma.TransactionClient, purchas
     },
   });
 }
+
+/** A PR is ordered once every line is fully on a PO, partly ordered before that. */
+export async function refreshPurchaseRequest(tx: Prisma.TransactionClient, purchaseRequestUuid: string) {
+  const pr = await tx.purchaseRequest.findUniqueOrThrow({
+    where: { uuid: purchaseRequestUuid },
+    include: { items: true },
+  });
+
+  const anyOrdered = pr.items.some((i) => new Prisma.Decimal(i.orderedQty).gt(0));
+  const allOrdered = pr.items.every((i) => new Prisma.Decimal(i.orderedQty).gte(i.requestedQty));
+  const status = allOrdered ? 'ordered' : anyOrdered ? 'partly_ordered' : pr.status;
+
+  return tx.purchaseRequest.update({ where: { uuid: pr.uuid }, data: { status } });
+}

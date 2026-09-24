@@ -11,6 +11,7 @@ import {
 } from '@/config/invoice';
 import { nextCode } from './codes';
 import { refreshSalesOrder } from './sales';
+import { ACCOUNT, postJournal } from './ledger';
 
 export type CreateSalesInvoiceRequest = {
   salesOrderUuid?: string;
@@ -167,6 +168,20 @@ export async function createSalesInvoice(
         })),
       },
     },
+  });
+
+  await postJournal(tx, {
+    companyUuid,
+    description: `Sales invoice to ${order.customerName}`,
+    sourceType: 'sales_invoice',
+    sourceUuid: invoice.uuid,
+    sourceCode: invoice.code,
+    entryDate: invoiceDate,
+    lines: [
+      { account: ACCOUNT.accountsReceivable, debit: totals.total },
+      { account: ACCOUNT.salesRevenue, credit: totals.total - totals.vatAmount },
+      { account: ACCOUNT.outputVat, credit: totals.vatAmount },
+    ],
   });
 
   await refreshSalesOrder(tx, order.uuid);

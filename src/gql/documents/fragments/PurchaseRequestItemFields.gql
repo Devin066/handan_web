@@ -1,0 +1,13 @@
+fragment PurchaseRequestItemFields on PurchaseRequestItem {
+  uuid
+  purchaseRequestUuid
+  purchaseRequestCode
+  itemUuid
+  itemName
+  uomName
+  stockUomUuid
+  requestedQty
+  orderedQty
+  remainingQty
+  estimatedUnitPrice
+}

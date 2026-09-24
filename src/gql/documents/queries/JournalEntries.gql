@@ -1,0 +1,21 @@
+query JournalEntries {
+  journalEntries {
+    uuid
+    entryDate
+    description
+    sourceType
+    sourceCode
+    lines {
+      uuid
+      account
+      debit
+      credit
+    }
+  }
+  accountBalances {
+    account
+    debit
+    credit
+    balance
+  }
+}

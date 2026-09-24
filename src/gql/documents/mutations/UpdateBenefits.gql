@@ -1,0 +1,5 @@
+mutation UpdateBenefits($request: BenefitsRequest!) {
+  updateBenefits(request: $request) {
+    ...BenefitsFields
+  }
+}

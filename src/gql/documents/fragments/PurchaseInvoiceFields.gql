@@ -2,6 +2,13 @@ fragment PurchaseInvoiceFields on PurchaseInvoice {
   uuid
 	code
   status
+  paidAmount
+  balance
+  receiptNoteCode
+  purchaseOrderCode
+  referenceNo
+  paymentMethodName
+  paidAt
 	amount
 	supplierName
 	supplierUuid

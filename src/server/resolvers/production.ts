@@ -6,11 +6,35 @@ import { nextCode } from '../domain/codes';
 import { applyStockMove } from '../domain/stock';
 import { expandBom, refreshWorkOrder } from '../domain/production';
 import { JOB_CARD_STATUS, WORK_ORDER_STATUS } from '../domain/status';
+import { manilaDay } from '../domain/time';
 
 type Id = { request: { uuid?: string } };
 
 export const productionResolvers = {
   RootQueryType: {
+    /** Daily Manufactured Goods (SRS 4.3): everything stored from production on a given day. */
+    manufacturedGoods: async (_: unknown, { request }: { request: { date?: string } }, ctx: Context) => {
+      const companyUuid = requireCompany(ctx);
+      const { start, end } = manilaDay(request?.date);
+      const entries = await ctx.db.inventoryEntry.findMany({
+        where: { companyUuid, type: 'production', insertedAt: { gte: start, lt: end } },
+        orderBy: { insertedAt: 'desc' },
+      });
+      const workOrders = await ctx.db.workOrder.findMany({
+        where: { uuid: { in: entries.map((e) => e.threadUuid).filter(Boolean) as string[] } },
+      });
+      const woByUuid = new Map(workOrders.map((w) => [w.uuid, w]));
+      return entries.map((entry) => {
+        const wo = entry.threadUuid ? woByUuid.get(entry.threadUuid) : undefined;
+        return {
+          uuid: entry.uuid,
+          itemName: wo?.itemName ?? '',
+          qty: entry.actualQty,
+          workOrderCode: wo?.code ?? null,
+          storedAt: entry.insertedAt,
+        };
+      });
+    },
     boms: async (_: unknown, __: unknown, ctx: Context) => {
       const companyUuid = requireCompany(ctx);
       return ctx.db.bom.findMany({ where: { companyUuid }, orderBy: { insertedAt: 'desc' } });
@@ -80,8 +104,11 @@ export const productionResolvers = {
           if (!defaultUomByItem.has(uom.itemUuid)) defaultUomByItem.set(uom.itemUuid, uom.uuid);
         }
 
+        const code = await nextCode(tx, companyUuid, 'bom');
+
         return tx.bom.create({
           data: {
+            code,
             companyUuid,
             name: request.name ?? `BOM for ${item.name}`,
             itemUuid: item.uuid,
@@ -116,6 +143,10 @@ export const productionResolvers = {
           plannedQty?: number;
           startTime?: string;
           endTime?: string;
+          salesOrderUuid?: string;
+          assignedStaffUuid?: string;
+          pieceRate?: number;
+          dueDate?: string;
         };
       },
       ctx: Context,
@@ -139,6 +170,15 @@ export const productionResolvers = {
         });
 
         const defaultUom = bom.item.stockUoms[0];
+
+        const salesOrder = request.salesOrderUuid
+          ? await tx.salesOrder.findFirst({ where: { uuid: request.salesOrderUuid, companyUuid } })
+          : null;
+        if (request.salesOrderUuid && !salesOrder) throw new GraphQLError('Sales order not found.');
+        if (request.assignedStaffUuid) {
+          await tx.staff.findFirstOrThrow({ where: { uuid: request.assignedStaffUuid, companyUuid } });
+        }
+
         const code = await nextCode(tx, companyUuid, 'workOrder');
 
         const workOrder = await tx.workOrder.create({
@@ -154,6 +194,10 @@ export const productionResolvers = {
             plannedQty,
             startTime: request.startTime ? new Date(request.startTime) : null,
             endTime: request.endTime ? new Date(request.endTime) : null,
+            salesOrderUuid: salesOrder?.uuid ?? null,
+            dueDate: request.dueDate ? new Date(request.dueDate) : (salesOrder?.requiredDate ?? null),
+            assignedStaffUuid: request.assignedStaffUuid || null,
+            pieceRate: new Prisma.Decimal(request.pieceRate ?? 0),
           },
         });
 
@@ -219,6 +263,9 @@ export const productionResolvers = {
       }
 
       return ctx.db.$transaction(async (tx) => {
+        const workOrder = await tx.workOrder.findFirstOrThrow({
+          where: { uuid: request.workOrderUuid, companyUuid },
+        });
         const step = await tx.workOrderItem.findFirstOrThrow({
           where: {
             uuid: request.workOrderItemUuid,
@@ -235,7 +282,7 @@ export const productionResolvers = {
             companyUuid,
             workOrderUuid: step.workOrderUuid,
             workOrderItemUuid: step.uuid,
-            operatorStaffUuid: request.operatorStaffUuid,
+            operatorStaffUuid: request.operatorStaffUuid || workOrder.assignedStaffUuid,
             // A reported job card is work that already happened, not a queued
             // task, so it skips the queue states the column now defaults to.
             status: JOB_CARD_STATUS.completed,
@@ -344,6 +391,38 @@ export const productionResolvers = {
   },
 
   Bom: {
+    /**
+     * The assembly flattened into levels (SRS 4.4): level 0 is the finished part,
+     * level 1 its direct components, deeper levels come from components that have
+     * their own BOM. Quantities are per one unit of the level-0 item.
+     */
+    levels: async (parent: { uuid: string; itemUuid: string }, _: unknown, ctx: Context) => {
+      const root = await ctx.loaders.item.load(parent.itemUuid);
+      const rows: Array<{ level: number; itemName: string; itemType: string | null; qty: number; bomCode: string | null }> = [
+        { level: 0, itemName: root?.name ?? '', itemType: root?.itemType ?? null, qty: 1, bomCode: null },
+      ];
+      const walk = async (bomUuid: string, level: number, multiplier: number, seen: Set<string>) => {
+        const components = await ctx.db.bomItem.findMany({ where: { bomUuid }, include: { item: true } });
+        for (const component of components) {
+          const qty = Number(component.qty) * multiplier;
+          const sub = await ctx.db.bom.findFirst({
+            where: { itemUuid: component.itemUuid },
+            orderBy: { insertedAt: 'desc' },
+          });
+          rows.push({
+            level,
+            itemName: component.item.name,
+            itemType: component.item.itemType,
+            qty,
+            bomCode: sub?.code ?? null,
+          });
+          // A component that points back up the tree would loop forever.
+          if (sub && !seen.has(sub.uuid)) await walk(sub.uuid, level + 1, qty, new Set([...seen, sub.uuid]));
+        }
+      };
+      await walk(parent.uuid, 1, 1, new Set([parent.uuid]));
+      return rows;
+    },
     item: (parent: { itemUuid: string }, _: unknown, ctx: Context) => ctx.loaders.item.load(parent.itemUuid),
     itemName: async (parent: { itemUuid: string }, _: unknown, ctx: Context) => {
       const item = await ctx.loaders.item.load(parent.itemUuid);
@@ -382,6 +461,13 @@ export const productionResolvers = {
   },
 
   WorkOrder: {
+    assignedStaffName: async (parent: { assignedStaffUuid: string | null }, _: unknown, ctx: Context) => {
+      if (!parent.assignedStaffUuid) return null;
+      const staff = await ctx.loaders.staff.load(parent.assignedStaffUuid);
+      return staff?.name ?? staff?.email ?? null;
+    },
+    salesOrderCode: async (parent: { salesOrderUuid: string | null }, _: unknown, ctx: Context) =>
+      parent.salesOrderUuid ? (await ctx.loaders.salesOrder.load(parent.salesOrderUuid))?.code : null,
     items: (parent: { uuid: string }, _: unknown, ctx: Context) => ctx.loaders.workOrderSteps.load(parent.uuid),
     materialRequests: (parent: { uuid: string }, _: unknown, ctx: Context) =>
       ctx.db.workOrderMaterialRequest.findMany({ where: { workOrderUuid: parent.uuid } }),

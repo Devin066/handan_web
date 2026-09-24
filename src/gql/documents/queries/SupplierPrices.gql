@@ -1,0 +1,7 @@
+query SupplierPrices($request: IdRequest!) {
+  supplierPrices(request: $request) {
+    uuid
+    supplierUuid
+    unitPrice
+  }
+}

@@ -1,0 +1,7 @@
+mutation ReviewPurchaseRequest($request: ReviewPurchaseRequestRequest!) {
+  reviewPurchaseRequest(request: $request) {
+    uuid
+    code
+    status
+  }
+}

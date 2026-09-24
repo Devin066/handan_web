@@ -5,6 +5,10 @@ fragment SalesOrderFields on SalesOrder {
   billingStatus
   deliveryStatus
   customerName
+  requiredDate
+  notes
+  deliveryRisk
+  salesInvoiceCode
   totalAmount
   paidAmount
   remainingAmount

@@ -1,0 +1,14 @@
+query Attendance($request: DateRequest) {
+  attendance(request: $request) {
+    uuid
+    staffUuid
+    staffName
+    workDate
+    timeIn
+    timeOut
+    status
+    regularHours
+    overtimeHours
+    notes
+  }
+}

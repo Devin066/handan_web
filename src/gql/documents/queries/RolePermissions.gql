@@ -1,0 +1,10 @@
+query RolePermissions {
+  rolePermissions {
+    role
+    modules
+  }
+  modules {
+    key
+    label
+  }
+}

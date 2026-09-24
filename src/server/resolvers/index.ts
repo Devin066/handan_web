@@ -6,6 +6,9 @@ import { purchasingResolvers } from './purchasing';
 import { productionResolvers } from './production';
 import { financeResolvers } from './finance';
 import { configurationResolvers } from './configuration';
+import { hrResolvers } from './hr';
+import { dashboardResolvers } from './dashboard';
+import { guardRootFields } from '../rbac';
 
 type ResolverMap = Record<string, Record<string, unknown>>;
 
@@ -26,7 +29,7 @@ function mergeResolvers(...maps: ResolverMap[]): ResolverMap {
   return merged;
 }
 
-export const resolvers = mergeResolvers(
+const merged = mergeResolvers(
   scalarResolvers as unknown as ResolverMap,
   authResolvers as unknown as ResolverMap,
   setupResolvers as unknown as ResolverMap,
@@ -35,4 +38,12 @@ export const resolvers = mergeResolvers(
   productionResolvers as unknown as ResolverMap,
   financeResolvers as unknown as ResolverMap,
   configurationResolvers as unknown as ResolverMap,
+  hrResolvers as unknown as ResolverMap,
+  dashboardResolvers as unknown as ResolverMap,
 );
+
+export const resolvers: ResolverMap = {
+  ...merged,
+  RootQueryType: guardRootFields(merged.RootQueryType),
+  RootMutationType: guardRootFields(merged.RootMutationType),
+};

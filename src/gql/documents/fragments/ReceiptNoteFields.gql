@@ -2,6 +2,8 @@ fragment ReceiptNoteFields on ReceiptNote {
   uuid
 	code
   status
+  purchaseOrderCode
+  purchaseInvoiceCode
 	supplierName
 	totalAmount
 	totalQty

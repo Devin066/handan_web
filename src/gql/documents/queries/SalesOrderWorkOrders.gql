@@ -1,0 +1,25 @@
+query SalesOrderWorkOrders($request: SalesOrderRequest!) {
+  salesOrder(request: $request) {
+    uuid
+    code
+    requiredDate
+    warehouseUuid
+    workOrders {
+      uuid
+      code
+      itemName
+      plannedQty
+      status
+    }
+    workOrderSuggestions {
+      salesOrderItemUuid
+      itemUuid
+      itemName
+      bomUuid
+      bomName
+      availableQty
+      suggestedQty
+      reason
+    }
+  }
+}

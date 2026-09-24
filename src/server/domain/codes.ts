@@ -13,6 +13,9 @@ const PREFIXES = {
   paymentEntry: 'PE',
   inventoryEntry: 'IE',
   bom: 'BOM',
+  rawMaterial: 'RM',
+  manufacturedPart: 'MP',
+  finishedGood: 'FG',
 } as const;
 
 /** Invoices restart their sequence each fiscal year and carry the year in the number. */

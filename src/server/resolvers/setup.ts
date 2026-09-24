@@ -1,7 +1,9 @@
+import { GraphQLError } from 'graphql';
 import { Prisma } from '@/generated/prisma/client';
+import { nextCode } from '../domain/codes';
 import type { Context } from '../context';
 import { requireCompany } from '../context';
-import { UNSETTLED_INVOICE_STATUSES } from '../domain/status';
+import { ITEM_TYPE, ITEM_TYPE_PREFIX, UNSETTLED_INVOICE_STATUSES } from '../domain/status';
 import { applyStockMove } from '../domain/stock';
 import { assertCustomerValid, customerDisplayName, normalizeCustomerInput } from '../domain/customer';
 import { normaliseSupplier, type SupplierInput } from '../domain/supplier';
@@ -124,6 +126,11 @@ export const setupResolvers = {
       }: {
         request: {
           name: string;
+          itemType?: string;
+          sku?: string;
+          category?: string;
+          standardCost?: number;
+          minStockThreshold?: number;
           spec?: string;
           description?: string;
           sellingPrice: number;
@@ -135,11 +142,22 @@ export const setupResolvers = {
     ) => {
       const companyUuid = requireCompany(ctx);
 
+      const itemType = request.itemType ?? ITEM_TYPE.rawMaterial;
+      if (!ITEM_TYPE_PREFIX[itemType]) throw new GraphQLError(`Unknown material class: ${itemType}`);
+
       return ctx.db.$transaction(async (tx) => {
+        // Codes follow the class prefix (RM-, MP-, FG-) unless one is given.
+        const sku = request.sku?.trim() || (await nextCode(tx, companyUuid, ITEM_TYPE_PREFIX[itemType]));
+
         const item = await tx.item.create({
           data: {
             companyUuid,
             name: request.name,
+            itemType,
+            sku,
+            category: request.category?.trim() || null,
+            standardCost: new Prisma.Decimal(request.standardCost ?? 0),
+            minStockThreshold: new Prisma.Decimal(request.minStockThreshold ?? 0),
             spec: request.spec,
             description: request.description,
             sellingPrice: new Prisma.Decimal(request.sellingPrice ?? 0),
@@ -232,6 +250,15 @@ export const setupResolvers = {
   },
 
   Item: {
+    supplierPrices: async (parent: { uuid: string }, _: unknown, ctx: Context) => {
+      const prices = await ctx.db.supplierPrice.findMany({ where: { itemUuid: parent.uuid }, orderBy: { unitPrice: 'asc' } });
+      const suppliers = await ctx.db.supplier.findMany({ where: { uuid: { in: prices.map((p) => p.supplierUuid) } } });
+      const names = new Map(suppliers.map((s) => [s.uuid, s.name]));
+      return prices.map((p) => ({ ...p, supplierName: names.get(p.supplierUuid) ?? '' }));
+    },
+    /** On-hand valued at standard cost, in the default stock UOM. */
+    stockValue: async (parent: { uuid: string; standardCost: Prisma.Decimal }, _: unknown, ctx: Context) =>
+      (await ctx.loaders.stockLevelByItem.load(parent.uuid)).onHand * Number(parent.standardCost),
     // All three UOM fields share one batched lookup per request.
     stockUoms: (parent: { uuid: string }, _: unknown, ctx: Context) => ctx.loaders.stockUomsByItem.load(parent.uuid),
     stockItems: (parent: { uuid: string }, _: unknown, ctx: Context) =>

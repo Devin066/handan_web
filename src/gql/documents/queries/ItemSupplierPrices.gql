@@ -1,0 +1,11 @@
+query ItemSupplierPrices($request: IdRequest!) {
+  item(request: $request) {
+    uuid
+    supplierPrices {
+      uuid
+      supplierName
+      unitPrice
+      updatedAt
+    }
+  }
+}

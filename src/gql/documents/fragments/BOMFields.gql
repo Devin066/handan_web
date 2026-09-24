@@ -1,5 +1,6 @@
 fragment BOMFields on Bom {
   uuid
+  code
   name
   insertedAt
   updatedAt

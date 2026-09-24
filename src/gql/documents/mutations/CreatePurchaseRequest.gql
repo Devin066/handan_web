@@ -1,0 +1,6 @@
+mutation CreatePurchaseRequest($request: CreatePurchaseRequestRequest!) {
+  createPurchaseRequest(request: $request) {
+    uuid
+    code
+  }
+}

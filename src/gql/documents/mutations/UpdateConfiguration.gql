@@ -1,5 +1,7 @@
 mutation UpdateConfiguration($request: UpdateConfigurationRequest!) {
 	updateConfiguration(request: $request) {
 		currency
+		timezone
+		decimalPlaces
 	}
 }

@@ -1,0 +1,6 @@
+mutation FinalizePayroll($request: IdRequest!) {
+  finalizePayroll(request: $request) {
+    uuid
+    status
+  }
+}
