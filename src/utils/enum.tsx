@@ -90,6 +90,27 @@ export const inventoryEntryTypeEnum: StatusEnum = {
   material_consumption: { text: 'Material Consumed', status: 'Warning' },
 };
 
+export const purchaseRequestStatusEnum: StatusEnum = {
+  pending: { text: 'Awaiting Approval', status: 'Warning' },
+  approved: { text: 'Approved', status: 'Processing' },
+  partly_ordered: { text: 'Partly Ordered', status: 'Processing' },
+  ordered: { text: 'Ordered', status: 'Success' },
+  rejected: { text: 'Rejected', status: 'Default' },
+};
+
+export const deliveryRiskEnum: StatusEnum = {
+  overdue: { text: 'Overdue', status: 'Error' },
+  at_risk: { text: 'Due Soon', status: 'Warning' },
+  on_track: { text: 'On Track', status: 'Success' },
+};
+
+/** Material Master classes (SRS 4.4) with their code prefixes. */
+export const itemTypeEnum: Record<string, { text: string; prefix: string }> = {
+  raw_material: { text: 'Raw Material', prefix: 'RM' },
+  manufactured_part: { text: 'Manufactured Part', prefix: 'MP' },
+  finished_good: { text: 'Finished Good', prefix: 'FG' },
+};
+
 // --- Production ------------------------------------------------------------
 
 export const workOrderStatusEnum: StatusEnum = {
@@ -122,6 +143,20 @@ export const paymentEntryTypeEnum: StatusEnum = {
 export const partyTypeEnum: StatusEnum = {
   customer: { text: 'Customer', status: 'Processing' },
   supplier: { text: 'Supplier', status: 'Default' },
+};
+
+// --- HR --------------------------------------------------------------------
+
+export const attendanceStatusEnum: StatusEnum = {
+  present: { text: 'Present', status: 'Success' },
+  late: { text: 'Late', status: 'Warning' },
+  absent: { text: 'Absent', status: 'Error' },
+  on_leave: { text: 'On Leave', status: 'Default' },
+};
+
+export const payrollStatusEnum: StatusEnum = {
+  draft: { text: 'Draft', status: 'Warning' },
+  finalized: { text: 'Finalized', status: 'Success' },
 };
 
 // --- Customers -------------------------------------------------------------

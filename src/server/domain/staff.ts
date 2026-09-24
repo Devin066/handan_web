@@ -29,7 +29,8 @@ export function normaliseStaff(request: StaffInput) {
   if (phone && !isValidMobile(phone)) throw new GraphQLError('Mobile number is not valid.');
 
   const employmentType = request.employmentType ?? 'regular';
-  if (!(employmentType in EMPLOYMENT_TYPES) && !LEGACY_EMPLOYMENT_TYPES.includes(employmentType)) throw new GraphQLError(`Unknown employment type: ${employmentType}`);
+  if (!(employmentType in EMPLOYMENT_TYPES) && !LEGACY_EMPLOYMENT_TYPES.includes(employmentType))
+    throw new GraphQLError(`Unknown employment type: ${employmentType}`);
   const status = request.status ?? 'active';
   if (!(status in STAFF_STATUSES)) throw new GraphQLError(`Unknown status: ${status}`);
 

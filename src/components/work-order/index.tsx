@@ -89,6 +89,17 @@ const WorkOrderList: React.FC = () => {
     progressColumn('Produced', 'producedQty', 'plannedQty'),
     progressColumn('Stored', 'storedQty', 'plannedQty'),
     {
+      title: 'Assigned to',
+      dataIndex: 'assignedStaffName',
+      render: (_: any, r: any) => r.assignedStaffName ?? '—',
+    },
+    {
+      title: 'Sales order',
+      dataIndex: 'salesOrderCode',
+      render: (_: any, r: any) => r.salesOrderCode ?? 'For stock',
+    },
+    { title: 'Due', dataIndex: 'dueDate', valueType: 'date' },
+    {
       title: 'Start Time',
       dataIndex: 'startTime',
       valueType: 'date',

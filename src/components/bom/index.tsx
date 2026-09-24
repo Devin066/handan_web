@@ -43,6 +43,12 @@ const BOMList: React.FC = () => {
 
   const columns: ProColumns<any>[] = [
     {
+      title: 'No.',
+      dataIndex: 'code',
+      width: 130,
+      render: (_, r) => <span className="doc-code">{r.code ?? '—'}</span>,
+    },
+    {
       title: 'Name',
       search: false,
       width: 200,

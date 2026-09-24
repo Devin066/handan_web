@@ -1,5 +1,5 @@
 import { DEFAULT_CURRENCY } from '@/config/currency';
-import { getCurrency } from '@/stores/useConfig';
+import { getCurrency, getDecimalPlaces } from '@/stores/useConfig';
 
 /**
  * Shared display formatting.
@@ -20,22 +20,39 @@ import { getCurrency } from '@/stores/useConfig';
  */
 const currencyFormatters = new Map<string, Intl.NumberFormat>();
 
-const currencyFormatter = (currency: string): Intl.NumberFormat => {
-  const cached = currencyFormatters.get(currency);
+const currencyFormatter = (currency: string, decimals?: number): Intl.NumberFormat => {
+  const key = `${currency}:${decimals ?? ''}`;
+  const cached = currencyFormatters.get(key);
   if (cached) return cached;
+
+  // Currencies with no minor unit (JPY) ignore the company's decimal setting.
+  const digits = (code: string) => {
+    const natural = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: code,
+    }).resolvedOptions().maximumFractionDigits;
+    return decimals === undefined || natural === 0
+      ? {}
+      : { minimumFractionDigits: decimals, maximumFractionDigits: decimals };
+  };
 
   let formatter: Intl.NumberFormat;
   try {
-    formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency });
+    formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+      ...digits(currency),
+    });
   } catch {
     // An unknown code would otherwise throw inside a render and blank the page.
     formatter = new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: DEFAULT_CURRENCY,
+      ...digits(DEFAULT_CURRENCY),
     });
   }
 
-  currencyFormatters.set(currency, formatter);
+  currencyFormatters.set(key, formatter);
   return formatter;
 };
 
@@ -58,7 +75,7 @@ const toNumber = (value: unknown): number | null => {
  */
 export const formatCurrency = (value: unknown, currency?: string): string => {
   const n = toNumber(value);
-  return n === null ? '—' : currencyFormatter(currency ?? getCurrency()).format(n);
+  return n === null ? '—' : currencyFormatter(currency ?? getCurrency(), getDecimalPlaces()).format(n);
 };
 
 /** Quantities: no forced decimals, so 5 stays "5" and 2.5 stays "2.5". */

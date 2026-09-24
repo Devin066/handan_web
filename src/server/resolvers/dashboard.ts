@@ -8,7 +8,9 @@ import { manilaDay } from '../domain/time';
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** AR/AP aging by days past due (or past invoice date when there is no due date). */
-function aging(invoices: Array<{ amount: Prisma.Decimal; paidAmount: Prisma.Decimal; dueDate?: Date | null; insertedAt: Date }>) {
+function aging(
+  invoices: Array<{ amount: Prisma.Decimal; paidAmount: Prisma.Decimal; dueDate?: Date | null; insertedAt: Date }>,
+) {
   const buckets = { current: 0, days1to30: 0, days31to60: 0, days61to90: 0, over90: 0 };
   let total = 0;
   for (const inv of invoices) {
@@ -33,14 +35,33 @@ export const dashboardResolvers = {
       const { start: todayStart, end: todayEnd, day } = manilaDay();
       const fy = fiscalYear();
 
-      const [items, stockItems, salesInvoices, purchaseInvoices, purchaseOrders, purchaseRequests, workOrders,
-        manufactured, salesOrders, activeStaff, attendance, fyInvoices] = await Promise.all([
+      const [
+        items,
+        stockItems,
+        salesInvoices,
+        purchaseInvoices,
+        purchaseOrders,
+        purchaseRequests,
+        workOrders,
+        manufactured,
+        salesOrders,
+        activeStaff,
+        attendance,
+        fyInvoices,
+      ] = await Promise.all([
         ctx.db.item.findMany({ where: { companyUuid, status: 'active' } }),
-        ctx.db.stockItem.findMany({ where: { companyUuid }, include: { stockUom: { select: { conversionFactor: true } } } }),
+        ctx.db.stockItem.findMany({
+          where: { companyUuid },
+          include: { stockUom: { select: { conversionFactor: true } } },
+        }),
         ctx.db.salesInvoice.findMany({ where: { companyUuid, status: { in: [...UNSETTLED_INVOICE_STATUSES] } } }),
         ctx.db.purchaseInvoice.findMany({ where: { companyUuid, status: { in: [...UNSETTLED_INVOICE_STATUSES] } } }),
         ctx.db.purchaseOrder.findMany({
-          where: { companyUuid, receiptStatus: { not: 'fully_received' }, status: { notIn: ['cancelled', 'completed'] } },
+          where: {
+            companyUuid,
+            receiptStatus: { not: 'fully_received' },
+            status: { notIn: ['cancelled', 'completed'] },
+          },
           orderBy: [{ expectedDate: 'asc' }, { insertedAt: 'asc' }],
         }),
         ctx.db.purchaseRequest.findMany({
@@ -73,7 +94,10 @@ export const dashboardResolvers = {
       // Stock per item in its base unit, valued at standard cost.
       const onHand = new Map<string, number>();
       for (const row of stockItems) {
-        onHand.set(row.itemUuid, (onHand.get(row.itemUuid) ?? 0) + Number(row.totalOnHand) * (row.stockUom.conversionFactor || 1));
+        onHand.set(
+          row.itemUuid,
+          (onHand.get(row.itemUuid) ?? 0) + Number(row.totalOnHand) * (row.stockUom.conversionFactor || 1),
+        );
       }
       const stockRows = items.map((item) => ({
         uuid: item.uuid,
@@ -158,9 +182,7 @@ export const dashboardResolvers = {
         workforce: {
           present: activeStaff.filter((s) => presentStaff.has(s.uuid)).length,
           total: activeStaff.length,
-          absent: activeStaff
-            .filter((s) => !presentStaff.has(s.uuid))
-            .map((s) => s.name ?? s.email),
+          absent: activeStaff.filter((s) => !presentStaff.has(s.uuid)).map((s) => s.name ?? s.email),
         },
         fiscalYearInvoices: {
           count: fyInvoices.length,

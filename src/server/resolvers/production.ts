@@ -398,9 +398,13 @@ export const productionResolvers = {
      */
     levels: async (parent: { uuid: string; itemUuid: string }, _: unknown, ctx: Context) => {
       const root = await ctx.loaders.item.load(parent.itemUuid);
-      const rows: Array<{ level: number; itemName: string; itemType: string | null; qty: number; bomCode: string | null }> = [
-        { level: 0, itemName: root?.name ?? '', itemType: root?.itemType ?? null, qty: 1, bomCode: null },
-      ];
+      const rows: Array<{
+        level: number;
+        itemName: string;
+        itemType: string | null;
+        qty: number;
+        bomCode: string | null;
+      }> = [{ level: 0, itemName: root?.name ?? '', itemType: root?.itemType ?? null, qty: 1, bomCode: null }];
       const walk = async (bomUuid: string, level: number, multiplier: number, seen: Set<string>) => {
         const components = await ctx.db.bomItem.findMany({ where: { bomUuid }, include: { item: true } });
         for (const component of components) {

@@ -152,7 +152,8 @@ export const amountBreakdownColumn = (
 export const codeColumn = (title: string, dataIndex = 'code', onClick?: (record: any) => void): ProColumns<any> => ({
   title,
   dataIndex,
-  width: 130,
+  // Fits the longest SRS number, e.g. SO-INV-2026-000001.
+  width: 175,
   copyable: true,
   render: (_: any, record: any) =>
     onClick ? (

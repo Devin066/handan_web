@@ -100,7 +100,8 @@ export const hrResolvers = {
       if (!staff) throw new GraphQLError('Employee not found.');
 
       const status = request.status ?? 'present';
-      if (!['present', 'late', 'absent', 'on_leave'].includes(status)) throw new GraphQLError(`Unknown status: ${status}`);
+      if (!['present', 'late', 'absent', 'on_leave'].includes(status))
+        throw new GraphQLError(`Unknown status: ${status}`);
 
       const workDate = new Date(`${request.workDate ?? manilaDate()}T00:00:00Z`);
       const timeIn = request.timeIn ? new Date(request.timeIn) : null;
@@ -232,7 +233,8 @@ export const hrResolvers = {
           const unitsProduced = cards.reduce((sum, c) => sum + Number(c.producedQty), 0);
           const incentivePay = round2(
             cards.reduce((sum, c) => {
-              const rate = Number(c.workOrder.pieceRate) > 0 ? Number(c.workOrder.pieceRate) : benefits.defaultPieceRate;
+              const rate =
+                Number(c.workOrder.pieceRate) > 0 ? Number(c.workOrder.pieceRate) : benefits.defaultPieceRate;
               return sum + Number(c.producedQty) * rate;
             }, 0),
           );
@@ -249,7 +251,9 @@ export const hrResolvers = {
           const sss = statutory ? round2((gross * benefits.sssRate) / 100) : 0;
           const philhealth = statutory ? round2((gross * benefits.philhealthRate) / 100) : 0;
           const pagibig = statutory ? round2((gross * benefits.pagibigRate) / 100) : 0;
-          const tax = statutory ? round2(((gross - sss - philhealth - pagibig) * benefits.withholdingTaxRate) / 100) : 0;
+          const tax = statutory
+            ? round2(((gross - sss - philhealth - pagibig) * benefits.withholdingTaxRate) / 100)
+            : 0;
 
           await tx.payrollEntry.create({
             data: {

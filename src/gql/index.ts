@@ -1433,6 +1433,7 @@ export type Supplier = {
 
 export type SupplierPrice = {
   __typename?: 'SupplierPrice';
+  itemUuid?: Maybe<Scalars['ID']['output']>;
   supplierName?: Maybe<Scalars['String']['output']>;
   supplierUuid?: Maybe<Scalars['ID']['output']>;
   unitPrice?: Maybe<Scalars['Decimal']['output']>;
@@ -1659,7 +1660,7 @@ export type CompleteReceiptNoteMutationVariables = Exact<{
 }>;
 
 
-export type CompleteReceiptNoteMutation = { __typename?: 'RootMutationType', completeReceiptNote?: { __typename?: 'ReceiptNote', status?: string | null, uuid?: string | null } | null };
+export type CompleteReceiptNoteMutation = { __typename?: 'RootMutationType', completeReceiptNote?: { __typename?: 'ReceiptNote', status?: string | null, uuid?: string | null, code?: string | null, purchaseInvoiceCode?: string | null } | null };
 
 export type CreateBomMutationVariables = Exact<{
   request: CreateBomRequest;
@@ -1750,7 +1751,7 @@ export type CreateSalesOrderMutationVariables = Exact<{
 }>;
 
 
-export type CreateSalesOrderMutation = { __typename?: 'RootMutationType', createSalesOrder?: { __typename?: 'SalesOrder', customerUuid?: string | null, items?: Array<{ __typename?: 'SalesOrderItem', itemName?: string | null } | null> | null } | null };
+export type CreateSalesOrderMutation = { __typename?: 'RootMutationType', createSalesOrder?: { __typename?: 'SalesOrder', uuid?: string | null, code?: string | null, salesInvoiceCode?: string | null } | null };
 
 export type CreateSupplierMutationVariables = Exact<{
   request: CreateSupplierRequest;
@@ -2134,7 +2135,7 @@ export type SupplierPricesQueryVariables = Exact<{
 }>;
 
 
-export type SupplierPricesQuery = { __typename?: 'RootQueryType', supplierPrices?: Array<{ __typename?: 'SupplierPrice', uuid?: string | null, supplierUuid?: string | null, unitPrice?: any | null } | null> | null };
+export type SupplierPricesQuery = { __typename?: 'RootQueryType', supplierPrices?: Array<{ __typename?: 'SupplierPrice', uuid?: string | null, supplierUuid?: string | null, itemUuid?: string | null, unitPrice?: any | null } | null> | null };
 
 export type SuppliersQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2733,6 +2734,8 @@ export const CompleteReceiptNoteDocument = gql`
   completeReceiptNote(request: $request) {
     status
     uuid
+    code
+    purchaseInvoiceCode
   }
 }
     `;
@@ -3177,10 +3180,9 @@ export type CreateSalesInvoiceMutationOptions = Apollo.BaseMutationOptions<Creat
 export const CreateSalesOrderDocument = gql`
     mutation CreateSalesOrder($request: CreateSalesOrderRequest!) {
   createSalesOrder(request: $request) {
-    customerUuid
-    items {
-      itemName
-    }
+    uuid
+    code
+    salesInvoiceCode
   }
 }
     `;
@@ -5722,6 +5724,7 @@ export const SupplierPricesDocument = gql`
   supplierPrices(request: $request) {
     uuid
     supplierUuid
+    itemUuid
     unitPrice
   }
 }

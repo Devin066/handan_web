@@ -12,6 +12,9 @@ import { DEFAULT_CURRENCY } from '@/config/currency';
  */
 type ConfigState = {
   currency: string;
+  /** Fraction digits for money (SRS 4.8 decimal formatting). */
+  decimalPlaces: number;
+  setDecimalPlaces: (decimalPlaces: number) => void;
   /** False until the server value arrives, so screens can avoid flashing the default. */
   loaded: boolean;
   setCurrency: (currency: string) => void;
@@ -19,11 +22,14 @@ type ConfigState = {
 
 export const useConfigStore = create<ConfigState>((set) => ({
   currency: DEFAULT_CURRENCY,
+  decimalPlaces: 2,
+  setDecimalPlaces: (decimalPlaces: number) => set({ decimalPlaces }),
   loaded: false,
   setCurrency: (currency: string) => set({ currency, loaded: true }),
 }));
 
 /** For non-React callers such as the formatters. */
 export const getCurrency = (): string => useConfigStore.getState().currency;
+export const getDecimalPlaces = (): number => useConfigStore.getState().decimalPlaces;
 
 export default useConfigStore;

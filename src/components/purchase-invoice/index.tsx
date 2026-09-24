@@ -1,73 +1,74 @@
 import { useRef, useState } from 'react';
-import { useRouter } from 'next/router';
-import { Button } from 'antd';
+import { Button, Typography } from 'antd';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 
-// locale
-import { useMessageContext } from '@/components/common/message-context';
 import client from '@/gql/apollo';
 import { invoiceStatusEnum } from '@/utils/enum';
 import DataTable from '@/components/shared/data-table';
-import { moneyColumn, statusColumn } from '@/components/shared/columns';
+import { codeColumn, moneyColumn, statusColumn } from '@/components/shared/columns';
+import RecordPayment from '@/components/shared/record-payment';
 import { PurchaseInvoicesDocument } from '@/gql';
+import { formatCurrency } from '@/utils/format';
 
-import PaymentEntryNew from '@/components/payment-entry/new';
+const { Text } = Typography;
 
+/** Purchase invoices (SRS 4.5): raised automatically by each completed goods receipt. */
 const PurchaseInvoiceList: React.FC = () => {
-  const { messageApi } = useMessageContext();
-  const [detailVisible, setDetailVisible] = useState(false);
-  const [record, setRecord] = useState(null);
-
-  const router = useRouter();
-
   const actionRef = useRef<ActionType | null>(null);
+  const [paying, setPaying] = useState<any>(null);
+  const [rows, setRows] = useState<any[]>([]);
+  const reload = () => actionRef.current?.reload();
 
-  const handleEntryNew = (record: any) => {
-    setRecord(record);
-    setDetailVisible(true);
-  };
-
-  const handleClose = () => {
-    setRecord(null);
-    setDetailVisible(false);
-    handleReloadTable();
-  };
-
-  const handleReloadTable = () => {
-    actionRef.current?.reload();
-  };
+  const outstanding = rows.reduce((sum, r) => sum + Number(r.balance ?? 0), 0);
 
   const columns: ProColumns<any>[] = [
+    codeColumn('No.'),
+    { title: 'Supplier', dataIndex: 'supplierName' },
     {
-      title: 'No.',
-      width: 200,
-      dataIndex: 'code',
-    },
-    {
-      title: 'Supplier Name',
-      dataIndex: 'supplierName',
+      title: 'Source',
+      dataIndex: 'receiptNoteCode',
+      render: (_, r) => (
+        <div>
+          <div className="doc-code">{r.receiptNoteCode ?? 'Manual'}</div>
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            {r.purchaseOrderCode}
+          </Text>
+        </div>
+      ),
     },
     moneyColumn('Amount', 'amount'),
-    statusColumn('Status', 'status', invoiceStatusEnum, { width: 150 }),
+    moneyColumn('Balance', 'balance'),
+    statusColumn('Status', 'status', invoiceStatusEnum, { width: 130 }),
     {
-      title: 'Created At',
-      dataIndex: 'insertedAt',
-      valueType: 'dateTime',
+      title: 'Paid by',
+      dataIndex: 'paymentMethodName',
+      render: (_, r) =>
+        r.paymentMethodName ? (
+          <div>
+            <div>{r.paymentMethodName}</div>
+            {r.referenceNo ? (
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {r.referenceNo}
+              </Text>
+            ) : null}
+          </div>
+        ) : (
+          '—'
+        ),
     },
+    { title: 'Created', dataIndex: 'insertedAt', valueType: 'dateTime' },
     {
       title: 'Actions',
-      width: 180,
-      key: 'option',
+      width: 130,
       valueType: 'option',
-      render: (item: any, record: any) => [
-        <>
-          {record.status !== 'paid' && (
-            <Button size="small" type="link" onClick={() => handleEntryNew(record)}>
-              Pay
-            </Button>
-          )}
-        </>,
-      ],
+      render: (_, r) => {
+        if (r.status === 'paid' || r.status === 'cancelled') return [];
+        return [
+          <Button key="pay" size="small" type="link" onClick={() => setPaying(r)}>
+            Record payment
+          </Button>,
+        ];
+      },
     },
   ];
 
@@ -75,26 +76,28 @@ const PurchaseInvoiceList: React.FC = () => {
     <>
       <DataTable
         entityName="purchase invoices"
-        emptyHint="Invoices are raised from a purchase order."
+        emptyHint="Completing a goods receipt raises its purchase invoice here."
         actionRef={actionRef}
         columns={columns}
-        request={async (params, sorter, filter) => {
+        headerTitle={
+          <div className="list-summary">
+            <span>
+              <span className="list-summary-value tabular-figures">{formatCurrency(outstanding)}</span> owed to
+              suppliers
+            </span>
+          </div>
+        }
+        request={async () => {
           const { data } = await client.query({
             query: PurchaseInvoicesDocument,
-            variables: {
-              request: {},
-            },
+            fetchPolicy: 'network-only',
           });
-
-          return {
-            data: data.purchaseInvoices,
-            total: data.purchaseInvoices.length,
-            success: true,
-          };
+          const invoices = data?.purchaseInvoices ?? [];
+          setRows(invoices);
+          return { data: invoices, total: invoices.length, success: true };
         }}
       />
-
-      <PaymentEntryNew visible={detailVisible} purchaseInvoice={record} onClose={() => handleClose()} />
+      <RecordPayment invoice={paying} type="purchase" onClose={() => setPaying(null)} onRecorded={reload} />
     </>
   );
 };

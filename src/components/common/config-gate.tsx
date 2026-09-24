@@ -19,16 +19,20 @@ import useConfigStore from '@/stores/useConfig';
 const ConfigGate = ({ children }: { children: ReactNode }) => {
   const currency = useConfigStore((state) => state.currency);
   const setCurrency = useConfigStore((state) => state.setCurrency);
+  const decimalPlaces = useConfigStore((state) => state.decimalPlaces);
+  const setDecimalPlaces = useConfigStore((state) => state.setDecimalPlaces);
 
   const { data } = useConfigurationQuery({ fetchPolicy: 'cache-and-network' });
 
   useEffect(() => {
     const loaded = data?.configuration?.currency;
     if (loaded) setCurrency(loaded);
-  }, [data, setCurrency]);
+    const decimals = data?.configuration?.decimalPlaces;
+    if (decimals != null) setDecimalPlaces(decimals);
+  }, [data, setCurrency, setDecimalPlaces]);
 
   return (
-    <div key={currency} style={{ display: 'contents' }}>
+    <div key={`${currency}:${decimalPlaces}`} style={{ display: 'contents' }}>
       {children}
     </div>
   );

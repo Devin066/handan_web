@@ -5,6 +5,7 @@ import {
   ProfileOutlined,
   WalletOutlined,
   TeamOutlined,
+  IdcardOutlined,
   RocketOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
@@ -13,22 +14,33 @@ const menuProps = {
   route: {
     path: '/',
     routes: [
-      { path: '/dashboard', name: 'Dashboard', icon: <DashboardOutlined /> },
+      {
+        path: '/dashboard',
+        name: 'Dashboard',
+        icon: <DashboardOutlined />,
+        module: 'dashboard',
+      },
       {
         path: '/selling',
         name: 'Sales',
+        module: 'sales',
         icon: <ProfileOutlined />,
         routes: [{ path: '/selling/sales-orders', name: 'Sales Orders' }],
       },
       {
         path: '/purchasing',
         name: 'Purchasing',
+        module: 'purchasing',
         icon: <ShoppingCartOutlined />,
-        routes: [{ path: '/purchasing/purchase-orders', name: 'Purchase Orders' }],
+        routes: [
+          { path: '/purchasing/purchase-requests', name: 'Purchase Requests' },
+          { path: '/purchasing/purchase-orders', name: 'Purchase Orders' },
+        ],
       },
       {
         path: '/production',
         name: 'Production',
+        module: 'production',
         icon: <RocketOutlined />,
         routes: [
           { path: '/production/work-orders', name: 'Work Orders' },
@@ -38,6 +50,7 @@ const menuProps = {
       {
         path: '/stock',
         name: 'Inventory',
+        module: 'inventory',
         icon: <BookOutlined />,
         routes: [
           { path: '/stock/receipt-notes', name: 'Goods Receipts' },
@@ -50,16 +63,19 @@ const menuProps = {
       {
         path: '/finance',
         name: 'Finance',
+        module: 'finance',
         icon: <WalletOutlined />,
         routes: [
           { path: '/finance/sales-invoices', name: 'Sales Invoices' },
           { path: '/finance/purchase-invoices', name: 'Purchase Invoices' },
+          { path: '/finance/accounting-ledger', name: 'Accounting Ledger' },
           { path: '/finance/payment-entries', name: 'Payment Entries' },
         ],
       },
       {
         path: '/partners',
         name: 'Business Partners',
+        module: 'partners',
         icon: <TeamOutlined />,
         routes: [
           { path: '/selling/customers', name: 'Customers' },
@@ -67,12 +83,26 @@ const menuProps = {
         ],
       },
       {
+        path: '/hr',
+        name: 'HR',
+        icon: <IdcardOutlined />,
+        module: 'hr',
+        routes: [
+          { path: '/hr/employees', name: 'Employees' },
+          { path: '/hr/attendance', name: 'Time and Attendance' },
+          { path: '/hr/payroll', name: 'Payroll' },
+          { path: '/hr/benefits', name: 'Benefits Management' },
+        ],
+      },
+      {
         path: '/system',
         name: 'Settings',
+        module: 'settings',
         icon: <SettingOutlined />,
         routes: [
           { path: '/system/members', name: 'User Management' },
           { path: '/system/configuration', name: 'Configuration' },
+          { path: '/system/roles', name: 'Roles' },
           {
             path: '/master-data',
             name: 'Master Data',

@@ -69,6 +69,7 @@ type StockUom {
 
 type SupplierPrice {
   uuid: ID
+  itemUuid: ID
   supplierUuid: ID
   supplierName: String
   unitPrice: Decimal

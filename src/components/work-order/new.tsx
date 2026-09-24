@@ -1,10 +1,17 @@
 import { useState } from 'react';
 import { Space, Button } from 'antd';
-import { ModalForm, ProForm, ProFormDigit, ProFormSelect, ProFormDateTimePicker } from '@ant-design/pro-components';
+import {
+  ModalForm,
+  ProForm,
+  ProFormDatePicker,
+  ProFormDigit,
+  ProFormSelect,
+  ProFormDateTimePicker,
+} from '@ant-design/pro-components';
 
 // locale
 import { getUTCTime } from '@/utils';
-import { fetchWarehouses, fetchBoms } from '@/utils/api';
+import { fetchWarehouses, fetchBoms, fetchStaff } from '@/utils/api';
 
 const WorkOrderNew = (props: any) => {
   const { onCreate } = props;
@@ -19,6 +26,9 @@ const WorkOrderNew = (props: any) => {
       plannedQty: values.plannedQty,
       startTime: getUTCTime(values.startTime),
       endTime: getUTCTime(values.endTime),
+      dueDate: values.dueDate ? getUTCTime(values.dueDate) : null,
+      assignedStaffUuid: values.assignedStaffUuid,
+      pieceRate: values.pieceRate ?? 0,
     };
 
     await onCreate(request);
@@ -33,7 +43,7 @@ const WorkOrderNew = (props: any) => {
           setModalVisible(true);
         }}
       >
-        New Work Order
+        New work order
       </Button>
 
       <ModalForm
@@ -88,6 +98,25 @@ const WorkOrderNew = (props: any) => {
             name="endTime"
             label="End Time"
             rules={[{ required: true, message: 'Enter end time' }]}
+          />
+          <ProFormDatePicker name="dueDate" label="Due date" />
+        </ProForm.Group>
+        <ProForm.Group>
+          <ProFormSelect
+            width="sm"
+            name="assignedStaffUuid"
+            label="Assign to"
+            request={async (e) => fetchStaff(e)}
+            placeholder="Machinist or fabricator"
+            tooltip="Job cards reported without an operator are credited to this person."
+          />
+          <ProFormDigit
+            width="sm"
+            name="pieceRate"
+            label="Piece rate"
+            min={0}
+            tooltip="Paid per good unit reported at each step, on top of hourly pay."
+            placeholder="0"
           />
         </ProForm.Group>
       </ModalForm>

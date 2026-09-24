@@ -14,6 +14,7 @@ import type { ProColumns } from '@ant-design/pro-components';
 import { useUoMsLazyQuery, useWarehousesLazyQuery } from '@/gql';
 import { onError } from '@/utils';
 import useConfigStore from '@/stores/useConfig';
+import { itemTypeEnum } from '@/utils/enum';
 
 const ItemNew = (props: any) => {
   const currency = useConfigStore((state) => state.currency);
@@ -92,7 +93,12 @@ const ItemNew = (props: any) => {
 
     const request = {
       name: values.name,
-      sellingPrice: parseFloat(values.sellingPrice),
+      itemType: values.itemType,
+      sku: values.sku,
+      category: values.category,
+      standardCost: Number(values.standardCost ?? 0),
+      minStockThreshold: Number(values.minStockThreshold ?? 0),
+      sellingPrice: parseFloat(values.sellingPrice ?? 0),
       spec: values.spec,
       stockUoms,
       openingStocks,
@@ -148,7 +154,7 @@ const ItemNew = (props: any) => {
           setModalVisible(true);
         }}
       >
-        New Item
+        New material
       </Button>
 
       <ModalForm
@@ -158,12 +164,34 @@ const ItemNew = (props: any) => {
         }}
         width={'70%'}
         onOpenChange={setModalVisible}
-        title={<Space>New Item</Space>}
+        title={<Space>New material</Space>}
         submitTimeout={2000}
         autoFocusFirstInput
         open={modalVisible}
         onFinish={onFinish}
       >
+        <ProForm.Group>
+          <ProFormSelect
+            width="sm"
+            name="itemType"
+            label="Class"
+            initialValue="raw_material"
+            options={Object.entries(itemTypeEnum).map(([value, t]) => ({
+              value,
+              label: `${t.prefix} · ${t.text}`,
+            }))}
+            rules={[{ required: true, message: 'Choose a class' }]}
+            tooltip="Raw materials are bought in, manufactured parts are made for larger assemblies, finished goods are sold."
+          />
+          <ProFormText
+            width="sm"
+            name="sku"
+            label="Code"
+            placeholder="Generated from the class"
+            tooltip="Leave blank to get the next RM-, MP- or FG- number."
+          />
+          <ProFormText width="sm" name="category" label="Category" placeholder="e.g. Billet, Tubing, Fasteners" />
+        </ProForm.Group>
         <ProForm.Group>
           <ProFormText
             width="sm"
@@ -178,13 +206,30 @@ const ItemNew = (props: any) => {
           <ProFormDigit
             width="sm"
             name="sellingPrice"
-            label="Sale Price"
+            label="Sale price"
             fieldProps={{
               precision: 2,
               addonAfter: currency,
             }}
-            placeholder="Enter sale price"
-            rules={[{ required: true, message: 'Enter sale price' }]}
+            placeholder="0 if not sold"
+          />
+
+          <ProFormDigit
+            width="sm"
+            name="standardCost"
+            label="Standard cost"
+            fieldProps={{ precision: 2, addonAfter: currency }}
+            placeholder="Per unit"
+            tooltip="Used to value stock on the dashboard and to estimate purchase requests."
+          />
+
+          <ProFormDigit
+            width="sm"
+            name="minStockThreshold"
+            label="Reorder level"
+            min={0}
+            placeholder="0"
+            tooltip="At or below this, the dashboard warns of low stock."
           />
 
           <ProFormSelect

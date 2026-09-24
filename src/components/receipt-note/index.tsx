@@ -21,8 +21,9 @@ const ReceiptNoteList: React.FC = () => {
   const [record, setRecord] = useState<any>({});
 
   const [completeReceiptNote] = useCompleteReceiptNoteMutation({
-    onCompleted: () => {
-      messageApi?.success('Goods receipt completed');
+    onCompleted: (data) => {
+      const gr = data.completeReceiptNote;
+      messageApi?.success(`${gr?.code} stocked in, purchase invoice ${gr?.purchaseInvoiceCode} raised`);
       handleReloadTable();
     },
     onError,
@@ -59,7 +60,13 @@ const ReceiptNoteList: React.FC = () => {
       title: 'Supplier Name',
       dataIndex: 'supplierName',
     },
+    { title: 'Purchase order', dataIndex: 'purchaseOrderCode' },
     qtyColumn('Total Qty', 'totalQty'),
+    {
+      title: 'Purchase invoice',
+      dataIndex: 'purchaseInvoiceCode',
+      render: (_: any, r: any) => r.purchaseInvoiceCode ?? 'Raised on stock in',
+    },
     statusColumn('Status', 'status', receiptNoteStatusEnum, { width: 170 }),
     {
       title: 'Created At',
@@ -76,7 +83,8 @@ const ReceiptNoteList: React.FC = () => {
           {record.status === 'to_receive' && (
             <Popconfirm
               key="link2"
-              title="Confirm stock in?"
+              title="Stock these goods in?"
+              description="Stock levels update and the supplier's purchase invoice is raised."
               onConfirm={() => handleCompleteReceiptNote(record)}
               okText="Yes"
               cancelText="No"

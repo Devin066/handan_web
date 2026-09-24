@@ -10,7 +10,7 @@ import { codeColumn, moneyColumn, statusColumn } from '@/components/shared/colum
 import { SalesInvoicesDocument } from '@/gql';
 import { formatCurrency } from '@/utils/format';
 
-import PaymentEntryNew from '@/components/payment-entry/new';
+import RecordPayment from '@/components/shared/record-payment';
 import SalesInvoiceNew from './new';
 import SalesInvoiceDetail from './detail';
 
@@ -82,6 +82,22 @@ const SalesInvoiceList: React.FC = () => {
     moneyColumn('Balance', 'balance'),
     statusColumn('Status', 'status', invoiceStatusEnum, { width: 130 }),
     {
+      title: 'OR no.',
+      dataIndex: 'orNumber',
+      width: 140,
+      render: (_, record) =>
+        record.orNumber ? (
+          <div>
+            <div className="doc-code">{record.orNumber}</div>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              {record.paymentMethodName}
+            </Text>
+          </div>
+        ) : (
+          <Text type="secondary">Awaiting payment</Text>
+        ),
+    },
+    {
       title: 'Actions',
       width: 100,
       key: 'option',
@@ -101,7 +117,7 @@ const SalesInvoiceList: React.FC = () => {
     <>
       <DataTable
         entityName="sales invoices"
-        emptyHint="Create an invoice from a confirmed sales order."
+        emptyHint="Invoices are issued automatically when a sales order is created."
         actionRef={actionRef}
         columns={columns}
         request={async () => {
@@ -132,14 +148,7 @@ const SalesInvoiceList: React.FC = () => {
 
       <SalesInvoiceNew open={creating} onClose={() => setCreating(false)} onCreated={reload} />
       <SalesInvoiceDetail uuid={viewing} onClose={() => setViewing(undefined)} />
-      <PaymentEntryNew
-        visible={!!paying}
-        saleInvoice={paying}
-        onClose={() => {
-          setPaying(null);
-          reload();
-        }}
-      />
+      <RecordPayment invoice={paying} type="sales" onClose={() => setPaying(null)} onRecorded={reload} />
     </>
   );
 };

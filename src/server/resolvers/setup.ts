@@ -251,7 +251,10 @@ export const setupResolvers = {
 
   Item: {
     supplierPrices: async (parent: { uuid: string }, _: unknown, ctx: Context) => {
-      const prices = await ctx.db.supplierPrice.findMany({ where: { itemUuid: parent.uuid }, orderBy: { unitPrice: 'asc' } });
+      const prices = await ctx.db.supplierPrice.findMany({
+        where: { itemUuid: parent.uuid },
+        orderBy: { unitPrice: 'asc' },
+      });
       const suppliers = await ctx.db.supplier.findMany({ where: { uuid: { in: prices.map((p) => p.supplierUuid) } } });
       const names = new Map(suppliers.map((s) => [s.uuid, s.name]));
       return prices.map((p) => ({ ...p, supplierName: names.get(p.supplierUuid) ?? '' }));

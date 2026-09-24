@@ -6,7 +6,7 @@
  * Fira Sans for UI, Fira Code for figures. Loaded with display=swap so text is
  * never invisible while the font downloads.
  */
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Fira+Sans:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Fira+Sans:wght@400;500;600;700&display=swap");
 
 /*
  * Surface tokens, mirroring src/components/common/theme.tsx so plain CSS and
@@ -34,8 +34,15 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
-    Arial, sans-serif;
+  font-family:
+    "Fira Sans",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -48,7 +55,7 @@ body {
 .ant-statistic-content-value,
 .ant-table-cell-numeric {
   font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum';
+  font-feature-settings: "tnum";
 }
 
 /* Keyboard focus must stay visible; Ant Design's default ring is easy to lose. */
@@ -73,7 +80,7 @@ body {
  * references to copy or quote, distinct from names and prose around them.
  */
 .doc-code {
-  font-family: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: "Fira Code", ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 13px;
   font-weight: 500;
   letter-spacing: -0.01em;
@@ -88,6 +95,15 @@ body {
 }
 
 /* Dashboard KPI strip: one panel, four cells, hairline dividers. */
+/* Dashboard module headings: small caps rule so sections scan as groups. */
+.dash-section {
+  margin: 20px 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #475569;
+}
 .kpi-strip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -324,7 +340,9 @@ body {
   background: transparent;
   color: #c7d2e5;
   cursor: pointer;
-  transition: background-color 150ms ease-out, color 150ms ease-out;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out;
 }
 .sider-toggle:hover {
   color: #ffffff;
@@ -336,7 +354,10 @@ body {
  * fill alone marks the current screen at this size, with its name in the tooltip.
  */
 .ant-pro-sider-collapsed .ant-menu-inline-collapsed > .ant-menu-item,
-.ant-pro-sider-collapsed .ant-menu-inline-collapsed > .ant-menu-submenu > .ant-menu-submenu-title {
+.ant-pro-sider-collapsed
+  .ant-menu-inline-collapsed
+  > .ant-menu-submenu
+  > .ant-menu-submenu-title {
   display: flex !important;
   align-items: center;
   justify-content: center;
@@ -346,8 +367,12 @@ body {
   padding: 0 !important;
   line-height: 40px;
 }
-.ant-pro-sider-collapsed .ant-menu-inline-collapsed .ant-pro-base-menu-inline-item-title,
-.ant-pro-sider-collapsed .ant-menu-inline-collapsed .ant-pro-base-menu-inline-item-icon {
+.ant-pro-sider-collapsed
+  .ant-menu-inline-collapsed
+  .ant-pro-base-menu-inline-item-title,
+.ant-pro-sider-collapsed
+  .ant-menu-inline-collapsed
+  .ant-pro-base-menu-inline-item-icon {
   display: flex !important;
   align-items: center;
   justify-content: center;
@@ -370,10 +395,28 @@ body {
   justify-content: center;
   padding-inline: 0;
 }
-.ant-pro-sider-collapsed .ant-menu-inline-collapsed .ant-menu-title-content > a {
+.ant-pro-sider-collapsed
+  .ant-menu-inline-collapsed
+  .ant-menu-title-content
+  > a {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
   height: 100%;
+}
+
+/* Journal lines inside a ledger row: debits flush left, credits indented. */
+.journal-lines {
+  border-collapse: collapse;
+  min-width: 320px;
+}
+.journal-lines td {
+  padding: 1px 8px 1px 0;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.journal-lines td:nth-child(2),
+.journal-lines td:nth-child(3) {
+  min-width: 96px;
 }

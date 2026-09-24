@@ -197,7 +197,10 @@ export const purchasingResolvers = {
           if (qty.gt(left)) {
             throw new GraphQLError(`${prLine.itemName}: only ${left} left to order on ${prLine.purchaseRequest.code}.`);
           }
-          await tx.purchaseRequestItem.update({ where: { uuid: prLine.uuid }, data: { orderedQty: { increment: qty } } });
+          await tx.purchaseRequestItem.update({
+            where: { uuid: prLine.uuid },
+            data: { orderedQty: { increment: qty } },
+          });
           touchedRequests.add(prLine.purchaseRequestUuid);
         }
         for (const uuid of touchedRequests) await refreshPurchaseRequest(tx, uuid);
@@ -550,7 +553,10 @@ export const purchasingResolvers = {
 
   PurchaseRequest: {
     items: (parent: { uuid: string }, _: unknown, ctx: Context) =>
-      ctx.db.purchaseRequestItem.findMany({ where: { purchaseRequestUuid: parent.uuid }, orderBy: { insertedAt: 'asc' } }),
+      ctx.db.purchaseRequestItem.findMany({
+        where: { purchaseRequestUuid: parent.uuid },
+        orderBy: { insertedAt: 'asc' },
+      }),
     purchaseOrderCodes: async (parent: { uuid: string }, _: unknown, ctx: Context) => {
       const rows = await ctx.db.purchaseOrderItem.findMany({
         where: { purchaseRequestItem: { purchaseRequestUuid: parent.uuid } },

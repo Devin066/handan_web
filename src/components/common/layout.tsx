@@ -6,6 +6,7 @@ import React, { createContext, useContext, useState } from 'react';
 import type { FC, ReactNode } from 'react';
 
 import menuProps from './_menu';
+import { useMyModulesQuery } from '@/gql';
 import { tokens } from './theme';
 import brand from '@/config/brand';
 import GlobalFloatButtons from './global-float-buttons';
@@ -61,8 +62,16 @@ const GlobalLayout: FC<LayoutProps> = ({ children }) => {
     }
   };
 
+  // Modules this user's role can open (Settings > Roles). Until it loads, show
+  // nothing gated rather than flashing menu entries that will be refused.
+  const { data: access } = useMyModulesQuery({
+    fetchPolicy: 'cache-and-network',
+  });
+  const allowed = new Set((access?.myModules ?? []) as string[]);
+
   const menuDataRender = (menuList: MenuDataItem[]): MenuDataItem[] => {
     const menuListTemp = menuList
+      .filter((item: MenuDataItem) => !item.module || allowed.has(item.module))
       .map((item: MenuDataItem) => {
         const localItem = {
           ...item,

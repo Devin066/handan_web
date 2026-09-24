@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
-import { Popconfirm, Button } from 'antd';
+import { Popconfirm, Button, Space } from 'antd';
+import dayjs from 'dayjs';
 import size from 'lodash.size';
 
 // locale
@@ -9,25 +10,39 @@ import client from '@/gql/apollo';
 import { useCreateSalesOrderMutation, SalesOrdersDocument, useCreateDeliveryNoteMutation } from '@/gql';
 import { onError } from '@/utils';
 import { fetchCustomers } from '@/utils/api';
-import { salesOrderStatusEnum, salesOrderDeliveryStatusEnum, salesOrderBillingStatusEnum } from '@/utils/enum';
+import {
+  deliveryRiskEnum,
+  salesOrderStatusEnum,
+  salesOrderDeliveryStatusEnum,
+  salesOrderBillingStatusEnum,
+} from '@/utils/enum';
 import DataTable from '@/components/shared/data-table';
-import { amountBreakdownColumn, codeColumn, progressColumn, statusColumn } from '@/components/shared/columns';
+import {
+  StatusBadge,
+  amountBreakdownColumn,
+  codeColumn,
+  progressColumn,
+  statusColumn,
+} from '@/components/shared/columns';
 
 import SalesOrderNew from './new';
 import SalesOrderDetail from './detail';
-import SalesInvoiceNew from '@/components/sales-invoice/new';
+import WorkOrderPrompt from './work-order-prompt';
 
 const SalesOrderList: React.FC = () => {
   const { messageApi } = useMessageContext();
 
   const [detailVisible, setDetailVisible] = useState(false);
   const [record, setRecord] = useState<any>(null);
-  const [invoicingOrder, setInvoicingOrder] = useState<string | undefined>();
+  const [workOrdersFor, setWorkOrdersFor] = useState<string | undefined>();
 
   const [createSalesOrder] = useCreateSalesOrderMutation({
-    onCompleted: () => {
-      messageApi?.success('Sales order created successfully');
+    onCompleted: (data) => {
+      const order = data.createSalesOrder;
+      messageApi?.success(`${order?.code} created with invoice ${order?.salesInvoiceCode}`);
       handleReloadTable();
+      // Straight on to the shop floor for anything that has to be made.
+      setWorkOrdersFor(order?.uuid ?? undefined);
     },
     onError,
   });
@@ -79,6 +94,27 @@ const SalesOrderList: React.FC = () => {
       request: () => fetchCustomers({}),
     },
     statusColumn('Status', 'status', salesOrderStatusEnum, { width: 170 }),
+    {
+      title: 'Target date',
+      dataIndex: 'requiredDate',
+      width: 150,
+      render: (_: any, r: any) =>
+        r.requiredDate ? (
+          <Space direction="vertical" size={0}>
+            <span>{dayjs(r.requiredDate).format('YYYY-MM-DD')}</span>
+            {r.deliveryRisk && r.deliveryRisk !== 'on_track' ? (
+              <StatusBadge value={r.deliveryRisk} valueEnum={deliveryRiskEnum} />
+            ) : null}
+          </Space>
+        ) : (
+          '—'
+        ),
+    },
+    {
+      title: 'Invoice',
+      dataIndex: 'salesInvoiceCode',
+      render: (_: any, r: any) => r.salesInvoiceCode ?? '—',
+    },
     statusColumn('Delivery', 'deliveryStatus', salesOrderDeliveryStatusEnum),
     statusColumn('Payment', 'billingStatus', salesOrderBillingStatusEnum),
     progressColumn('Delivered', 'deliveredQty', 'totalQty'),
@@ -103,9 +139,9 @@ const SalesOrderList: React.FC = () => {
       valueType: 'option',
       render: (item: any, record: any) => [
         <>
-          {record.status !== 'draft' && record.billingStatus != 'fully_billed' && (
-            <Button key="sales-invoice-new" size="small" type="link" onClick={() => setInvoicingOrder(record.uuid)}>
-              Create invoice
+          {record.status !== 'cancelled' && record.deliveryStatus != 'fully_delivered' && (
+            <Button key="work-orders" size="small" type="link" onClick={() => setWorkOrdersFor(record.uuid)}>
+              Work orders
             </Button>
           )}
         </>,
@@ -135,12 +171,10 @@ const SalesOrderList: React.FC = () => {
         emptyHint="Create a sales order to start the order-to-cash flow."
         actionRef={actionRef}
         columns={columns}
-        request={async (params, sorter, filter) => {
+        request={async () => {
           const { data } = await client.query({
             query: SalesOrdersDocument,
-            variables: {
-              request: {},
-            },
+            fetchPolicy: 'network-only',
           });
 
           return {
@@ -152,12 +186,7 @@ const SalesOrderList: React.FC = () => {
         toolBarRender={() => [<SalesOrderNew key="sales-order-new" onCreate={(values: any) => handleCreate(values)} />]}
       />
 
-      <SalesInvoiceNew
-        open={!!invoicingOrder}
-        salesOrderUuid={invoicingOrder}
-        onClose={() => setInvoicingOrder(undefined)}
-        onCreated={handleReloadTable}
-      />
+      <WorkOrderPrompt salesOrderUuid={workOrdersFor} onClose={() => setWorkOrdersFor(undefined)} />
 
       <SalesOrderDetail
         uuid={record?.uuid}

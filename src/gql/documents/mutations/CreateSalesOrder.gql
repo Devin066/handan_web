@@ -1,8 +1,7 @@
 mutation CreateSalesOrder($request: CreateSalesOrderRequest!) {
-	createSalesOrder(request: $request) {
-		customerUuid
-		items {
-			itemName
-		}
-	}
+  createSalesOrder(request: $request) {
+    uuid
+    code
+    salesInvoiceCode
+  }
 }

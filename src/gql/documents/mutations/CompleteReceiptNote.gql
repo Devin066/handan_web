@@ -1,6 +1,8 @@
 mutation CompleteReceiptNote($request: ReceiptNoteRequest!) {
-	completeReceiptNote(request: $request) {
-		status
-		uuid
-	}
+  completeReceiptNote(request: $request) {
+    status
+    uuid
+    code
+    purchaseInvoiceCode
+  }
 }

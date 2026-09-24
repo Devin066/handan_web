@@ -6,12 +6,7 @@ import { Popconfirm, Button } from 'antd';
 // locale
 import { useMessageContext } from '@/components/common/message-context';
 import client from '@/gql/apollo';
-import {
-  useCreatePurchaseOrderMutation,
-  useCreateReceiptNoteMutation,
-  useCreatePurchaseInvoiceMutation,
-  PurchaseOrdersDocument,
-} from '@/gql';
+import { useCreatePurchaseOrderMutation, useCreateReceiptNoteMutation, PurchaseOrdersDocument } from '@/gql';
 import { onError } from '@/utils';
 import { purchaseOrderStatusEnum, purchaseOrderReceiptStatusEnum, purchaseOrderBillingStatusEnum } from '@/utils/enum';
 import DataTable from '@/components/shared/data-table';
@@ -19,7 +14,6 @@ import { amountBreakdownColumn, codeColumn, progressColumn, statusColumn } from 
 
 import PurchaseOrderNew from './new';
 import PurchaseOrderDetail from './detail';
-import PurchaseInvoiceNew from './invoice-new';
 
 const PurchaseOrderList: React.FC = () => {
   const { messageApi } = useMessageContext();
@@ -44,14 +38,6 @@ const PurchaseOrderList: React.FC = () => {
     onError,
   });
 
-  const [createPurchaseInvoice] = useCreatePurchaseInvoiceMutation({
-    onCompleted: () => {
-      messageApi?.success('Purchase invoice created successfully');
-      handleReloadTable();
-    },
-    onError,
-  });
-
   const handleDetail = (record: any) => {
     setDetailVisible(true);
     setRecord(record);
@@ -63,9 +49,7 @@ const PurchaseOrderList: React.FC = () => {
     actionRef.current?.reload();
   };
 
-  const handleCreate = async (values: any) => {
-    await createPurchaseOrder({ variables: { request: values } });
-  };
+  const handleCreate = (request: any) => createPurchaseOrder({ variables: { request } });
 
   const handleReceiptNote = async (values: any) => {
     const receiptItems = values.items.map((item: any) => ({
@@ -79,10 +63,6 @@ const PurchaseOrderList: React.FC = () => {
     };
 
     await createReceiptNote({ variables: { request } });
-  };
-
-  const handleInvoice = async (request: any) => {
-    await createPurchaseInvoice({ variables: { request } });
   };
 
   const columns: ProColumns<any>[] = [
@@ -106,6 +86,11 @@ const PurchaseOrderList: React.FC = () => {
       dataIndex: 'warehouseName',
     },
     {
+      title: 'Expected',
+      dataIndex: 'expectedDate',
+      valueType: 'date',
+    },
+    {
       title: 'Created At',
       dataIndex: 'insertedAt',
       valueType: 'dateTime',
@@ -117,15 +102,11 @@ const PurchaseOrderList: React.FC = () => {
       valueType: 'option',
       render: (item: any, record: any) => [
         <>
-          {record.status !== 'draft' && record.billingStatus != 'fully_billed' && (
-            <PurchaseInvoiceNew key="purchase-invoice-new" record={record} onCallback={handleInvoice} />
-          )}
-        </>,
-        <>
           {record.status !== 'draft' && record.receiptStatus != 'fully_received' && (
             <Popconfirm
               key="link2"
-              title="Confirm stock in?"
+              title="Receive everything still outstanding?"
+              description="This creates a goods receipt. Complete it on Goods Receipts to update stock and raise the purchase invoice."
               onConfirm={() => handleReceiptNote(record)}
               okText="Yes"
               cancelText="No"
@@ -161,9 +142,7 @@ const PurchaseOrderList: React.FC = () => {
             success: true,
           };
         }}
-        toolBarRender={() => [
-          <PurchaseOrderNew key="purchase-order-new" onCreate={(values: any) => handleCreate(values)} />,
-        ]}
+        toolBarRender={() => [<PurchaseOrderNew key="purchase-order-new" onCreate={handleCreate} />]}
       />
       <PurchaseOrderDetail
         uuid={record?.uuid}

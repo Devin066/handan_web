@@ -1,33 +1,24 @@
 import Link from 'next/link';
-import { Alert, Button, Card, Col, Empty, List, Row, Skeleton, Tag, Typography } from 'antd';
+import dayjs from 'dayjs';
+import { Alert, Badge, Button, Card, Col, Empty, List, Row, Skeleton, Tooltip, Typography } from 'antd';
 import {
   ArrowRightOutlined,
-  ContainerOutlined,
   DollarOutlined,
+  InboxOutlined,
   ShoppingCartOutlined,
-  ToolOutlined,
+  TeamOutlined,
 } from '@ant-design/icons';
 
-import {
-  useDeliveryNotesQuery,
-  usePurchaseOrdersQuery,
-  useReceiptNotesQuery,
-  useSalesOrdersQuery,
-  useWorkOrdersQuery,
-} from '@/gql';
+import { useDashboardQuery } from '@/gql';
 import { formatCurrency, formatQty } from '@/utils/format';
 import { tokens } from '@/components/common/theme';
 
 const { Text } = Typography;
 
-const sum = (rows: any[] | undefined | null, field: string) =>
-  (rows ?? []).reduce((total, row) => total + Number(row?.[field] ?? 0), 0);
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+const date = (value?: string | null) => (value ? dayjs(value).format('MMM D') : null);
 
-/**
- * One figure in the KPI strip. The caption says what the number is for, so it
- * is not just a figure. Cells share one panel, divided by rules, so the row reads
- * as a single status line rather than four unrelated cards.
- */
+/** One figure in the KPI strip; the caption says what the number is for. */
 const Kpi = ({
   title,
   value,
@@ -39,9 +30,9 @@ const Kpi = ({
 }: {
   title: string;
   value: string;
-  caption: string;
+  caption: React.ReactNode;
   icon: React.ReactNode;
-  /** Amber value: reserved for figures that need the operator's attention. */
+  /** Amber value: reserved for figures that need attention. */
   attention?: boolean;
   loading: boolean;
   href: string;
@@ -71,18 +62,31 @@ const WorkList = ({
   items,
   loading,
   emptyText,
+  renderTitle,
   renderMeta,
+  count,
 }: {
   title: string;
   href: string;
   items: any[];
   loading: boolean;
   emptyText: string;
+  renderTitle?: (item: any) => React.ReactNode;
   renderMeta: (item: any) => React.ReactNode;
+  count?: number;
 }) => (
   <Card
     size="small"
-    title={title}
+    title={
+      <span>
+        {title}
+        {!loading && (count ?? items.length) > 0 ? (
+          <Text type="secondary" className="tabular-figures" style={{ marginLeft: 8, fontWeight: 400 }}>
+            {count ?? items.length}
+          </Text>
+        ) : null}
+      </span>
+    }
     style={{ height: '100%', borderColor: tokens.border }}
     extra={
       <Link href={href} style={{ fontSize: 13 }}>
@@ -101,11 +105,11 @@ const WorkList = ({
     ) : (
       <List
         size="small"
-        dataSource={items.slice(0, 5)}
+        dataSource={items.slice(0, 6)}
         renderItem={(item: any) => (
           <List.Item style={{ paddingInline: 0 }}>
             <List.Item.Meta
-              title={<span className="doc-code">{item.code}</span>}
+              title={renderTitle ? renderTitle(item) : <span className="doc-code">{item.code}</span>}
               description={<span style={{ fontSize: 12 }}>{renderMeta(item)}</span>}
             />
           </List.Item>
@@ -115,39 +119,79 @@ const WorkList = ({
   </Card>
 );
 
+/** Outstanding money split by how late it is. */
+const Aging = ({ title, href, data, loading }: { title: string; href: string; data: any; loading: boolean }) => {
+  const rows = [
+    ['Not yet due', data?.current],
+    ['1 to 30 days late', data?.days1to30],
+    ['31 to 60 days late', data?.days31to60],
+    ['61 to 90 days late', data?.days61to90],
+    ['Over 90 days late', data?.over90],
+  ] as const;
+  return (
+    <Card
+      size="small"
+      title={title}
+      style={{ height: '100%', borderColor: tokens.border }}
+      extra={
+        <Link href={href} style={{ fontSize: 13 }}>
+          Invoices <ArrowRightOutlined style={{ fontSize: 11 }} />
+        </Link>
+      }
+    >
+      {loading ? (
+        <Skeleton active paragraph={{ rows: 4 }} title={false} />
+      ) : (
+        <>
+          <div className="tabular-figures" style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>
+            {formatCurrency(data?.total ?? 0)}
+          </div>
+          {rows.map(([label, value]) => (
+            <div
+              key={label}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: 13,
+                padding: '2px 0',
+              }}
+            >
+              <Text type="secondary">{label}</Text>
+              <span
+                className="tabular-figures"
+                style={{
+                  color: label !== 'Not yet due' && Number(value) > 0 ? tokens.warning : undefined,
+                }}
+              >
+                {formatCurrency(value ?? 0)}
+              </span>
+            </div>
+          ))}
+        </>
+      )}
+    </Card>
+  );
+};
+
+const riskBadge = (risk?: string | null) =>
+  risk === 'overdue' ? (
+    <Badge status="error" text="Overdue" />
+  ) : risk === 'at_risk' ? (
+    <Badge status="warning" text="Due soon" />
+  ) : null;
+
 /**
- * The screen an operator lands on. It answers "what needs me today?" — money
- * outstanding, goods owed, and work in progress — rather than showing totals
- * that nobody acts on.
+ * Executive & Operations Dashboard (SRS 3): stock alerts, money owed both ways,
+ * purchasing and production queues, delivery risk and who is in today.
  */
 const Dashboard = () => {
-  const salesOrders = useSalesOrdersQuery();
-  const purchaseOrders = usePurchaseOrdersQuery();
-  const workOrders = useWorkOrdersQuery();
-  const deliveryNotes = useDeliveryNotesQuery();
-  const receiptNotes = useReceiptNotesQuery();
-
-  const queries = [salesOrders, purchaseOrders, workOrders, deliveryNotes, receiptNotes];
-  const loading = queries.some((q) => q.loading);
-  const failed = queries.some((q) => q.error);
-
-  const so = (salesOrders.data?.salesOrders ?? []) as any[];
-  const po = (purchaseOrders.data?.purchaseOrders ?? []) as any[];
-  const wo = (workOrders.data?.workOrders ?? []) as any[];
-  const dn = (deliveryNotes.data?.deliveryNotes ?? []) as any[];
-  const rn = (receiptNotes.data?.receiptNotes ?? []) as any[];
-
-  const receivable = sum(so, 'remainingAmount');
-  const payable = sum(po, 'remainingAmount');
-
-  const toDeliver = so.filter((o) => o?.deliveryStatus !== 'fully_delivered');
-  const toReceive = po.filter((o) => o?.receiptStatus !== 'fully_received');
-  const openWork = wo.filter((o) => o?.status !== 'completed' && o?.status !== 'cancelled');
-  const pendingStockOut = dn.filter((n) => n?.status === 'to_deliver');
-  const pendingStockIn = rn.filter((n) => n?.status === 'to_receive');
+  const { data, loading, error, refetch } = useDashboardQuery({
+    fetchPolicy: 'cache-and-network',
+  });
+  const d = (data?.dashboard ?? {}) as any;
 
   // Zeros from a failed request would read as real balances, so show nothing.
-  if (failed) {
+  if (error && !data) {
     return (
       <Alert
         type="error"
@@ -155,7 +199,7 @@ const Dashboard = () => {
         message="The dashboard couldn't load."
         description="Figures are hidden rather than shown as zero. Check your connection and try again."
         action={
-          <Button size="small" onClick={() => queries.forEach((q) => q.refetch())}>
+          <Button size="small" onClick={() => refetch()}>
             Retry
           </Button>
         }
@@ -163,92 +207,253 @@ const Dashboard = () => {
     );
   }
 
+  const busy = loading && !data;
+  const low = d.lowStock ?? [];
+  const out = d.outOfStock ?? [];
+  const valuation = d.stockValuation ?? {};
+  const workforce = d.workforce ?? {};
+  const delayed = d.delayedSalesOrders ?? [];
+
   return (
     <div>
+      {!busy && out.length > 0 ? (
+        <Alert
+          type="error"
+          showIcon
+          style={{ marginBottom: 12 }}
+          message={`${plural(out.length, 'item')} out of stock`}
+          description={out
+            .slice(0, 6)
+            .map((i: any) => i.name)
+            .join(', ')
+            .concat(out.length > 6 ? ` and ${out.length - 6} more` : '')}
+          action={
+            <Link href="/purchasing/purchase-requests">
+              <Button size="small">Raise a purchase request</Button>
+            </Link>
+          }
+        />
+      ) : null}
+
       <div className="kpi-strip">
         <Kpi
+          title="Stock value"
+          value={formatCurrency(valuation.total ?? 0)}
+          caption={
+            <Tooltip
+              title={
+                <div style={{ fontSize: 12, lineHeight: 1.6 }}>
+                  <div>Raw materials: {formatCurrency(valuation.rawMaterial ?? 0)}</div>
+                  <div>Manufactured parts: {formatCurrency(valuation.manufacturedPart ?? 0)}</div>
+                  <div>Finished goods: {formatCurrency(valuation.finishedGood ?? 0)}</div>
+                </div>
+              }
+            >
+              <span>at standard cost, {plural(low.length, 'item')} low</span>
+            </Tooltip>
+          }
+          attention={low.length > 0}
+          icon={<InboxOutlined />}
+          loading={busy}
+          href="/setup/items"
+        />
+        <Kpi
           title="Receivable"
-          value={formatCurrency(receivable)}
-          caption={`across ${so.length} sales order${so.length === 1 ? '' : 's'}`}
-          attention={receivable > 0}
+          value={formatCurrency(d.accountsReceivable?.total ?? 0)}
+          caption={`on ${plural(d.accountsReceivable?.count ?? 0, 'open sales invoice')}`}
+          attention={(d.accountsReceivable?.total ?? 0) - (d.accountsReceivable?.current ?? 0) > 0}
           icon={<DollarOutlined />}
-          loading={loading}
-          href="/selling/sales-orders"
+          loading={busy}
+          href="/finance/sales-invoices"
         />
         <Kpi
           title="Payable"
-          value={formatCurrency(payable)}
-          caption={`across ${po.length} purchase order${po.length === 1 ? '' : 's'}`}
+          value={formatCurrency(d.accountsPayable?.total ?? 0)}
+          caption={`on ${plural(d.accountsPayable?.count ?? 0, 'open purchase invoice')}`}
           icon={<ShoppingCartOutlined />}
-          loading={loading}
-          href="/purchasing/purchase-orders"
+          loading={busy}
+          href="/finance/purchase-invoices"
         />
         <Kpi
-          title="Orders to deliver"
-          value={formatQty(toDeliver.length)}
+          title="Present today"
+          value={`${workforce.present ?? 0} / ${workforce.total ?? 0}`}
           caption={
-            pendingStockOut.length
-              ? `${pendingStockOut.length} note${pendingStockOut.length === 1 ? '' : 's'} awaiting stock out`
-              : 'no notes awaiting stock out'
+            workforce.absent?.length ? `not in: ${workforce.absent.slice(0, 3).join(', ')}` : 'everyone is clocked in'
           }
-          icon={<ContainerOutlined />}
-          loading={loading}
-          href="/stock/delivery-notes"
-        />
-        <Kpi
-          title="Work in progress"
-          value={formatQty(openWork.length)}
-          caption={`of ${wo.length} work order${wo.length === 1 ? '' : 's'}`}
-          icon={<ToolOutlined />}
-          loading={loading}
-          href="/production/work-orders"
+          icon={<TeamOutlined />}
+          loading={busy}
+          href="/hr/attendance"
         />
       </div>
 
-      <Row gutter={[12, 12]} style={{ marginTop: 12 }}>
+      <h2 className="dash-section">Inventory</h2>
+      <Row gutter={[12, 12]}>
+        <Col xs={24} lg={12}>
+          <WorkList
+            title="Out of stock"
+            href="/setup/items"
+            items={out}
+            loading={busy}
+            emptyText="No tracked item is at zero."
+            renderTitle={(i) => i.name}
+            renderMeta={(i) => (
+              <>
+                {i.sku ?? 'No code'} · reorder level {formatQty(i.minStockThreshold)}
+              </>
+            )}
+          />
+        </Col>
+        <Col xs={24} lg={12}>
+          <WorkList
+            title="Low stock"
+            href="/setup/items"
+            items={low}
+            loading={busy}
+            emptyText="Everything is above its reorder level."
+            renderTitle={(i) => i.name}
+            renderMeta={(i) => (
+              <>
+                {formatQty(i.onHandQty)} on hand · reorder level {formatQty(i.minStockThreshold)}
+              </>
+            )}
+          />
+        </Col>
+      </Row>
+
+      <h2 className="dash-section">Finance</h2>
+      <Row gutter={[12, 12]}>
+        <Col xs={24} md={12}>
+          <Aging
+            title="Accounts receivable"
+            href="/finance/sales-invoices"
+            data={d.accountsReceivable}
+            loading={busy}
+          />
+        </Col>
+        <Col xs={24} md={12}>
+          <Aging title="Accounts payable" href="/finance/purchase-invoices" data={d.accountsPayable} loading={busy} />
+        </Col>
+      </Row>
+
+      <h2 className="dash-section">Sales</h2>
+      <Row gutter={[12, 12]}>
         <Col xs={24} lg={8}>
           <WorkList
-            title="Awaiting delivery"
+            title="Delivery date at risk"
             href="/selling/sales-orders"
-            items={toDeliver}
-            loading={loading}
-            emptyText="Every sales order has shipped."
+            items={delayed}
+            loading={busy}
+            emptyText="No open order is late or due within 3 days."
+            renderTitle={(o) => (
+              <span>
+                <span className="doc-code">{o.code}</span> <span style={{ marginLeft: 6 }}>{riskBadge(o.risk)}</span>
+              </span>
+            )}
             renderMeta={(o) => (
               <>
-                {o.customerName} · {formatQty(o.remainingQty)} outstanding
+                {o.customerName} · target {date(o.requiredDate)}
               </>
             )}
           />
         </Col>
         <Col xs={24} lg={8}>
           <WorkList
-            title="Awaiting receipt"
+            title="Open sales orders"
+            href="/selling/sales-orders"
+            items={d.openSalesOrders ?? []}
+            loading={busy}
+            emptyText="Every sales order is complete."
+            renderMeta={(o) => (
+              <>
+                {o.customerName}
+                {o.requiredDate ? ` · target ${date(o.requiredDate)}` : ''}
+              </>
+            )}
+          />
+        </Col>
+        <Col xs={24} lg={8}>
+          <WorkList
+            title={`FY${d.fiscalYear ?? ''} invoices`}
+            href="/finance/sales-invoices"
+            items={d.fiscalYearInvoices?.latest ?? []}
+            count={d.fiscalYearInvoices?.count}
+            loading={busy}
+            emptyText="No sales invoices issued this fiscal year."
+            renderMeta={(inv) => (
+              <>
+                {inv.customerName} · {formatCurrency(inv.amount)}
+              </>
+            )}
+          />
+        </Col>
+      </Row>
+
+      <h2 className="dash-section">Purchasing</h2>
+      <Row gutter={[12, 12]}>
+        <Col xs={24} lg={12}>
+          <WorkList
+            title="Open purchase orders"
             href="/purchasing/purchase-orders"
-            items={toReceive}
-            loading={loading}
+            items={d.openPurchaseOrders ?? []}
+            loading={busy}
             emptyText="Nothing outstanding from suppliers."
-            renderMeta={(o) => (
+            renderMeta={(po) => (
               <>
-                {o.supplierName} · {formatQty(o.remainingQty)} outstanding
+                {po.supplierName} ·{' '}
+                {po.expectedDate ? (
+                  <span style={{ color: po.overdue ? tokens.danger : undefined }}>
+                    {po.overdue ? 'was due' : 'expected'} {date(po.expectedDate)}
+                  </span>
+                ) : (
+                  'no delivery date'
+                )}
               </>
             )}
           />
         </Col>
-        <Col xs={24} lg={8}>
+        <Col xs={24} lg={12}>
           <WorkList
-            title="Pending stock moves"
-            href="/stock/delivery-notes"
-            items={[...pendingStockOut, ...pendingStockIn]}
-            loading={loading}
-            emptyText="No notes waiting to be stocked in or out."
-            renderMeta={(n) => (
+            title="Purchase requests not on a PO"
+            href="/purchasing/purchase-requests"
+            items={d.openPurchaseRequests ?? []}
+            loading={busy}
+            emptyText="Every request has been ordered."
+            renderMeta={(pr) => (
               <>
-                <Tag color={n.customerName ? 'blue' : 'green'} style={{ marginInlineEnd: 6 }}>
-                  {n.customerName ? 'Out' : 'In'}
-                </Tag>
-                {n.customerName ?? n.supplierName} · {formatQty(n.totalQty)}
+                {pr.status === 'pending' ? 'Awaiting approval' : 'Approved'} · {plural(pr.openLines, 'line')} to order
+                {pr.requestedBy ? ` · ${pr.requestedBy}` : ''}
               </>
             )}
+          />
+        </Col>
+      </Row>
+
+      <h2 className="dash-section">Production</h2>
+      <Row gutter={[12, 12]}>
+        <Col xs={24} lg={12}>
+          <WorkList
+            title="Open work orders"
+            href="/production/work-orders"
+            items={d.openWorkOrders ?? []}
+            loading={busy}
+            emptyText="No work orders in progress."
+            renderMeta={(wo) => (
+              <>
+                {wo.itemName} · {formatQty(wo.producedQty)} / {formatQty(wo.plannedQty)} made
+                {wo.dueDate ? ` · due ${date(wo.dueDate)}` : ''}
+              </>
+            )}
+          />
+        </Col>
+        <Col xs={24} lg={12}>
+          <WorkList
+            title="Manufactured today"
+            href="/production/work-orders"
+            items={d.manufacturedToday ?? []}
+            loading={busy}
+            emptyText="Nothing stored from production yet today."
+            renderTitle={(m) => m.itemName}
+            renderMeta={(m) => <>{formatQty(m.qty)} stored</>}
           />
         </Col>
       </Row>

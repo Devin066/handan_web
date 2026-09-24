@@ -31,7 +31,9 @@ export const DEFAULT_PERMISSIONS: Record<string, Module[]> = {
 export const PERMISSIONS_KEY = 'rbac.permissions';
 
 export async function loadPermissions(db: Prisma.TransactionClient, companyUuid: string) {
-  const row = await db.appSetting.findUnique({ where: { companyUuid_key: { companyUuid, key: PERMISSIONS_KEY } } });
+  const row = await db.appSetting.findUnique({
+    where: { companyUuid_key: { companyUuid, key: PERMISSIONS_KEY } },
+  });
   const stored = (row?.value ?? {}) as Record<string, string[]>;
   const merged: Record<string, Module[]> = {};
   for (const role of Object.values(ROLE)) {
@@ -113,15 +115,15 @@ type Resolver = (parent: unknown, args: unknown, ctx: Context, info: unknown) =>
 export function guardRootFields(fields: Record<string, unknown>) {
   const guarded: Record<string, unknown> = {};
   for (const [name, resolver] of Object.entries(fields)) {
-    const module = GUARDED[name];
-    if (!module || typeof resolver !== 'function') {
+    const required = GUARDED[name];
+    if (!required || typeof resolver !== 'function') {
       guarded[name] = resolver;
       continue;
     }
     guarded[name] = async (parent: unknown, args: unknown, ctx: Context, info: unknown) => {
       // Unauthenticated calls fall through to the resolver's own requireCompany.
-      if (ctx.userUuid && !(await allowedModules(ctx)).includes(module)) {
-        throw new GraphQLError(`Your role does not have access to ${MODULES[module]}.`, {
+      if (ctx.userUuid && !(await allowedModules(ctx)).includes(required)) {
+        throw new GraphQLError(`Your role does not have access to ${MODULES[required]}.`, {
           extensions: { code: 'FORBIDDEN' },
         });
       }

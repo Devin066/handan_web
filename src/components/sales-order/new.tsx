@@ -1,6 +1,14 @@
 import { useState } from 'react';
 import { Space, Button, Divider } from 'antd';
-import { ModalForm, ProForm, ProFormText, ProFormSelect, ProFormDatePicker } from '@ant-design/pro-components';
+import {
+  ModalForm,
+  ProForm,
+  ProFormText,
+  ProFormTextArea,
+  ProFormSelect,
+  ProFormDatePicker,
+} from '@ant-design/pro-components';
+import dayjs from 'dayjs';
 import round from 'lodash.round';
 import size from 'lodash.size';
 
@@ -26,8 +34,9 @@ const SalesOrderNew = (props: any) => {
 
   const onFinish = async (values: any) => {
     const updatedLineItems = lines
-      .map(({ item, unitPrice, orderedQty, stockUOM }: any) => {
+      .map(({ item, unitPrice, orderedQty, stockUOM, customSpec }: any) => {
         return {
+          customSpec,
           itemUuid: item.uuid,
           stockUomUuid: stockUOM.uuid,
           uomName: stockUOM.uomName,
@@ -46,6 +55,8 @@ const SalesOrderNew = (props: any) => {
       customerUuid: values.customerUuid,
       warehouseUuid: values.warehouseUuid,
       customerAddress: values.customerAddress,
+      requiredDate: values.requiredDate ? dayjs(values.requiredDate).startOf('day').toISOString() : null,
+      notes: values.notes,
       salesItems: updatedLineItems,
     };
 
@@ -79,7 +90,7 @@ const SalesOrderNew = (props: any) => {
           setModalVisible(true);
         }}
       >
-        New Sales Order
+        New sales order
       </Button>
 
       <ModalForm
@@ -147,8 +158,19 @@ const SalesOrderNew = (props: any) => {
             rules={[{ required: true, message: 'Select warehouse' }]}
           />
 
-          <ProFormDatePicker name="endTime" label="Delivery Date" />
+          <ProFormDatePicker
+            name="requiredDate"
+            label="Target delivery date"
+            tooltip="Orders due within 3 days or past this date are flagged on the dashboard."
+          />
         </ProForm.Group>
+
+        <ProFormTextArea
+          name="notes"
+          label="Build notes"
+          placeholder="Anything the shop needs to know about this order"
+          fieldProps={{ rows: 2 }}
+        />
 
         <OrderItemForm onCallback={(values: any) => handleAdjustAmount(values)} />
       </ModalForm>
