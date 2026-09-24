@@ -330,11 +330,11 @@ const ProductionBoard = () => {
           Updates every 15 seconds.
         </Text>
         <Space>
-          <Tooltip title="Refresh now">
+          <Tooltip title="Refresh Now">
             <Button icon={<ReloadOutlined />} onClick={() => refetch()} loading={loading} aria-label="Refresh now" />
           </Tooltip>
           <Button icon={fullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />} onClick={toggleFullscreen}>
-            {fullscreen ? 'Exit full screen' : 'Full screen'}
+            {fullscreen ? 'Exit Full Screen' : 'Full Screen'}
           </Button>
         </Space>
       </div>
