@@ -1,0 +1,5 @@
+mutation SaveWarehouse($request: WarehouseRequest!) {
+  saveWarehouse(request: $request) {
+    ...WarehouseFields
+  }
+}

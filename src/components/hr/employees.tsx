@@ -20,6 +20,7 @@ import {
 
 import client from '@/gql/apollo';
 import { ListStaffDocument, usePayslipsQuery, useSaveStaffMutation } from '@/gql';
+import useModuleAccess from '@/hooks/use-module-access';
 import DataTable from '@/components/shared/data-table';
 import { StatusBadge } from '@/components/shared/columns';
 import { useMessageContext } from '@/components/common/message-context';
@@ -280,6 +281,7 @@ const EmployeeDrawer = ({ employee, onClose }: { employee: any; onClose: () => v
 
 /** Employee Profile Management (SRS 4.6). */
 const EmployeeList = () => {
+  const canEdit = useModuleAccess().canEdit('hr');
   const actionRef = useRef<ActionType | null>(null);
   const [editing, setEditing] = useState<any>(null);
   const [viewing, setViewing] = useState<any>(null);
@@ -335,6 +337,12 @@ const EmployeeList = () => {
     },
   ];
 
+  const renderToolbar = () => [
+    <Button key="add" type="primary" size="small" onClick={() => setEditing({})}>
+      Add Employee
+    </Button>,
+  ];
+
   return (
     <>
       <DataTable
@@ -350,11 +358,7 @@ const EmployeeList = () => {
           const staff = data?.listStaff ?? [];
           return { data: staff, total: staff.length, success: true };
         }}
-        toolBarRender={() => [
-          <Button key="add" type="primary" size="small" onClick={() => setEditing({})}>
-            Add Employee
-          </Button>,
-        ]}
+        toolBarRender={canEdit ? renderToolbar : undefined}
       />
       <EmployeeForm employee={editing} onClose={() => setEditing(null)} onSaved={() => actionRef.current?.reload()} />
       <EmployeeDrawer employee={viewing} onClose={() => setViewing(null)} />

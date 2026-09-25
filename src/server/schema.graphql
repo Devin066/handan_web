@@ -663,6 +663,8 @@ type PurchaseRequest {
 
 type PurchaseRequestItem {
   uuid: ID
+  supplierUuid: ID
+  supplierName: String
   purchaseRequestUuid: ID
   purchaseRequestCode: String
   itemUuid: ID
@@ -770,6 +772,10 @@ type PayrollPeriod {
 type RolePermission {
   role: String
   modules: [String]
+  """Whether people with this role may be given a login."""
+  canLogin: Boolean
+  """Modules in modules that this role may only view, not change."""
+  viewOnly: [String]
 }
 
 type ModuleOption {
@@ -784,7 +790,10 @@ type InvoiceRef {
 
 input IdRequest { uuid: ID }
 input DateRequest { date: String }
-input PurchaseRequestItemArg { itemUuid: ID, requestedQty: Float, stockUomUuid: ID, uomName: String }
+"""supplierUuid is optional: the supplier this line is expected to come from; its price becomes the estimate."""
+input PurchaseRequestItemArg { itemUuid: ID, requestedQty: Float, stockUomUuid: ID, uomName: String, supplierUuid: ID }
+input SupplierPriceRequest { itemUuid: ID!, supplierUuid: ID!, unitPrice: Float! }
+input LowStockLevelRequest { itemUuid: ID!, minStockThreshold: Float! }
 input CreatePurchaseRequestRequest {
   requestedBy: String
   requiredDate: DateTime
@@ -823,8 +832,15 @@ input BenefitsRequest {
   standardHoursPerDay: Float
 }
 input GeneratePayrollRequest { uuid: ID, name: String, startDate: String!, endDate: String!, payDate: String }
-input RolePermissionRequest { role: String!, modules: [String]! }
+"""modules: what the role can open. viewOnly: which of those it can't change; omitted keeps the current list."""
+input RolePermissionRequest { role: String!, modules: [String]!, viewOnly: [String] }
 input UserRoleRequest { staffUuid: ID!, role: String! }
+"""name is only accepted from roles with Settings access."""
+input MyProfileRequest { name: String, phone: String }
+input ChangePasswordRequest { currentPassword: String!, newPassword: String! }
+input RoleLoginRequest { role: String!, canLogin: Boolean! }
+"""Turn a member's login on or off. A new login needs a password; an existing one keeps its password unless one is sent."""
+input MemberLoginRequest { staffUuid: ID!, enabled: Boolean!, role: String, password: String }
 input LoginRequest { email: String, password: String }
 input CreateCustomerRequest {
   """Optional: derived from the name parts when omitted."""
@@ -877,6 +893,18 @@ input CreateSupplierRequest {
   notes: String
 }
 input CreateProcessRequest { name: String, code: String, description: String }
+"""Omit uuid to create. On update, fields left out keep their stored values."""
+input WarehouseRequest {
+  uuid: ID
+  name: String
+  address: String
+  area: String
+  "A member whose login role is owner or manager; their name and email are stored as the contact. Send null to clear."
+  contactStaffUuid: ID
+  "The warehouse forms pick first. Setting it clears the flag on every other warehouse."
+  isDefault: Boolean
+}
+
 input CreateWorkstationRequest {
   uuid: ID
   name: String
@@ -913,6 +941,18 @@ input CreateItemRequest {
   sellingPrice: Decimal!
   stockUoms: [StockUomArg]!
   openingStocks: [OpeningStockArg]
+}
+
+"Fields left out keep their stored values."
+input UpdateItemRequest {
+  name: String
+  sku: String
+  category: String
+  standardCost: Float
+  minStockThreshold: Float
+  spec: String
+  description: String
+  sellingPrice: Decimal
 }
 
 input BomItemArg { itemUuid: ID, qty: Decimal }
@@ -1165,6 +1205,10 @@ type RootQueryType {
   payslips(request: IdRequest!): [PayrollEntry]
   staffPerformance(request: IdRequest!): [JobCard]
   rolePermissions: [RolePermission]
+  "Modules the signed-in user can change data in."
+  myEditModules: [String]
+  "The member record of the signed-in person, if they have one."
+  myProfile: Staff
   modules: [ModuleOption]
   myModules: [String]
   "Orders, invoices and payments for one customer, with running balance."
@@ -1181,10 +1225,26 @@ type RootMutationType {
   updateConfiguration(request: UpdateConfigurationRequest!): Configuration
 
   createItem(request: CreateItemRequest!): Item
+  """
+  Change a material's descriptive and costing fields. Class, unit of measure and
+  stock quantities are fixed after creation: the code is derived from the class,
+  and quantities only move through stock transactions so the ledger stays whole.
+  """
+  updateItem(uuid: ID!, request: UpdateItemRequest!): Item
   createCustomer(request: CreateCustomerRequest!): Customer
   createSupplier(request: CreateSupplierRequest!): Supplier
+  "Settings access only. Fields left out keep their stored values."
+  updateCustomer(uuid: ID!, request: CreateCustomerRequest!): Customer
+  "Settings access only."
+  updateSupplier(uuid: ID!, request: CreateSupplierRequest!): Supplier
   createProcess(request: CreateProcessRequest!): Process
   createWorkstation(request: CreateWorkstationRequest!): Workstation
+  saveWarehouse(request: WarehouseRequest!): Warehouse
+  "Add or change one supplier's price for a material. Purchase orders also update it."
+  saveSupplierPrice(request: SupplierPriceRequest!): SupplierPrice
+  deleteSupplierPrice(request: IdRequest!): Boolean
+  "The on-hand level at or below which the material shows as low stock."
+  setLowStockLevel(request: LowStockLevelRequest!): Item
   createPaymentMethod(request: CreatePaymentMethodRequest!): PaymentMethod
   "Updates the method named by request.uuid."
   updatePaymentMethod(request: CreatePaymentMethodRequest!): PaymentMethod
@@ -1219,6 +1279,11 @@ type RootMutationType {
   finalizePayroll(request: IdRequest!): PayrollPeriod
   updateRolePermissions(request: RolePermissionRequest!): RolePermission
   setUserRole(request: UserRoleRequest!): Staff
+  setRoleLogin(request: RoleLoginRequest!): RolePermission
+  setMemberLogin(request: MemberLoginRequest!): Staff
+  "Change the signed-in person's own mobile, and their name if their role has Settings access. Role, email and employment stay with the owner."
+  updateMyProfile(request: MyProfileRequest!): Staff
+  changeMyPassword(request: ChangePasswordRequest!): Boolean
   "Moves a work order to another stage on the production board."
   moveWorkOrderStage(request: MoveWorkOrderStageRequest!): WorkOrder
 }

@@ -22,8 +22,10 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
 
 const SupplierNew = (props: any) => {
   const [form] = ProForm.useForm();
-  const { onCreate } = props;
-  const [modalVisible, setModalVisible] = useState(false);
+  const { onCreate, onUpdate, record, onClose } = props;
+  // With a record this is the Edit dialog: no button, open while mounted.
+  const editing = !!record;
+  const [modalVisible, setModalVisible] = useState(editing);
 
   // A supplier is only useful if purchasing can actually reach someone there.
   const reachable = {
@@ -36,6 +38,11 @@ const SupplierNew = (props: any) => {
   };
 
   const onFinish = async (values: any) => {
+    if (editing) {
+      await onUpdate(record.uuid, values);
+      onClose?.();
+      return;
+    }
     await onCreate(values);
     setModalVisible(false);
   };
@@ -51,13 +58,17 @@ const SupplierNew = (props: any) => {
         layout="vertical"
         modalProps={{ destroyOnClose: true }}
         width="min(720px, 100vw)"
-        onOpenChange={setModalVisible}
-        title="New Supplier"
+        onOpenChange={(open) => {
+          setModalVisible(open);
+          if (!open && editing) onClose?.();
+        }}
+        title={editing ? `Edit ${record.name}` : 'New Supplier'}
+        initialValues={editing ? record : undefined}
         submitTimeout={2000}
         autoFocusFirstInput
         open={modalVisible}
         onFinish={onFinish}
-        submitter={{ searchConfig: { submitText: 'Create Supplier' } }}
+        submitter={{ searchConfig: { submitText: editing ? 'Save Changes' : 'Create Supplier' } }}
       >
         <SectionTitle>Business</SectionTitle>
         <Row gutter={16}>

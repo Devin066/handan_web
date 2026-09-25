@@ -9,6 +9,7 @@ import { invoiceStatusEnum } from '@/utils/enum';
 import DataTable from '@/components/shared/data-table';
 import { codeColumn, moneyColumn, statusColumn } from '@/components/shared/columns';
 import { SalesInvoicesDocument } from '@/gql';
+import useModuleAccess from '@/hooks/use-module-access';
 import { formatCurrency } from '@/utils/format';
 
 import RecordPayment from '@/components/shared/record-payment';
@@ -24,6 +25,7 @@ const isOverdue = (record: any) =>
   dayjs(record.dueDate).isBefore(dayjs(), 'day');
 
 const SalesInvoiceList: React.FC = () => {
+  const canEdit = useModuleAccess().canEdit('finance');
   const actionRef = useRef<ActionType | null>(null);
 
   const [creating, setCreating] = useState(false);
@@ -114,6 +116,15 @@ const SalesInvoiceList: React.FC = () => {
     },
   ];
 
+  const renderToolbar = () => [
+    <Link key="payments" href="/finance/payment-entries">
+      <Button size="small">Payment History</Button>
+    </Link>,
+    <Button key="new" type="primary" size="small" onClick={() => setCreating(true)}>
+      New Invoice
+    </Button>,
+  ];
+
   return (
     <>
       <DataTable
@@ -140,14 +151,7 @@ const SalesInvoiceList: React.FC = () => {
             {overdue.length ? <Badge status="error" text={`${overdue.length} overdue`} /> : null}
           </div>
         }
-        toolBarRender={() => [
-          <Link key="payments" href="/finance/payment-entries">
-            <Button size="small">Payment History</Button>
-          </Link>,
-          <Button key="new" type="primary" size="small" onClick={() => setCreating(true)}>
-            New Invoice
-          </Button>,
-        ]}
+        toolBarRender={canEdit ? renderToolbar : undefined}
       />
 
       <SalesInvoiceNew open={creating} onClose={() => setCreating(false)} onCreated={reload} />

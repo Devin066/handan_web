@@ -1,0 +1,9 @@
+mutation SaveSupplierPrice($request: SupplierPriceRequest!) {
+  saveSupplierPrice(request: $request) {
+    uuid
+    supplierUuid
+    supplierName
+    unitPrice
+    updatedAt
+  }
+}

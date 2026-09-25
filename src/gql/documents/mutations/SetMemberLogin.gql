@@ -1,0 +1,7 @@
+mutation SetMemberLogin($request: MemberLoginRequest!) {
+  setMemberLogin(request: $request) {
+    uuid
+    hasLogin
+    role
+  }
+}

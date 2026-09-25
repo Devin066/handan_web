@@ -4,42 +4,17 @@ import { Badge, Input, Segmented, Space, Typography } from 'antd';
 
 import { useMessageContext } from '@/components/common/message-context';
 import client from '@/gql/apollo';
-import { useCreateItemMutation, useItemSupplierPricesQuery, ItemsDocument } from '@/gql';
-import dayjs from 'dayjs';
+import { useCreateItemMutation, useUpdateItemMutation, ItemsDocument } from '@/gql';
+import useModuleAccess from '@/hooks/use-module-access';
 import { itemTypeEnum } from '@/utils/enum';
 import { onError } from '@/utils';
-import { formatCurrency, formatQty } from '@/utils/format';
+import { formatQty } from '@/utils/format';
 import DataTable from '@/components/shared/data-table';
 import { moneyColumn, qtyColumn } from '@/components/shared/columns';
 import { tokens } from '@/components/common/theme';
 
 import ItemNew from './new';
-
-/** Supplier pricing records (SRS 4.4): the last price each supplier charged. */
-const SupplierPrices = ({ itemUuid }: { itemUuid: string }) => {
-  const { data, loading } = useItemSupplierPricesQuery({
-    variables: { request: { uuid: itemUuid } },
-  });
-  const prices = data?.item?.supplierPrices ?? [];
-  if (loading) return <Text type="secondary">Loading supplier prices</Text>;
-  if (!prices.length)
-    return <Text type="secondary">No supplier prices yet. They are recorded from purchase orders.</Text>;
-  return (
-    <Space direction="vertical" size={2}>
-      <Text strong style={{ fontSize: 13 }}>
-        Supplier prices
-      </Text>
-      {prices.map((p: any) => (
-        <Text key={p.uuid} style={{ fontSize: 13 }}>
-          {p.supplierName}: <span className="tabular-figures">{formatCurrency(p.unitPrice)}</span>{' '}
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            as of {dayjs(p.updatedAt).format('YYYY-MM-DD')}
-          </Text>
-        </Text>
-      ))}
-    </Space>
-  );
-};
+import ItemPurchasing from './supplier-prices';
 
 const { Text } = Typography;
 
@@ -64,9 +39,11 @@ const matches = (item: any, term: string) =>
   [item.name, item.sku, item.spec, item.category].some((field) => field?.toLowerCase().includes(term));
 
 const ItemList: React.FC = () => {
+  const canEdit = useModuleAccess().canEdit('inventory');
   const { messageApi } = useMessageContext();
   const actionRef = useRef<ActionType | null>(null);
   const [keyword, setKeyword] = useState('');
+  const [editing, setEditing] = useState<any>(null);
   const [stockFilter, setStockFilter] = useState<StockFilter>('all');
   const [classFilter, setClassFilter] = useState<ClassFilter>('all');
 
@@ -76,6 +53,18 @@ const ItemList: React.FC = () => {
       actionRef.current?.reload();
     },
     onError,
+  });
+
+  const [updateItem] = useUpdateItemMutation({
+    onCompleted: () => {
+      messageApi?.success('Material updated');
+      actionRef.current?.reload();
+    },
+    // Not the shared onError: it posts through antd's static `message`, which
+    // did not appear on this screen (antd v5's static methods are the part that
+    // breaks under React 19, hence the console warning). A rejected save has to
+    // say why, beside the dialog still holding the typed values.
+    onError: (error) => messageApi?.error(error.message),
   });
 
   const columns: ProColumns<any>[] = [
@@ -141,77 +130,106 @@ const ItemList: React.FC = () => {
     moneyColumn('Price', 'sellingPrice'),
   ];
 
+  // Read-only users get no actions column at all, rather than a column of
+  // nothing taking up the width the numbers need.
+  if (canEdit) {
+    columns.push({
+      title: 'Actions',
+      valueType: 'option',
+      width: 80,
+      render: (_, record) => [
+        <a key="edit" onClick={() => setEditing(record)}>
+          Edit
+        </a>,
+      ],
+    });
+  }
+
+  const renderToolbar = () => [
+    <ItemNew key="item-new" onCreate={(values: any) => createItem({ variables: { request: values } })} />,
+  ];
+
   return (
-    <DataTable
-      actionRef={actionRef}
-      columns={columns}
-      entityName="materials"
-      emptyTitle={keyword || stockFilter !== 'all' ? 'No matching items' : undefined}
-      emptyHint={
-        keyword || stockFilter !== 'all'
-          ? 'Try a different search, or switch the filter back to All.'
-          : 'Add raw materials, manufactured parts and finished goods to start tracking stock.'
-      }
-      params={{ keyword, stockFilter, classFilter }}
-      expandable={{
-        expandedRowRender: (record: any) => <SupplierPrices itemUuid={record.uuid} />,
-      }}
-      request={async (params) => {
-        const { data } = await client.query({
-          query: ItemsDocument,
-          variables: { request: {} },
-          // Stock moves happen on other screens; always show the current figure.
-          fetchPolicy: 'network-only',
-        });
+    <>
+      <DataTable
+        actionRef={actionRef}
+        columns={columns}
+        entityName="materials"
+        emptyTitle={keyword || stockFilter !== 'all' ? 'No matching items' : undefined}
+        emptyHint={
+          keyword || stockFilter !== 'all'
+            ? 'Try a different search, or switch the filter back to All.'
+            : 'Add raw materials, manufactured parts and finished goods to start tracking stock.'
+        }
+        params={{ keyword, stockFilter, classFilter }}
+        expandable={{
+          expandedRowRender: (record: any) => (
+            <ItemPurchasing itemUuid={record.uuid} canEdit={canEdit} onChanged={() => actionRef.current?.reload()} />
+          ),
+        }}
+        request={async (params) => {
+          const { data } = await client.query({
+            query: ItemsDocument,
+            variables: { request: {} },
+            // Stock moves happen on other screens; always show the current figure.
+            fetchPolicy: 'network-only',
+          });
 
-        const term = String(params.keyword ?? '')
-          .trim()
-          .toLowerCase();
-        const rows = (data.items ?? []).filter((item: any) => {
-          if (term && !matches(item, term)) return false;
-          if (params.classFilter !== 'all' && item.itemType !== params.classFilter) return false;
-          if (params.stockFilter === 'low') return stockState(item) !== 'ok';
-          if (params.stockFilter === 'out') return stockState(item) === 'out';
-          return true;
-        });
+          const term = String(params.keyword ?? '')
+            .trim()
+            .toLowerCase();
+          const rows = (data.items ?? []).filter((item: any) => {
+            if (term && !matches(item, term)) return false;
+            if (params.classFilter !== 'all' && item.itemType !== params.classFilter) return false;
+            if (params.stockFilter === 'low') return stockState(item) !== 'ok';
+            if (params.stockFilter === 'out') return stockState(item) === 'out';
+            return true;
+          });
 
-        return { data: rows, total: rows.length, success: true };
-      }}
-      headerTitle={
-        <Space wrap>
-          <Input.Search
-            allowClear
-            placeholder="Search name, SKU, spec or category"
-            onSearch={setKeyword}
-            onChange={(event) => !event.target.value && setKeyword('')}
-            style={{ width: 280 }}
-            aria-label="Search Items"
-          />
-          <Segmented<ClassFilter>
-            value={classFilter}
-            onChange={setClassFilter}
-            options={[
-              { label: 'All Classes', value: 'all' },
-              { label: 'RM', value: 'raw_material' },
-              { label: 'MP', value: 'manufactured_part' },
-              { label: 'FG', value: 'finished_good' },
-            ]}
-          />
-          <Segmented<StockFilter>
-            value={stockFilter}
-            onChange={setStockFilter}
-            options={[
-              { label: 'All', value: 'all' },
-              { label: 'Low or Out', value: 'low' },
-              { label: 'Out of Stock', value: 'out' },
-            ]}
-          />
-        </Space>
-      }
-      toolBarRender={() => [
-        <ItemNew key="item-new" onCreate={(values: any) => createItem({ variables: { request: values } })} />,
-      ]}
-    />
+          return { data: rows, total: rows.length, success: true };
+        }}
+        headerTitle={
+          <Space wrap>
+            <Input.Search
+              allowClear
+              placeholder="Search name, SKU, spec or category"
+              onSearch={setKeyword}
+              onChange={(event) => !event.target.value && setKeyword('')}
+              style={{ width: 280 }}
+              aria-label="Search Items"
+            />
+            <Segmented<ClassFilter>
+              value={classFilter}
+              onChange={setClassFilter}
+              options={[
+                { label: 'All Classes', value: 'all' },
+                { label: 'RM', value: 'raw_material' },
+                { label: 'MP', value: 'manufactured_part' },
+                { label: 'FG', value: 'finished_good' },
+              ]}
+            />
+            <Segmented<StockFilter>
+              value={stockFilter}
+              onChange={setStockFilter}
+              options={[
+                { label: 'All', value: 'all' },
+                { label: 'Low or Out', value: 'low' },
+                { label: 'Out of Stock', value: 'out' },
+              ]}
+            />
+          </Space>
+        }
+        toolBarRender={canEdit ? renderToolbar : undefined}
+      />
+
+      {editing ? (
+        <ItemNew
+          record={editing}
+          onClose={() => setEditing(null)}
+          onUpdate={(uuid: string, values: any) => updateItem({ variables: { uuid, request: values } })}
+        />
+      ) : null}
+    </>
   );
 };
 

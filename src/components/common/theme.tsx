@@ -13,14 +13,14 @@ import type { ThemeConfig } from 'antd';
 
 export const tokens = {
   // Handlathe orange (brand) carries primary actions and the current location.
-  // White on this orange is only ~2.9:1, so anything filled with it uses dark
-  // text (onPrimary, ~5.7:1), and orange *text* on white uses the deeper
-  // primaryText shade (~5.2:1).
+  // Fills in this orange carry white text (brand choice). White on it is ~2.9:1,
+  // below the 4.5:1 body-text guideline, so labels on orange are set semibold.
+  // Orange *text* on white uses the deeper primaryText shade (~5.2:1).
   primary: '#F86901',
   primaryHover: '#FF7F1F',
   primaryActive: '#D95B00',
   primaryText: '#C2410C',
-  onPrimary: '#1C1917',
+  onPrimary: '#FFFFFF',
 
   // "Needs attention" can no longer be amber: next to an orange brand it would
   // read as decoration. It is a restrained red, used sparingly.
@@ -41,13 +41,14 @@ export const tokens = {
   primaryContainer: '#FFDBC9',
   onPrimaryContainer: '#331200',
 
-  // Navigation drawer: same ground as the page, as in Gmail and Drive, with a
-  // grey state layer on hover and the tonal container for the current item.
-  chrome: '#F8F9FA',
-  chromeHover: '#E8EAED',
-  chromeSelected: '#FFDBC9',
-  chromeText: '#444746',
-  chromeTextMuted: '#5E5E5E',
+  // Sidebar: near-black, matching the logo's own black ground, with the
+  // brand-orange pill for the current item.
+  chrome: '#141414',
+  chromeHover: '#262626',
+  chromeSelected: '#F86901',
+  chromeText: '#D4D4D4',
+  chromeTextMuted: '#A3A3A3',
+  chromeBorder: '#2E2E2E',
 
   text: '#1F1F1F',
   textSecondary: '#444746',
@@ -112,9 +113,9 @@ const theme: ThemeConfig = {
     Menu: {
       itemBg: tokens.surface,
       subMenuItemBg: tokens.surface,
-      itemSelectedBg: tokens.primaryContainer,
-      itemSelectedColor: tokens.onPrimaryContainer,
-      itemHoverBg: tokens.chromeHover,
+      itemSelectedBg: tokens.primary,
+      itemSelectedColor: tokens.onPrimary,
+      itemHoverBg: tokens.surfaceMuted,
       itemBorderRadius: 100,
       itemHeight: 40,
       iconSize: 18,
@@ -155,7 +156,7 @@ const theme: ThemeConfig = {
       primaryColor: tokens.onPrimary,
       defaultShadow: 'none',
 
-      fontWeight: 500,
+      fontWeight: 600,
       // Material buttons are full pills.
       borderRadius: 20,
       borderRadiusLG: 24,

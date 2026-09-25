@@ -13,12 +13,23 @@ import {
   Segmented,
   Select,
   Space,
+  Switch,
   Tag,
   Typography,
 } from 'antd';
 
 import client from '@/gql/apollo';
-import { ListStaffDocument, useSaveStaffMutation } from '@/gql';
+import { CheckCircleFilled, MinusCircleOutlined } from '@ant-design/icons';
+import {
+  ListStaffDocument,
+  useMyModulesQuery,
+  useRolePermissionsQuery,
+  useSaveStaffMutation,
+  useSetMemberLoginMutation,
+} from '@/gql';
+import useModuleAccess from '@/hooks/use-module-access';
+import { ROLE_LABELS } from '@/components/roles';
+import { tokens } from '@/components/common/theme';
 import DataTable from '@/components/shared/data-table';
 import { useMessageContext } from '@/components/common/message-context';
 import { EMPLOYMENT_TYPES, STAFF_STATUSES } from '@/config/staff';
@@ -36,17 +47,20 @@ const MemberForm = ({ member, open, onClose, onSaved }: any) => {
   const { messageApi } = useMessageContext();
   const editing = !!member?.uuid;
 
-  const [saveStaff, { loading }] = useSaveStaffMutation({
-    onCompleted: (data) => {
-      messageApi?.success(`${data.saveStaff?.name} ${editing ? 'updated' : 'added'}`);
-      onSaved();
-      onClose();
-    },
-    onError,
-  });
+  const { data: access } = useMyModulesQuery();
+  // Logins are a Settings permission; HR can edit the profile without them.
+  const canManageLogins = ((access?.myModules ?? []) as string[]).includes('settings');
+  const { data: rolesData } = useRolePermissionsQuery({ skip: !canManageLogins });
+  const loginRoles = ((rolesData?.rolePermissions ?? []) as any[]).filter(
+    (r) => r.canLogin !== false || r.role === member?.role,
+  );
+  const loginEnabled = Form.useWatch('loginEnabled', form);
 
-  const onFinish = (values: any) =>
-    saveStaff({
+  const [saveStaff, { loading }] = useSaveStaffMutation({ onError });
+  const [setMemberLogin, { loading: savingLogin }] = useSetMemberLoginMutation({ onError });
+
+  const onFinish = async ({ loginEnabled: enabled, loginRole, password, ...values }: any) => {
+    const saved = await saveStaff({
       variables: {
         request: {
           uuid: member?.uuid,
@@ -55,15 +69,39 @@ const MemberForm = ({ member, open, onClose, onSaved }: any) => {
         },
       },
     });
+    const staff = saved.data?.saveStaff;
+    if (!staff) return;
+
+    const loginChanged =
+      canManageLogins && (!!enabled !== !!member?.hasLogin || (enabled && (loginRole !== member?.role || !!password)));
+    if (loginChanged) {
+      const result = await setMemberLogin({
+        variables: {
+          request: {
+            staffUuid: staff.uuid!,
+            enabled: !!enabled,
+            role: enabled ? loginRole : null,
+            password: password || null,
+          },
+        },
+      });
+      // The profile saved; keep the form open so the login problem can be fixed.
+      if (!result.data?.setMemberLogin) return;
+    }
+
+    messageApi?.success(`${staff.name} ${editing ? 'updated' : 'added'}`);
+    onSaved();
+    onClose();
+  };
 
   return (
     <Modal
-      title={editing ? `Edit ${member.name ?? member.email}` : 'Add member'}
+      title={editing ? `Edit ${member.name ?? member.email}` : 'Add Member'}
       open={open}
       onCancel={onClose}
       onOk={() => form.submit()}
       okText={editing ? 'Save Changes' : 'Add Member'}
-      confirmLoading={loading}
+      confirmLoading={loading || savingLogin}
       width="min(640px, 100vw)"
       destroyOnClose
     >
@@ -77,6 +115,8 @@ const MemberForm = ({ member, open, onClose, onSaved }: any) => {
           status: 'active',
           ...member,
           hiredAt: member?.hiredAt ? dayjs(member.hiredAt) : undefined,
+          loginEnabled: !!member?.hasLogin,
+          loginRole: member?.role ?? 'employee',
         }}
       >
         <Row gutter={16}>
@@ -148,12 +188,53 @@ const MemberForm = ({ member, open, onClose, onSaved }: any) => {
             </Col>
           ) : null}
         </Row>
+
+        {canManageLogins ? (
+          <fieldset className="login-access">
+            <legend>Login Access</legend>
+            <Form.Item name="loginEnabled" valuePropName="checked" style={{ marginBottom: 8 }}>
+              <Switch checkedChildren="Login" unCheckedChildren="No Login" />
+            </Form.Item>
+            <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
+              {loginEnabled
+                ? 'They sign in with the email above. What they can open depends on the role (Settings › Roles).'
+                : 'Without a login they still appear on work orders, attendance and payroll.'}
+            </Text>
+            {loginEnabled ? (
+              <Row gutter={16}>
+                <Col xs={24} sm={12}>
+                  <Form.Item name="loginRole" label="Role" rules={[{ required: true, message: 'Choose a role.' }]}>
+                    <Select
+                      options={loginRoles.map((r) => ({ value: r.role, label: ROLE_LABELS[r.role] ?? r.role }))}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <Form.Item
+                    name="password"
+                    label={member?.hasLogin ? 'New Password' : 'Temporary Password'}
+                    extra={
+                      member?.hasLogin ? 'Leave blank to keep their current password.' : 'Give it to them in person.'
+                    }
+                    rules={[
+                      { required: !member?.hasLogin, message: 'Set a password for the new login.' },
+                      { min: 8, message: 'At least 8 characters.' },
+                    ]}
+                  >
+                    <Input.Password autoComplete="new-password" />
+                  </Form.Item>
+                </Col>
+              </Row>
+            ) : null}
+          </fieldset>
+        ) : null}
       </Form>
     </Modal>
   );
 };
 
 const Members: React.FC = () => {
+  const canEdit = useModuleAccess().canEdit('hr');
   const actionRef = useRef<ActionType | null>(null);
   const [keyword, setKeyword] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
@@ -198,14 +279,31 @@ const Members: React.FC = () => {
         member.hiredAt ? dayjs(member.hiredAt).format('YYYY-MM-DD') : <Text type="secondary">—</Text>,
     },
     {
-      title: 'Sign-in',
+      title: 'Role',
       width: 110,
+      key: 'role',
+      render: (_, member) =>
+        member.role ? (
+          <Tag>{member.role.charAt(0).toUpperCase() + member.role.slice(1)}</Tag>
+        ) : (
+          <Text type="secondary">—</Text>
+        ),
+    },
+    {
+      title: 'Login',
+      width: 120,
       key: 'login',
       render: (_, member) =>
         member.hasLogin ? (
-          <Tag>{member.role ? member.role.charAt(0).toUpperCase() + member.role.slice(1) : 'Has login'}</Tag>
+          <Space size={6}>
+            <CheckCircleFilled style={{ color: tokens.success }} />
+            Login
+          </Space>
         ) : (
-          <Text type="secondary">No login</Text>
+          <Space size={6}>
+            <MinusCircleOutlined style={{ color: tokens.textTertiary }} />
+            <Text type="secondary">No Login</Text>
+          </Space>
         ),
     },
     {
@@ -230,6 +328,12 @@ const Members: React.FC = () => {
         </Button>,
       ],
     },
+  ];
+
+  const renderToolbar = () => [
+    <Button key="add" type="primary" size="small" onClick={() => setEditing({})}>
+      Add Member
+    </Button>,
   ];
 
   return (
@@ -276,11 +380,7 @@ const Members: React.FC = () => {
             />
           </Space>
         }
-        toolBarRender={() => [
-          <Button key="add" type="primary" size="small" onClick={() => setEditing({})}>
-            Add Member
-          </Button>,
-        ]}
+        toolBarRender={canEdit ? renderToolbar : undefined}
       />
 
       <MemberForm

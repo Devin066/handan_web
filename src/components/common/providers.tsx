@@ -3,7 +3,19 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { ConfigProvider } from 'antd';
-import enUS from 'antd/locale/en_US';
+import enUSBase from 'antd/locale/en_US';
+
+// Ant Design's built-in pagination text is lowercase ("20 / page"); labels in
+// this app use title case.
+const enUS = {
+  ...enUSBase,
+  Pagination: {
+    ...enUSBase.Pagination,
+    items_per_page: '/ Page',
+    jump_to: 'Go To',
+    page: 'Page',
+  },
+};
 
 import theme from './theme';
 import client from '@/gql/apollo';

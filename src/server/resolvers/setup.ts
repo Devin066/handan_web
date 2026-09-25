@@ -1,5 +1,6 @@
 import { GraphQLError } from 'graphql';
 
+import { SUPERVISOR_ROLES } from '@/config/production-stage';
 import { normalisePaymentMethod, type PaymentMethodInput } from '@/config/payment-method';
 import { Prisma } from '@/generated/prisma/client';
 import { nextCode } from '../domain/codes';
@@ -64,6 +65,18 @@ type WorkstationInput = {
 
 const tidy = (value?: string | null) => value?.trim() || null;
 
+/** Every field optional: an absent key means "leave this one alone". */
+type ItemUpdateInput = {
+  name?: string;
+  sku?: string;
+  category?: string;
+  standardCost?: number;
+  minStockThreshold?: number;
+  spec?: string;
+  description?: string;
+  sellingPrice?: number;
+};
+
 /** The record with this id in the caller's company, or a "not found" error. */
 async function ownedOrThrow<T>(
   model: { findFirst: (args: any) => Promise<T | null> },
@@ -77,6 +90,38 @@ async function ownedOrThrow<T>(
 }
 
 /** Drops keys the caller did not send, so an update only touches what it names. */
+const CUSTOMER_FIELDS = [
+  'customerType',
+  'firstName',
+  'middleName',
+  'lastName',
+  'suffix',
+  'companyName',
+  'contactName',
+  'phone',
+  'alternatePhone',
+  'landline',
+  'email',
+  'messengerId',
+  'facebook',
+  'viber',
+  'whatsapp',
+  'telegram',
+  'instagram',
+  'tiktok',
+  'marketplaceAccount',
+  'address',
+  'barangay',
+  'city',
+  'province',
+  'region',
+  'postalCode',
+  'sourcePlatform',
+  'primaryChannel',
+  'notes',
+  'buildSpecs',
+] as const;
+
 const defined = <T extends object>(request: T) =>
   Object.fromEntries(Object.entries(request).filter(([, value]) => value !== undefined)) as Partial<T>;
 
@@ -372,6 +417,62 @@ export const setupResolvers = {
       });
     },
 
+    /**
+     * Descriptive and costing fields only. Class is fixed because the code was
+     * issued from it and documents already quote that code; unit of measure and
+     * quantities are fixed because changing either behind the ledger's back
+     * would silently restate stock that receipts and issues have already moved.
+     */
+    updateItem: async (_: unknown, { uuid, request }: { uuid: string; request: ItemUpdateInput }, ctx: Context) => {
+      const companyUuid = requireCompany(ctx);
+      await ownedOrThrow(ctx.db.item, uuid, companyUuid, 'Material');
+
+      // Only the keys the caller actually sent: an absent field keeps its value
+      // rather than being cleared to null.
+      const data: Prisma.ItemUpdateInput = {};
+
+      if (request.name !== undefined) {
+        const name = tidy(request.name);
+        if (!name) throw new GraphQLError('Enter a material name.', { extensions: { code: 'BAD_USER_INPUT' } });
+        data.name = name;
+      }
+
+      // A blank code would orphan the material from every document quoting it,
+      // so an empty string is a mistake rather than an instruction to clear it.
+      let sku: string | undefined;
+      if (request.sku !== undefined) {
+        sku = tidy(request.sku)?.toUpperCase();
+        if (!sku) {
+          throw new GraphQLError('Enter a code, or leave the field as it was.', {
+            extensions: { code: 'BAD_USER_INPUT' },
+          });
+        }
+        data.sku = sku;
+      }
+
+      if (request.category !== undefined) data.category = tidy(request.category);
+      if (request.spec !== undefined) data.spec = tidy(request.spec);
+      if (request.description !== undefined) data.description = tidy(request.description);
+      if (request.standardCost !== undefined) data.standardCost = new Prisma.Decimal(request.standardCost ?? 0);
+      if (request.sellingPrice !== undefined) data.sellingPrice = new Prisma.Decimal(request.sellingPrice ?? 0);
+      if (request.minStockThreshold !== undefined) {
+        data.minStockThreshold = new Prisma.Decimal(request.minStockThreshold ?? 0);
+      }
+
+      try {
+        return await ctx.db.item.update({ where: { uuid }, data });
+      } catch (error) {
+        // The (company, sku) unique index. Saying which code clashed is more use
+        // than "constraint violated".
+        if ((error as { code?: string }).code === 'P2002') {
+          throw new GraphQLError(`Another material already uses the code ${sku}.`, {
+            extensions: { code: 'BAD_USER_INPUT' },
+          });
+        }
+        throw error;
+      }
+    },
+
     createCustomer: async (_: unknown, { request }: { request: CustomerInput }, ctx: Context) => {
       const companyUuid = requireCompany(ctx);
 
@@ -389,6 +490,27 @@ export const setupResolvers = {
       const companyUuid = requireCompany(ctx);
       const input = normaliseSupplier(request);
       return ctx.db.supplier.create({ data: { ...input, companyUuid } });
+    },
+
+    updateCustomer: async (_: unknown, { uuid, request }: { uuid: string; request: CustomerInput }, ctx: Context) => {
+      const companyUuid = requireCompany(ctx);
+      const current = await ownedOrThrow(ctx.db.customer, uuid, companyUuid, 'Customer');
+      // Only the editable fields, from the stored record, overlaid with what was sent.
+      const merged = Object.fromEntries(
+        CUSTOMER_FIELDS.map((key) => [
+          key,
+          (request as any)[key] !== undefined ? (request as any)[key] : (current as any)[key],
+        ]),
+      ) as CustomerInput;
+      const input = normalizeCustomerInput(merged);
+      assertCustomerValid(input);
+      return ctx.db.customer.update({ where: { uuid }, data: { ...input, name: customerDisplayName(input) } });
+    },
+
+    updateSupplier: async (_: unknown, { uuid, request }: { uuid: string; request: SupplierInput }, ctx: Context) => {
+      const companyUuid = requireCompany(ctx);
+      await ownedOrThrow(ctx.db.supplier, uuid, companyUuid, 'Supplier');
+      return ctx.db.supplier.update({ where: { uuid }, data: normaliseSupplier(request) });
     },
 
     createProcess: async (
@@ -410,6 +532,125 @@ export const setupResolvers = {
       }
       return ctx.db.process.create({
         data: { companyUuid, name, code, description: tidy(request.description) },
+      });
+    },
+
+    saveSupplierPrice: async (
+      _: unknown,
+      { request }: { request: { itemUuid: string; supplierUuid: string; unitPrice: number } },
+      ctx: Context,
+    ) => {
+      const companyUuid = requireCompany(ctx);
+      await ownedOrThrow(ctx.db.item, request.itemUuid, companyUuid, 'Item');
+      const supplier = await ownedOrThrow(ctx.db.supplier, request.supplierUuid, companyUuid, 'Supplier');
+      const unitPrice = Number(request.unitPrice);
+      if (!Number.isFinite(unitPrice) || unitPrice < 0) throw new GraphQLError('Enter a price of 0 or more.');
+      const saved = await ctx.db.supplierPrice.upsert({
+        where: { itemUuid_supplierUuid: { itemUuid: request.itemUuid, supplierUuid: supplier.uuid } },
+        create: { itemUuid: request.itemUuid, supplierUuid: supplier.uuid, unitPrice, companyUuid },
+        update: { unitPrice },
+      });
+      return { ...saved, supplierName: supplier.name };
+    },
+
+    deleteSupplierPrice: async (_: unknown, { request }: { request: { uuid?: string } }, ctx: Context) => {
+      const companyUuid = requireCompany(ctx);
+      const price = await ctx.db.supplierPrice.findFirst({ where: { uuid: request.uuid ?? '', companyUuid } });
+      if (!price) throw new GraphQLError('That supplier price no longer exists.');
+      await ctx.db.supplierPrice.delete({ where: { uuid: price.uuid } });
+      return true;
+    },
+
+    setLowStockLevel: async (
+      _: unknown,
+      { request }: { request: { itemUuid: string; minStockThreshold: number } },
+      ctx: Context,
+    ) => {
+      const companyUuid = requireCompany(ctx);
+      await ownedOrThrow(ctx.db.item, request.itemUuid, companyUuid, 'Item');
+      const level = Number(request.minStockThreshold);
+      if (!Number.isFinite(level) || level < 0) throw new GraphQLError('Enter a level of 0 or more.');
+      return ctx.db.item.update({ where: { uuid: request.itemUuid }, data: { minStockThreshold: level } });
+    },
+
+    saveWarehouse: async (
+      _: unknown,
+      {
+        request,
+      }: {
+        request: {
+          uuid?: string | null;
+          name?: string | null;
+          address?: string | null;
+          area?: string | null;
+          contactStaffUuid?: string | null;
+          isDefault?: boolean | null;
+        };
+      },
+      ctx: Context,
+    ) => {
+      const companyUuid = requireCompany(ctx);
+      const current = request.uuid
+        ? await ownedOrThrow(ctx.db.warehouse, request.uuid, companyUuid, 'Warehouse')
+        : null;
+      const { contactStaffUuid: _contact, ...fields } = request;
+      const merged = { ...current, ...defined(fields) };
+      const text = (value?: string | null) => value?.trim() || null;
+
+      const name = text(merged.name);
+      if (!name) throw new GraphQLError('Enter a warehouse name.');
+      if (name.length > 60) throw new GraphQLError('Keep the name under 60 characters.');
+      // The contact answers for stock in this warehouse, so it is an owner or manager.
+      let contactName = current?.contactName ?? null;
+      let contactEmail = current?.contactEmail ?? null;
+      if (request.contactStaffUuid !== undefined) {
+        contactName = null;
+        contactEmail = null;
+        if (request.contactStaffUuid) {
+          const staff = await ctx.db.staff.findFirst({
+            where: { uuid: request.contactStaffUuid, companyUuid },
+            include: { user: true },
+          });
+          if (!staff) throw new GraphQLError('That member is not in your company.');
+          if (!staff.user || !SUPERVISOR_ROLES.includes(staff.user.role)) {
+            throw new GraphQLError('The contact person must have the Owner or Manager role.');
+          }
+          contactName = staff.name;
+          contactEmail = staff.email;
+        }
+      }
+
+      const clash = await ctx.db.warehouse.findFirst({
+        where: {
+          companyUuid,
+          name: { equals: name, mode: 'insensitive' },
+          ...(current ? { NOT: { uuid: current.uuid } } : {}),
+        },
+      });
+      if (clash) throw new GraphQLError(`There is already a warehouse called ${clash.name}.`);
+
+      // The first warehouse is the default; after that, exactly one stays default.
+      const count = await ctx.db.warehouse.count({ where: { companyUuid } });
+      const isDefault = count === 0 || !!merged.isDefault;
+      if (current?.isDefault && !isDefault) {
+        throw new GraphQLError('Make another warehouse the default instead of turning this one off.');
+      }
+
+      const data = {
+        name,
+        address: text(merged.address),
+        area: text(merged.area),
+        contactName,
+        contactEmail,
+        isDefault,
+      };
+      return ctx.db.$transaction(async (tx) => {
+        if (isDefault) {
+          await tx.warehouse.updateMany({ where: { companyUuid, isDefault: true }, data: { isDefault: false } });
+        }
+        return current
+          ? tx.warehouse.update({ where: { uuid: current.uuid }, data })
+          : tx.warehouse.create({ data: { ...data, companyUuid } });
       });
     },
 

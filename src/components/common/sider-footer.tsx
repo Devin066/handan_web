@@ -1,4 +1,4 @@
-import { QuestionCircleOutlined, SettingOutlined, LogoutOutlined } from '@ant-design/icons';
+import { QuestionCircleOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import { Avatar, Dropdown, Tooltip, message } from 'antd';
 import { useRouter } from 'next/router';
 
@@ -54,7 +54,7 @@ const SiderFooter = ({ collapsed, onToggle }: { collapsed: boolean; onToggle: ()
       placement="topLeft"
       menu={{
         items: [
-          { key: 'settings', icon: <SettingOutlined />, label: 'Settings' },
+          { key: 'profile', icon: <UserOutlined />, label: 'Profile Settings' },
           {
             key: 'help',
             icon: <QuestionCircleOutlined />,
@@ -68,7 +68,7 @@ const SiderFooter = ({ collapsed, onToggle }: { collapsed: boolean; onToggle: ()
           { key: 'logout', icon: <LogoutOutlined />, label: 'Sign Out', danger: true },
         ],
         onClick: ({ key }) => {
-          if (key === 'settings') router.push('/system/configuration');
+          if (key === 'profile') router.push('/profile');
           if (key === 'logout') signOut();
         },
       }}

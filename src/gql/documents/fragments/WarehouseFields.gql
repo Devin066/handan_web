@@ -2,7 +2,10 @@ fragment WarehouseFields on Warehouse {
   uuid
   name
   address
+  area
+  contactName
+  contactEmail
+  isDefault
   insertedAt
   updatedAt
 }
-

@@ -30,6 +30,40 @@ export const DEFAULT_PERMISSIONS: Record<string, Module[]> = {
 
 export const PERMISSIONS_KEY = 'rbac.permissions';
 
+/** Which roles may be given a login. The owner always can. */
+export const LOGIN_ROLES_KEY = 'rbac.loginRoles';
+
+export async function loadLoginRoles(db: Prisma.TransactionClient, companyUuid: string) {
+  const row = await db.appSetting.findUnique({
+    where: { companyUuid_key: { companyUuid, key: LOGIN_ROLES_KEY } },
+  });
+  const stored = (row?.value ?? {}) as Record<string, boolean>;
+  const merged: Record<string, boolean> = {};
+  for (const role of Object.values(ROLE)) merged[role] = stored[role] !== false;
+  merged[ROLE.owner] = true;
+  return merged;
+}
+
+/**
+ * Modules a role may only look at. A module in a role's permission list is
+ * Edit unless it is also listed here, which keeps older saved settings (a plain
+ * list meant full access) working unchanged.
+ */
+export const VIEW_ONLY_KEY = 'rbac.viewOnly';
+
+export async function loadViewOnly(db: Prisma.TransactionClient, companyUuid: string) {
+  const row = await db.appSetting.findUnique({
+    where: { companyUuid_key: { companyUuid, key: VIEW_ONLY_KEY } },
+  });
+  const stored = (row?.value ?? {}) as Record<string, string[]>;
+  const merged: Record<string, Module[]> = {};
+  for (const role of Object.values(ROLE)) {
+    merged[role] = (Array.isArray(stored[role]) ? stored[role] : []).filter((m): m is Module => m in MODULES);
+  }
+  merged[ROLE.owner] = [];
+  return merged;
+}
+
 export async function loadPermissions(db: Prisma.TransactionClient, companyUuid: string) {
   const row = await db.appSetting.findUnique({
     where: { companyUuid_key: { companyUuid, key: PERMISSIONS_KEY } },
@@ -75,6 +109,10 @@ const GUARDED: Record<string, Module> = {
   createReceiptNote: 'inventory',
   completeReceiptNote: 'inventory',
   createItem: 'inventory',
+  updateItem: 'inventory',
+  saveSupplierPrice: 'inventory',
+  deleteSupplierPrice: 'inventory',
+  setLowStockLevel: 'inventory',
   createBom: 'inventory',
 
   createSalesInvoice: 'finance',
@@ -103,9 +141,14 @@ const GUARDED: Record<string, Module> = {
   updateConfiguration: 'settings',
   createPaymentMethod: 'settings',
   updatePaymentMethod: 'settings',
+  saveWarehouse: 'settings',
+  updateCustomer: 'partners',
+  updateSupplier: 'partners',
   createProcess: 'settings',
   updateRolePermissions: 'settings',
+  setRoleLogin: 'settings',
   setUserRole: 'settings',
+  setMemberLogin: 'settings',
 };
 
 export async function allowedModules(ctx: Context): Promise<Module[]> {
@@ -115,17 +158,32 @@ export async function allowedModules(ctx: Context): Promise<Module[]> {
   // to sign in instead of showing an empty menu.
   const { userUuid, companyUuid } = ctx;
   const user = userUuid && companyUuid ? await ctx.loaders.user.load(userUuid) : null;
-  if (!user || !companyUuid) {
+  if (!user || !companyUuid || !user.isActive) {
+    throw new GraphQLError('unauthenticated', { extensions: { code: 'UNAUTHENTICATED' } });
+  }
+  // Turning a role's login off signs its people out on their next request.
+  if (!(await loadLoginRoles(ctx.db, companyUuid))[user.role]) {
     throw new GraphQLError('unauthenticated', { extensions: { code: 'UNAUTHENTICATED' } });
   }
   const permissions = await loadPermissions(ctx.db, companyUuid);
   return permissions[user.role] ?? [];
 }
 
+/** Modules the signed-in user can change data in (Edit), a subset of allowedModules. */
+export async function editableModules(ctx: Context): Promise<Module[]> {
+  const allowed = await allowedModules(ctx);
+  const user = await ctx.loaders.user.load(ctx.userUuid!);
+  const viewOnly = (await loadViewOnly(ctx.db, ctx.companyUuid!))[user!.role] ?? [];
+  return allowed.filter((m) => !viewOnly.includes(m));
+}
+
 type Resolver = (parent: unknown, args: unknown, ctx: Context, info: unknown) => unknown;
 
-/** Wraps guarded root resolvers so a role without the module gets a clear refusal. */
-export function guardRootFields(fields: Record<string, unknown>) {
+/**
+ * Wraps guarded root resolvers so a role without the module gets a clear
+ * refusal. Queries need View; mutations (anything that saves) need Edit.
+ */
+export function guardRootFields(fields: Record<string, unknown>, level: 'view' | 'edit' = 'view') {
   const guarded: Record<string, unknown> = {};
   for (const [name, resolver] of Object.entries(fields)) {
     const required = GUARDED[name];
@@ -137,6 +195,11 @@ export function guardRootFields(fields: Record<string, unknown>) {
       // Unauthenticated calls fall through to the resolver's own requireCompany.
       if (ctx.userUuid && !(await allowedModules(ctx)).includes(required)) {
         throw new GraphQLError(`Your role does not have access to ${MODULES[required]}.`, {
+          extensions: { code: 'FORBIDDEN' },
+        });
+      }
+      if (ctx.userUuid && level === 'edit' && !(await editableModules(ctx)).includes(required)) {
+        throw new GraphQLError(`Your role can view ${MODULES[required]} but not change it.`, {
           extensions: { code: 'FORBIDDEN' },
         });
       }

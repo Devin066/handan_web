@@ -12,6 +12,7 @@ import {
   useStoreFinishItemMutation,
   useScheduleWorkOrderMutation,
 } from '@/gql';
+import useModuleAccess from '@/hooks/use-module-access';
 import { onError } from '@/utils';
 import { workOrderStatusEnum } from '@/utils/enum';
 import DataTable from '@/components/shared/data-table';
@@ -22,6 +23,7 @@ import WorkOrderDetail from './detail';
 import StoredItem from './stored-item';
 
 const WorkOrderList: React.FC = () => {
+  const canEdit = useModuleAccess().canEdit('production');
   const { messageApi } = useMessageContext();
 
   const [detailVisible, setDetailVisible] = useState(false);
@@ -164,6 +166,13 @@ const WorkOrderList: React.FC = () => {
     },
   ];
 
+  const renderToolbar = () => [
+    <Link key="workstations" href="/production/workstations">
+      <Button size="small">Workstations</Button>
+    </Link>,
+    <WorkOrderNew key="work-order-new" onCreate={(values: any) => handleCreate(values)} />,
+  ];
+
   return (
     <>
       <DataTable
@@ -185,12 +194,7 @@ const WorkOrderList: React.FC = () => {
             success: true,
           };
         }}
-        toolBarRender={() => [
-          <Link key="workstations" href="/production/workstations">
-            <Button size="small">Workstations</Button>
-          </Link>,
-          <WorkOrderNew key="work-order-new" onCreate={(values: any) => handleCreate(values)} />,
-        ]}
+        toolBarRender={canEdit ? renderToolbar : undefined}
       />
       <WorkOrderDetail
         uuid={record?.uuid}

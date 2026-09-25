@@ -1,0 +1,7 @@
+mutation SetRoleLogin($request: RoleLoginRequest!) {
+  setRoleLogin(request: $request) {
+    role
+    modules
+    canLogin
+  }
+}

@@ -327,7 +327,6 @@ const ProductionBoard = () => {
           {board?.claimMode === 'self'
             ? 'Workers claim tasks from the queue.'
             : 'A manager assigns tasks from the queue.'}{' '}
-          Updates every 15 seconds.
         </Text>
         <Space>
           <Tooltip title="Refresh Now">

@@ -1,8 +1,9 @@
-import { Alert, Card, Checkbox, Select, Skeleton, Space, Table, Tag, Typography } from 'antd';
+import { Alert, Card, Select, Skeleton, Space, Switch, Table, Tag, Typography } from 'antd';
 
 import {
   useListStaffQuery,
   useRolePermissionsQuery,
+  useSetRoleLoginMutation,
   useSetUserRoleMutation,
   useUpdateRolePermissionsMutation,
 } from '@/gql';
@@ -11,13 +12,19 @@ import { onError } from '@/utils';
 
 const { Text } = Typography;
 
-const ROLE_LABELS: Record<string, string> = {
+export const ROLE_LABELS: Record<string, string> = {
   owner: 'Owner',
   manager: 'Manager',
   finance: 'Finance',
   hr: 'HR',
-  employee: 'Shop floor',
+  employee: 'Shop Floor',
 };
+
+const ACCESS_LEVELS = [
+  { value: 'none', label: 'None' },
+  { value: 'view', label: 'View' },
+  { value: 'edit', label: 'Edit' },
+];
 
 /** Roles (SRS 4.8): which modules each role can use, and who holds which role. */
 const Roles = () => {
@@ -30,6 +37,14 @@ const Roles = () => {
   const [updatePermissions] = useUpdateRolePermissionsMutation({
     onCompleted: () => refetch(),
     onError,
+  });
+  const [setRoleLogin] = useSetRoleLoginMutation({
+    onCompleted: (d) =>
+      messageApi?.success(
+        `${ROLE_LABELS[d.setRoleLogin?.role ?? ''] ?? 'Role'} ${d.setRoleLogin?.canLogin ? 'can now be given a login' : 'can no longer sign in'}`,
+      ),
+    onError,
+    refetchQueries: ['RolePermissions', 'ListStaff'],
   });
   const [setRole] = useSetUserRoleMutation({
     onCompleted: () => {
@@ -46,19 +61,26 @@ const Roles = () => {
   const roles = (data?.rolePermissions ?? []) as any[];
   const logins = ((staff.data?.listStaff ?? []) as any[]).filter((s) => s.hasLogin);
 
-  const toggle = (role: any, module: string, on: boolean) => {
-    const next = on ? [...role.modules, module] : role.modules.filter((m: string) => m !== module);
-    updatePermissions({
-      variables: { request: { role: role.role, modules: next } },
-    });
+  const levelOf = (role: any, module: string) => {
+    if (!role.modules.includes(module)) return 'none';
+    return (role.viewOnly ?? []).includes(module) ? 'view' : 'edit';
+  };
+
+  const setLevel = (role: any, module: string, level: string) => {
+    const modules = role.modules.filter((m: string) => m !== module);
+    const viewOnly = (role.viewOnly ?? []).filter((m: string) => m !== module);
+    if (level !== 'none') modules.push(module);
+    if (level === 'view') viewOnly.push(module);
+    updatePermissions({ variables: { request: { role: role.role, modules, viewOnly } } });
   };
 
   return (
     <Space direction="vertical" size={12} style={{ width: '100%' }}>
       <Card size="small" title="Module Access by Role">
         <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
-          A role without a module does not see it in the menu, and its actions there are refused. The owner always has
-          full access.
+          None hides a module from the role. View opens its pages but refuses anything that saves; Edit allows both.
+          Login decides whether people with that role can be given a sign-in at all; turning it off signs them out. The
+          owner always has full access.
         </Text>
         <Table
           size="small"
@@ -72,15 +94,32 @@ const Roles = () => {
               fixed: 'left',
               render: (_: any, r: any) => <strong>{ROLE_LABELS[r.role] ?? r.role}</strong>,
             },
+            {
+              title: 'Login',
+              align: 'center' as const,
+              render: (_: any, r: any) => (
+                <Switch
+                  size="small"
+                  aria-label={`${ROLE_LABELS[r.role] ?? r.role} can sign in`}
+                  checked={r.role === 'owner' || r.canLogin !== false}
+                  disabled={r.role === 'owner'}
+                  onChange={(canLogin) => setRoleLogin({ variables: { request: { role: r.role, canLogin } } })}
+                />
+              ),
+            },
             ...modules.map((m) => ({
               title: m.label,
               align: 'center' as const,
               render: (_: any, r: any) => (
-                <Checkbox
-                  aria-label={`${ROLE_LABELS[r.role] ?? r.role} can use ${m.label}`}
-                  checked={r.modules.includes(m.key)}
+                <Select
+                  size="small"
+                  className={`access-level access-${levelOf(r, m.key)}`}
+                  aria-label={`${ROLE_LABELS[r.role] ?? r.role} access to ${m.label}`}
+                  value={r.role === 'owner' ? 'edit' : levelOf(r, m.key)}
                   disabled={r.role === 'owner'}
-                  onChange={(e) => toggle(r, m.key, e.target.checked)}
+                  popupMatchSelectWidth={false}
+                  onChange={(level) => setLevel(r, m.key, level)}
+                  options={ACCESS_LEVELS}
                 />
               ),
             })),
@@ -123,7 +162,9 @@ const Roles = () => {
                       variables: { request: { staffUuid: s.uuid, role } },
                     })
                   }
-                  options={Object.entries(ROLE_LABELS).map(([value, label]) => ({ value, label }))}
+                  options={Object.entries(ROLE_LABELS)
+                    .filter(([value]) => value === s.role || roles.find((r) => r.role === value)?.canLogin !== false)
+                    .map(([value, label]) => ({ value, label }))}
                 />
               ),
             },

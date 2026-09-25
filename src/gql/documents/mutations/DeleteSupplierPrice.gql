@@ -1,0 +1,3 @@
+mutation DeleteSupplierPrice($request: IdRequest!) {
+  deleteSupplierPrice(request: $request)
+}

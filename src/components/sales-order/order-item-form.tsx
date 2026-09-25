@@ -197,6 +197,7 @@ const OrderItemForm = (props: any) => {
       controlled
       recordCreatorProps={{
         position: 'bottom',
+        creatorButtonText: 'Add Line',
         record: () => ({ uuid: (Math.random() * 1000000).toFixed(0) }),
       }}
       loading={false}

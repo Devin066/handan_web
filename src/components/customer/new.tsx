@@ -31,9 +31,11 @@ const format = (isValid: (value: string) => boolean, message: string) => ({
 
 const CustomerNew = (props: any) => {
   const [form] = ProForm.useForm();
-  const { onCreate } = props;
-  const [modalVisible, setModalVisible] = useState(false);
-  const [customerType, setCustomerType] = useState<string>('individual');
+  const { onCreate, onUpdate, record, onClose } = props;
+  // With a record this is the Edit dialog: no button, open while mounted.
+  const editing = !!record;
+  const [modalVisible, setModalVisible] = useState(editing);
+  const [customerType, setCustomerType] = useState<string>(record?.customerType ?? 'individual');
 
   const isBusiness = customerType === 'business';
 
@@ -52,6 +54,11 @@ const CustomerNew = (props: any) => {
   };
 
   const onFinish = async (values: any) => {
+    if (editing) {
+      await onUpdate(record.uuid, values);
+      onClose?.();
+      return;
+    }
     await onCreate(values);
     setModalVisible(false);
   };
@@ -75,13 +82,15 @@ const CustomerNew = (props: any) => {
         onOpenChange={(open) => {
           setModalVisible(open);
           if (!open) setCustomerType('individual');
+          if (!open && editing) onClose?.();
         }}
-        title={<Space>New Customer</Space>}
+        title={<Space>{editing ? `Edit ${record.name}` : 'New Customer'}</Space>}
+        submitter={{ searchConfig: { submitText: editing ? 'Save Changes' : 'Submit' } }}
         submitTimeout={2000}
         autoFocusFirstInput
         open={modalVisible}
         onFinish={onFinish}
-        initialValues={{ customerType: 'individual', sourcePlatform: 'direct' }}
+        initialValues={editing ? record : { customerType: 'individual', sourcePlatform: 'direct' }}
       >
         {/* Small controls throughout: this form is 25 fields, and default-size
             inputs pushed the submit button two screens down. */}

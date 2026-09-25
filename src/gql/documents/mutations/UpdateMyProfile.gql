@@ -1,0 +1,5 @@
+mutation UpdateMyProfile($request: MyProfileRequest!) {
+  updateMyProfile(request: $request) {
+    ...StaffFields
+  }
+}

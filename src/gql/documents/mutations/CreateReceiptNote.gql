@@ -1,5 +1,7 @@
 mutation CreateReceiptNote($request: CreateReceiptNoteRequest!) {
 	createReceiptNote(request: $request) {
+		uuid
+		code
 		purchaseOrderUuid
 		totalQty
 		status

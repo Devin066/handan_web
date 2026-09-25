@@ -1,8 +1,11 @@
 query ItemSupplierPrices($request: IdRequest!) {
   item(request: $request) {
     uuid
+    minStockThreshold
+    defaultStockUomName
     supplierPrices {
       uuid
+      supplierUuid
       supplierName
       unitPrice
       updatedAt

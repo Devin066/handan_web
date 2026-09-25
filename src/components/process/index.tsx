@@ -7,11 +7,13 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { useMessageContext } from '../common/message-context';
 import client from '@/gql/apollo';
 import { ProcessesDocument, useCreateProcessMutation } from '@/gql';
+import useModuleAccess from '@/hooks/use-module-access';
 import { onError } from '@/utils';
 
 import ProcessNew from './new';
 
 const ProcessList: React.FC = () => {
+  const canEdit = useModuleAccess().canEdit('settings');
   const router = useRouter();
   const { messageApi } = useMessageContext();
 
@@ -59,6 +61,8 @@ const ProcessList: React.FC = () => {
     },
   ];
 
+  const renderToolbar = () => [<ProcessNew key="process-new" onCreate={(values: any) => handleCreate(values)} />];
+
   return (
     <ProTable
       actionRef={actionRef}
@@ -88,7 +92,7 @@ const ProcessList: React.FC = () => {
       //   defaultCollapsed: true,
       // }}
       dateFormatter="string"
-      toolBarRender={() => [<ProcessNew key="process-new" onCreate={(values: any) => handleCreate(values)} />]}
+      toolBarRender={canEdit ? renderToolbar : undefined}
     />
   );
 };

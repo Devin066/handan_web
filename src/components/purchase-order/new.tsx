@@ -52,7 +52,16 @@ const PurchaseOrderNew = ({ onCreate }: { onCreate: (request: any) => Promise<un
       variables: { request: { uuid: supplierUuid } },
       fetchPolicy: 'network-only',
     });
-    setPrices(new Map((data.supplierPrices ?? []).map((p: any) => [p.itemUuid, Number(p.unitPrice)])));
+    const next = new Map<string, number>(
+      (data.supplierPrices ?? []).map((p: any) => [p.itemUuid, Number(p.unitPrice)]),
+    );
+    setPrices(next);
+    // Lines already on the order take the new supplier's price where one is on record.
+    const lines = form.getFieldValue('lines') ?? [];
+    form.setFieldValue(
+      'lines',
+      lines.map((l: any) => (l?.itemUuid && next.has(l.itemUuid) ? { ...l, unitPrice: next.get(l.itemUuid) } : l)),
+    );
   };
 
   const addFromRequests = (uuids: string[]) => {

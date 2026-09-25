@@ -1170,6 +1170,9 @@ model PurchaseRequestItem {
   requestedQty        Decimal  @default(0) @db.Decimal(18, 4)
   orderedQty          Decimal  @default(0) @db.Decimal(18, 4)
   estimatedUnitPrice  Decimal  @default(0) @db.Decimal(18, 4)
+  /// Supplier the requester expects to buy from; the estimate uses their price.
+  supplierUuid        String?
+  supplierName        String?
   insertedAt          DateTime @default(now())
   updatedAt           DateTime @updatedAt
 

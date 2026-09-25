@@ -15,16 +15,9 @@ const { Title, Text } = Typography;
 const signInErrorMessage = (error: any) => {
   const codes = (error?.graphQLErrors ?? []).map((e: any) => e?.extensions?.code);
   if (codes.includes('UNAUTHENTICATED')) return "That email and password don't match an account.";
+  if (codes.includes('FORBIDDEN')) return 'This login is turned off. Ask the owner to turn it back on.';
   return "Couldn't reach the server to sign in. Try again in a moment; if it keeps failing, the server or its database may be down.";
 };
-
-const MODULES = [
-  { name: 'Sales', docs: 'Sales orders, invoices' },
-  { name: 'Purchasing', docs: 'Purchase orders, suppliers' },
-  { name: 'Production', docs: 'Work orders, BOMs, job cards' },
-  { name: 'Inventory', docs: 'Goods receipts, material master, ledger' },
-  { name: 'Finance', docs: 'Payments, balances' },
-];
 
 const Login = () => {
   const router = useRouter();
@@ -59,23 +52,17 @@ const Login = () => {
 
   return (
     <main className="login-page">
-      {/* Names the real modules so the screen says what this system is for. */}
+      {/* The shop's own promise, not the software's: this is the first screen
+          anyone sees, and the customer's name belongs on it before the tooling. */}
       <section className="login-aside">
         <img src="/handlathe-logo.jpg" alt={brand.name} className="login-logo" width={320} height={126} />
-        <p className="login-lede">Orders, production and stock for the shop floor, in one place.</p>
-        <ul className="login-modules">
-          {MODULES.map((module) => (
-            <li key={module.name}>
-              <span className="login-module-name">{module.name}</span>
-              <span className="login-module-docs">{module.docs}</span>
-            </li>
-          ))}
-        </ul>
+        <p className="login-tagline">Exquisite Craftsmanship. World-Class Quality.</p>
+        <p className="login-tagline-sub">100% custom-made and handcrafted by skilled Filipino machinists.</p>
       </section>
 
       <section className="login-panel">
         <div className="login-form">
-          {/* The navy panel with the logo is hidden on phones. */}
+          {/* The dark brand panel is hidden on phones, so the logo repeats here. */}
           <img src="/handlathe-logo.jpg" alt={brand.name} className="login-logo-mobile" width={200} height={79} />
           <Title level={3} style={{ margin: 0 }}>
             Sign In

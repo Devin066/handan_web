@@ -8,13 +8,16 @@ import { useMessageContext } from '@/components/common/message-context';
 import client from '@/gql/apollo';
 import { useCompleteReceiptNoteMutation, ReceiptNotesDocument } from '@/gql';
 import { onError } from '@/utils';
+import useModuleAccess from '@/hooks/use-module-access';
 import { receiptNoteStatusEnum } from '@/utils/enum';
 import DataTable from '@/components/shared/data-table';
 import { codeColumn, qtyColumn, statusColumn } from '@/components/shared/columns';
 
 import DeliveryNoteDetail from './detail';
+import ReceiptNoteNew from './new';
 
 const ReceiptNoteList: React.FC = () => {
+  const canEdit = useModuleAccess().canEdit('inventory');
   const { messageApi } = useMessageContext();
 
   const [detailVisible, setDetailVisible] = useState(false);
@@ -103,7 +106,8 @@ const ReceiptNoteList: React.FC = () => {
     <>
       <DataTable
         entityName="goods receipts"
-        emptyHint="Goods receipts are created from a purchase order, then stocked in here."
+        emptyHint="Record a delivery against a purchase order with New Goods Receipt."
+        toolBarRender={canEdit ? () => [<ReceiptNoteNew key="new" onCreated={handleReloadTable} />] : undefined}
         actionRef={actionRef}
         columns={columns}
         request={async (params, sorter, filter) => {

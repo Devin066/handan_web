@@ -7,7 +7,8 @@ import { Button, Typography } from 'antd';
 // locale
 import { useMessageContext } from '@/components/common/message-context';
 import client from '@/gql/apollo';
-import { SuppliersDocument, useCreateSupplierMutation } from '@/gql';
+import { SuppliersDocument, useCreateSupplierMutation, useUpdateSupplierMutation } from '@/gql';
+import useModuleAccess from '@/hooks/use-module-access';
 import { onError } from '@/utils';
 import SupplierNew from './new';
 
@@ -25,6 +26,16 @@ const SupplierList: React.FC = () => {
   });
 
   const actionRef = useRef<ActionType | null>(null);
+  const [editing, setEditing] = useState<any>(null);
+  // Business Partners at Edit level (Settings › Roles) may add and change partners.
+  const canEdit = useModuleAccess().canEdit('partners');
+  const [updateSupplier] = useUpdateSupplierMutation({
+    onCompleted: () => {
+      messageApi?.success('Supplier updated');
+      actionRef.current?.reload();
+    },
+    onError,
+  });
   const [ledgerFor, setLedgerFor] = useState<any>(null);
 
   const handleReloadTable = () => {
@@ -33,6 +44,15 @@ const SupplierList: React.FC = () => {
 
   const handleCreate = async (values: any) => {
     await createSupplier({ variables: { request: values } });
+  };
+
+  const editLink = (record: any) => {
+    if (!canEdit) return [];
+    return [
+      <a key="edit" onClick={() => setEditing(record)}>
+        Edit
+      </a>,
+    ];
   };
 
   const columns: ProColumns<any>[] = [
@@ -90,6 +110,7 @@ const SupplierList: React.FC = () => {
       valueType: 'option',
       width: 140,
       render: (_, record) => [
+        ...editLink(record),
         <Button key="ledger" size="small" type="link" onClick={() => setLedgerFor(record)}>
           Purchase History
         </Button>,
@@ -127,9 +148,18 @@ const SupplierList: React.FC = () => {
         //   defaultCollapsed: true,
         // }}
         dateFormatter="string"
-        toolBarRender={() => [<SupplierNew key="supplier-new" onCreate={(values: any) => handleCreate(values)} />]}
+        toolBarRender={() =>
+          canEdit ? [<SupplierNew key="supplier-new" onCreate={(values: any) => handleCreate(values)} />] : []
+        }
       />
       <PartyLedger party={ledgerFor} kind="supplier" onClose={() => setLedgerFor(null)} />
+      {editing ? (
+        <SupplierNew
+          record={editing}
+          onClose={() => setEditing(null)}
+          onUpdate={(uuid: string, values: any) => updateSupplier({ variables: { uuid, request: values } })}
+        />
+      ) : null}
     </>
   );
 };

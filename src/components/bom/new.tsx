@@ -86,7 +86,7 @@ const BOMNew = (props: any) => {
 
   const itemColumns: ProColumns<any>[] = [
     {
-      title: 'Process Name',
+      title: 'Item',
       dataIndex: 'name',
       valueType: 'select',
       align: 'center',
@@ -246,7 +246,7 @@ const BOMNew = (props: any) => {
         modalProps={{
           destroyOnClose: true,
         }}
-        width={'70%'}
+        width="min(960px, calc(100vw - 32px))"
         onOpenChange={setModalVisible}
         title={<Space>New BOM</Space>}
         submitTimeout={2000}
@@ -276,7 +276,7 @@ const BOMNew = (props: any) => {
           />
         </ProForm.Group>
 
-        <ProCard title="BOM Items" extra="BOM Items" headerBordered>
+        <ProCard title="BOM Items" headerBordered>
           <EditableProTable
             key="bomItems"
             rowKey="uuid"
@@ -285,6 +285,7 @@ const BOMNew = (props: any) => {
             controlled
             recordCreatorProps={{
               position: 'bottom',
+              creatorButtonText: 'Add Item',
               record: () => ({ uuid: (Math.random() * 1000000).toFixed(0) }),
             }}
             loading={false}
@@ -293,7 +294,7 @@ const BOMNew = (props: any) => {
             onChange={(values) => handleAdjustBomItems(values)}
           />
         </ProCard>
-        <ProCard title="BOM Processes" extra="BOM Processes" headerBordered>
+        <ProCard title="BOM Processes" headerBordered>
           <EditableProTable
             key="bomProcesses"
             rowKey="uuid"
@@ -302,6 +303,7 @@ const BOMNew = (props: any) => {
             controlled
             recordCreatorProps={{
               position: 'bottom',
+              creatorButtonText: 'Add Process',
               record: () => ({ uuid: (Math.random() * 1000000).toFixed(0) }),
             }}
             loading={false}

@@ -2,5 +2,6 @@ mutation UpdateRolePermissions($request: RolePermissionRequest!) {
   updateRolePermissions(request: $request) {
     role
     modules
+    viewOnly
   }
 }

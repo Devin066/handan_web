@@ -2,7 +2,19 @@ import { GraphQLError } from 'graphql';
 import type { Context } from '../context';
 import { requireCompany } from '../context';
 import { CURRENCY_SETTING_KEY, DEFAULT_CURRENCY, isSupportedCurrency } from '@/config/currency';
-import { MODULES, loadPermissions, allowedModules, PERMISSIONS_KEY, type Module } from '../rbac';
+import {
+  MODULES,
+  loadPermissions,
+  loadLoginRoles,
+  loadViewOnly,
+  editableModules,
+  VIEW_ONLY_KEY,
+  allowedModules,
+  PERMISSIONS_KEY,
+  LOGIN_ROLES_KEY,
+  type Module,
+} from '../rbac';
+import { hashPassword } from '../auth';
 import { ROLE } from '../domain/status';
 
 const TIMEZONE_KEY = 'timezone';
@@ -61,13 +73,25 @@ export const configurationResolvers = {
     configuration: async (_: unknown, __: unknown, ctx: Context) => readConfiguration(ctx, requireCompany(ctx)),
 
     rolePermissions: async (_: unknown, __: unknown, ctx: Context) => {
-      const permissions = await loadPermissions(ctx.db, requireCompany(ctx));
-      return Object.entries(permissions).map(([role, modules]) => ({ role, modules }));
+      const companyUuid = requireCompany(ctx);
+      const [permissions, loginRoles, viewOnly] = await Promise.all([
+        loadPermissions(ctx.db, companyUuid),
+        loadLoginRoles(ctx.db, companyUuid),
+        loadViewOnly(ctx.db, companyUuid),
+      ]);
+      return Object.entries(permissions).map(([role, modules]) => ({
+        role,
+        modules,
+        canLogin: loginRoles[role],
+        viewOnly: viewOnly[role].filter((m) => modules.includes(m)),
+      }));
     },
 
     modules: () => Object.entries(MODULES).map(([key, label]) => ({ key, label })),
 
     myModules: async (_: unknown, __: unknown, ctx: Context) => allowedModules(ctx),
+
+    myEditModules: async (_: unknown, __: unknown, ctx: Context) => editableModules(ctx),
   },
 
   RootMutationType: {
@@ -104,7 +128,7 @@ export const configurationResolvers = {
 
     updateRolePermissions: async (
       _: unknown,
-      { request }: { request: { role: string; modules: string[] } },
+      { request }: { request: { role: string; modules: string[]; viewOnly?: string[] | null } },
       ctx: Context,
     ) => {
       const companyUuid = requireCompany(ctx);
@@ -118,7 +142,96 @@ export const configurationResolvers = {
         create: { companyUuid, key: PERMISSIONS_KEY, value: current },
         update: { value: current },
       });
-      return { role: request.role, modules: current[request.role] };
+      const viewOnly = await loadViewOnly(ctx.db, companyUuid);
+      if (request.viewOnly) {
+        viewOnly[request.role] = request.viewOnly.filter((m): m is Module => m in MODULES);
+        await ctx.db.appSetting.upsert({
+          where: { companyUuid_key: { companyUuid, key: VIEW_ONLY_KEY } },
+          create: { companyUuid, key: VIEW_ONLY_KEY, value: viewOnly },
+          update: { value: viewOnly },
+        });
+      }
+      const loginRoles = await loadLoginRoles(ctx.db, companyUuid);
+      return {
+        role: request.role,
+        modules: current[request.role],
+        canLogin: loginRoles[request.role],
+        viewOnly: viewOnly[request.role].filter((m) => current[request.role].includes(m)),
+      };
+    },
+
+    setRoleLogin: async (_: unknown, { request }: { request: { role: string; canLogin: boolean } }, ctx: Context) => {
+      const companyUuid = requireCompany(ctx);
+      if (!Object.values(ROLE).includes(request.role as never)) throw new GraphQLError(`Unknown role: ${request.role}`);
+      if (request.role === ROLE.owner) throw new GraphQLError('The owner can always sign in.');
+
+      const current = await loadLoginRoles(ctx.db, companyUuid);
+      current[request.role] = request.canLogin;
+      await ctx.db.appSetting.upsert({
+        where: { companyUuid_key: { companyUuid, key: LOGIN_ROLES_KEY } },
+        create: { companyUuid, key: LOGIN_ROLES_KEY, value: current },
+        update: { value: current },
+      });
+      const permissions = await loadPermissions(ctx.db, companyUuid);
+      return { role: request.role, modules: permissions[request.role], canLogin: request.canLogin };
+    },
+
+    setMemberLogin: async (
+      _: unknown,
+      { request }: { request: { staffUuid: string; enabled: boolean; role?: string | null; password?: string | null } },
+      ctx: Context,
+    ) => {
+      const companyUuid = requireCompany(ctx);
+      const staff = await ctx.db.staff.findFirst({ where: { uuid: request.staffUuid, companyUuid } });
+      if (!staff) throw new GraphQLError('Member not found.');
+      const me = ctx.userUuid ? await ctx.loaders.user.load(ctx.userUuid) : null;
+      const user = staff.userUuid ? await ctx.db.user.findUnique({ where: { uuid: staff.userUuid } }) : null;
+
+      if (!request.enabled) {
+        if (!user) return staff;
+        if (user.uuid === ctx.userUuid) throw new GraphQLError('You cannot turn off your own login.');
+        // The user row stays: past records point at it. It just can't sign in.
+        await ctx.db.user.update({ where: { uuid: user.uuid }, data: { isActive: false } });
+        return staff;
+      }
+
+      const role = request.role ?? user?.role;
+      if (!role || !Object.values(ROLE).includes(role as never))
+        throw new GraphQLError('Choose a role for this login.');
+      if (!(await loadLoginRoles(ctx.db, companyUuid))[role]) {
+        throw new GraphQLError('That role is not allowed to sign in. Turn it on under Settings › Roles.');
+      }
+      if (role === ROLE.owner && me?.role !== ROLE.owner && user?.role !== ROLE.owner) {
+        throw new GraphQLError('Only the owner can give someone the owner role.');
+      }
+      if (user && user.uuid === ctx.userUuid && role !== user.role) {
+        throw new GraphQLError('You cannot change your own role.');
+      }
+
+      const password = request.password ?? '';
+      if (!user && !password) throw new GraphQLError('Set a password for the new login.');
+      if (password && password.length < 8) throw new GraphQLError('The password needs at least 8 characters.');
+      const passwordHash = password ? await hashPassword(password) : undefined;
+
+      if (user) {
+        await ctx.db.user.update({ where: { uuid: user.uuid }, data: { role, isActive: true, passwordHash } });
+        return staff;
+      }
+
+      const email = staff.email.trim().toLowerCase();
+      const taken = await ctx.db.user.findUnique({ where: { email } });
+      if (
+        taken &&
+        (taken.companyUuid !== companyUuid || (await ctx.db.staff.findFirst({ where: { userUuid: taken.uuid } })))
+      ) {
+        throw new GraphQLError(`${email} already has a login elsewhere. Use a different email for this member.`);
+      }
+      const data = { role, isActive: true, passwordHash };
+      const newUser = { ...data, email, companyUuid, nickname: staff.name, passwordHash: passwordHash! };
+      const created = taken
+        ? await ctx.db.user.update({ where: { uuid: taken.uuid }, data })
+        : await ctx.db.user.create({ data: newUser });
+      return ctx.db.staff.update({ where: { uuid: staff.uuid }, data: { userUuid: created.uuid } });
     },
 
     setUserRole: async (_: unknown, { request }: { request: { staffUuid: string; role: string } }, ctx: Context) => {

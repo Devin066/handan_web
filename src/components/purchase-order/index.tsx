@@ -7,6 +7,7 @@ import { Popconfirm, Button } from 'antd';
 import { useMessageContext } from '@/components/common/message-context';
 import client from '@/gql/apollo';
 import { useCreatePurchaseOrderMutation, useCreateReceiptNoteMutation, PurchaseOrdersDocument } from '@/gql';
+import useModuleAccess from '@/hooks/use-module-access';
 import { onError } from '@/utils';
 import { purchaseOrderStatusEnum, purchaseOrderReceiptStatusEnum, purchaseOrderBillingStatusEnum } from '@/utils/enum';
 import DataTable from '@/components/shared/data-table';
@@ -16,6 +17,7 @@ import PurchaseOrderNew from './new';
 import PurchaseOrderDetail from './detail';
 
 const PurchaseOrderList: React.FC = () => {
+  const canEdit = useModuleAccess().canEdit('purchasing');
   const { messageApi } = useMessageContext();
   const router = useRouter();
 
@@ -52,10 +54,13 @@ const PurchaseOrderList: React.FC = () => {
   const handleCreate = (request: any) => createPurchaseOrder({ variables: { request } });
 
   const handleReceiptNote = async (values: any) => {
-    const receiptItems = values.items.map((item: any) => ({
-      purchaseOrderItemUuid: item.uuid,
-      actualQty: item.orderedQty,
-    }));
+    const receiptItems = values.items
+      .filter((item: any) => Number(item.orderedQty) > Number(item.receivedQty ?? 0))
+      .map((item: any) => ({
+        purchaseOrderItemUuid: item.uuid,
+        // Only what is still outstanding; a partly received order would otherwise be refused.
+        actualQty: Number(item.orderedQty) - Number(item.receivedQty ?? 0),
+      }));
 
     const request = {
       purchaseOrderUuid: values.uuid,
@@ -121,6 +126,8 @@ const PurchaseOrderList: React.FC = () => {
     },
   ];
 
+  const renderToolbar = () => [<PurchaseOrderNew key="purchase-order-new" onCreate={handleCreate} />];
+
   return (
     <>
       <DataTable
@@ -142,7 +149,7 @@ const PurchaseOrderList: React.FC = () => {
             success: true,
           };
         }}
-        toolBarRender={() => [<PurchaseOrderNew key="purchase-order-new" onCreate={handleCreate} />]}
+        toolBarRender={canEdit ? renderToolbar : undefined}
       />
       <PurchaseOrderDetail
         uuid={record?.uuid}

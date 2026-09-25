@@ -18,11 +18,14 @@ import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 
 import client from '@/gql/apollo';
 import {
+  ItemSupplierPricesDocument,
   PurchaseRequestsDocument,
   useCreatePurchaseRequestMutation,
   useItemsQuery,
   useReviewPurchaseRequestMutation,
+  useSuppliersQuery,
 } from '@/gql';
+import useModuleAccess from '@/hooks/use-module-access';
 import DataTable from '@/components/shared/data-table';
 import { codeColumn, statusColumn } from '@/components/shared/columns';
 import { useMessageContext } from '@/components/common/message-context';
@@ -38,6 +41,40 @@ const PurchaseRequestNew = ({ onCreated }: { onCreated: () => void }) => {
   const [form] = Form.useForm();
   const { messageApi } = useMessageContext();
   const items = useItemsQuery({ skip: !open });
+  const suppliers = useSuppliersQuery({ skip: !open });
+  // Known prices per item, loaded as items are picked, so each line shows its estimate.
+  const [pricesByItem, setPricesByItem] = useState<Record<string, any[]>>({});
+  const lines = Form.useWatch('items', form) ?? [];
+
+  const loadPrices = async (itemUuid: string) => {
+    if (!itemUuid || pricesByItem[itemUuid]) return;
+    const { data } = await client.query({
+      query: ItemSupplierPricesDocument,
+      variables: { request: { uuid: itemUuid } },
+      fetchPolicy: 'network-only',
+    });
+    setPricesByItem((current) => ({ ...current, [itemUuid]: (data?.item?.supplierPrices ?? []) as any[] }));
+  };
+
+  const supplierOptions = (itemUuid?: string) => {
+    const known = new Map((pricesByItem[itemUuid ?? ''] ?? []).map((p) => [p.supplierUuid, Number(p.unitPrice)]));
+    return ((suppliers.data?.suppliers ?? []) as any[])
+      .map((s) => ({
+        value: s.uuid,
+        label: known.has(s.uuid) ? `${s.name} · ${formatCurrency(known.get(s.uuid))}` : `${s.name} · no price yet`,
+        priced: known.has(s.uuid),
+      }))
+      .sort((a, b) => Number(b.priced) - Number(a.priced));
+  };
+
+  // Mirrors the server: the chosen supplier's price, else the cheapest known, else "set on the PO".
+  const estimateFor = (line: any) => {
+    const prices = pricesByItem[line?.itemUuid ?? ''] ?? [];
+    const chosen = prices.find((p) => p.supplierUuid === line?.supplierUuid);
+    if (chosen) return Number(chosen.unitPrice);
+    if (!line?.supplierUuid && prices.length) return Math.min(...prices.map((p) => Number(p.unitPrice)));
+    return null;
+  };
 
   const [create, { loading }] = useCreatePurchaseRequestMutation({
     onCompleted: (data) => {
@@ -64,6 +101,7 @@ const PurchaseRequestNew = ({ onCreated }: { onCreated: () => void }) => {
           items: (values.items ?? []).map((line: any) => ({
             itemUuid: line.itemUuid,
             requestedQty: line.qty,
+            supplierUuid: line.supplierUuid ?? null,
           })),
         },
       },
@@ -81,7 +119,7 @@ const PurchaseRequestNew = ({ onCreated }: { onCreated: () => void }) => {
         onOk={() => form.submit()}
         okText="Submit for Approval"
         confirmLoading={loading}
-        width="min(720px, 100vw)"
+        width="min(960px, calc(100vw - 32px))"
         destroyOnClose
       >
         <Form form={form} layout="vertical" preserve={false} onFinish={onFinish} initialValues={{ items: [{}] }}>
@@ -110,6 +148,21 @@ const PurchaseRequestNew = ({ onCreated }: { onCreated: () => void }) => {
                         placeholder="Material or part"
                         loading={items.loading}
                         options={itemOptions}
+                        onChange={(itemUuid) => loadPrices(itemUuid)}
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      name={[field.name, 'supplierUuid']}
+                      style={{ width: 'min(260px, 80vw)', marginBottom: 8 }}
+                    >
+                      <Select
+                        allowClear
+                        showSearch
+                        optionFilterProp="label"
+                        placeholder="Supplier (optional)"
+                        aria-label="Supplier"
+                        loading={suppliers.loading}
+                        options={supplierOptions(lines[field.name]?.itemUuid)}
                       />
                     </Form.Item>
                     <Form.Item
@@ -119,6 +172,11 @@ const PurchaseRequestNew = ({ onCreated }: { onCreated: () => void }) => {
                     >
                       <InputNumber min={0.001} placeholder="Qty" style={{ width: 120 }} />
                     </Form.Item>
+                    <Text type="secondary" style={{ display: 'inline-block', paddingTop: 8, minWidth: 120 }}>
+                      {estimateFor(lines[field.name]) == null
+                        ? 'Price set on the PO'
+                        : `Est. ${formatCurrency(estimateFor(lines[field.name]))} each`}
+                    </Text>
                     {fields.length > 1 ? (
                       <Button
                         type="text"
@@ -147,6 +205,7 @@ const PurchaseRequestNew = ({ onCreated }: { onCreated: () => void }) => {
 
 /** Purchase Requests (SRS 4.2): approved lines become selectable on a new PO. */
 const PurchaseRequestList = () => {
+  const canEdit = useModuleAccess().canEdit('purchasing');
   const actionRef = useRef<ActionType | null>(null);
   const { messageApi } = useMessageContext();
   const reload = () => actionRef.current?.reload();
@@ -242,6 +301,8 @@ const PurchaseRequestList = () => {
     },
   ];
 
+  const renderToolbar = () => [<PurchaseRequestNew key="new" onCreated={reload} />];
+
   return (
     <DataTable
       entityName="purchase requests"
@@ -278,6 +339,7 @@ const PurchaseRequestList = () => {
                   align: 'right',
                   render: (_: any, l: any) => formatQty(l.remainingQty),
                 },
+                { title: 'Supplier', render: (_: any, l: any) => l.supplierName ?? '—' },
                 {
                   title: 'Est. Unit Price',
                   align: 'right',
@@ -299,7 +361,7 @@ const PurchaseRequestList = () => {
           success: true,
         };
       }}
-      toolBarRender={() => [<PurchaseRequestNew key="new" onCreated={reload} />]}
+      toolBarRender={canEdit ? renderToolbar : undefined}
     />
   );
 };

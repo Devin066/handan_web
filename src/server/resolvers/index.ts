@@ -47,5 +47,5 @@ const merged = mergeResolvers(
 export const resolvers: ResolverMap = {
   ...merged,
   RootQueryType: guardRootFields(merged.RootQueryType),
-  RootMutationType: guardRootFields(merged.RootMutationType),
+  RootMutationType: guardRootFields(merged.RootMutationType, 'edit'),
 };

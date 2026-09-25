@@ -1,0 +1,5 @@
+mutation UpdateCustomer($uuid: ID!, $request: CreateCustomerRequest!) {
+  updateCustomer(uuid: $uuid, request: $request) {
+    ...CustomerFields
+  }
+}

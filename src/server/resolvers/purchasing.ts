@@ -232,7 +232,13 @@ export const purchasingResolvers = {
           requestedBy?: string;
           requiredDate?: string;
           notes?: string;
-          items?: Array<{ itemUuid?: string; requestedQty?: number; stockUomUuid?: string; uomName?: string }>;
+          items?: Array<{
+            itemUuid?: string;
+            requestedQty?: number;
+            stockUomUuid?: string;
+            uomName?: string;
+            supplierUuid?: string | null;
+          }>;
         };
       },
       ctx: Context,
@@ -247,6 +253,9 @@ export const purchasingResolvers = {
           include: { supplierPrices: true, stockUoms: { orderBy: { sequence: 'asc' }, include: { uom: true } } },
         });
         const itemsByUuid = new Map(items.map((i) => [i.uuid, i]));
+        const supplierUuids = lines.map((l) => l.supplierUuid).filter(Boolean) as string[];
+        const suppliers = await tx.supplier.findMany({ where: { uuid: { in: supplierUuids }, companyUuid } });
+        const suppliersByUuid = new Map(suppliers.map((s) => [s.uuid, s]));
         const code = await nextCode(tx, companyUuid, 'purchaseRequest');
 
         return tx.purchaseRequest.create({
@@ -260,11 +269,14 @@ export const purchasingResolvers = {
               create: lines.map((line) => {
                 const item = itemsByUuid.get(line.itemUuid as string);
                 if (!item) throw new GraphQLError(`unknown item ${line.itemUuid}`);
-                // Estimate from the cheapest known supplier price, else standard cost.
+                const supplier = line.supplierUuid ? suppliersByUuid.get(line.supplierUuid) : undefined;
+                if (line.supplierUuid && !supplier) throw new GraphQLError('That supplier is not in your company.');
+                // The chosen supplier's price; without one, the cheapest known price, else standard cost.
+                const chosen = supplier && item.supplierPrices.find((p) => p.supplierUuid === supplier.uuid);
                 const prices = item.supplierPrices.map((p) => new Prisma.Decimal(p.unitPrice));
-                const estimate = prices.length
-                  ? prices.reduce((min, p) => (p.lt(min) ? p : min))
-                  : new Prisma.Decimal(item.standardCost);
+                let estimate = new Prisma.Decimal(item.standardCost);
+                if (chosen) estimate = new Prisma.Decimal(chosen.unitPrice);
+                else if (prices.length) estimate = prices.reduce((min, p) => (p.lt(min) ? p : min));
                 const uom = item.stockUoms.find((u) => u.uuid === line.stockUomUuid) ?? item.stockUoms[0];
                 return {
                   itemUuid: item.uuid,
@@ -273,6 +285,8 @@ export const purchasingResolvers = {
                   uomName: line.uomName ?? uom?.uom.name,
                   requestedQty: new Prisma.Decimal(line.requestedQty ?? 0),
                   estimatedUnitPrice: estimate,
+                  supplierUuid: supplier?.uuid ?? null,
+                  supplierName: supplier?.name ?? null,
                 };
               }),
             },

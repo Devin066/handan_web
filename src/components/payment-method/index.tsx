@@ -4,6 +4,7 @@ import { Badge, Button, Col, Form, Input, Modal, Row, Select, Switch, Typography
 
 import client from '@/gql/apollo';
 import { PaymentMethodsDocument, useCreatePaymentMethodMutation, useUpdatePaymentMethodMutation } from '@/gql';
+import useModuleAccess from '@/hooks/use-module-access';
 import DataTable from '@/components/shared/data-table';
 import { useMessageContext } from '@/components/common/message-context';
 import {
@@ -173,6 +174,7 @@ const PaymentMethodForm = ({ method, onClose, onSaved }: { method: any; onClose:
 };
 
 const PaymentMethodList: React.FC = () => {
+  const canEdit = useModuleAccess().canEdit('settings');
   const actionRef = useRef<ActionType | null>(null);
   const [editing, setEditing] = useState<any>(null);
 
@@ -236,6 +238,12 @@ const PaymentMethodList: React.FC = () => {
     },
   ];
 
+  const renderToolbar = () => [
+    <Button key="new" type="primary" size="small" onClick={() => setEditing({})}>
+      New Payment Method
+    </Button>,
+  ];
+
   return (
     <>
       <DataTable
@@ -248,11 +256,7 @@ const PaymentMethodList: React.FC = () => {
           const rows = data?.paymentMethods ?? [];
           return { data: rows, total: rows.length, success: true };
         }}
-        toolBarRender={() => [
-          <Button key="new" type="primary" size="small" onClick={() => setEditing({})}>
-            New Payment Method
-          </Button>,
-        ]}
+        toolBarRender={canEdit ? renderToolbar : undefined}
       />
       <PaymentMethodForm
         method={editing}

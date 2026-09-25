@@ -1,0 +1,6 @@
+mutation SetLowStockLevel($request: LowStockLevelRequest!) {
+  setLowStockLevel(request: $request) {
+    uuid
+    minStockThreshold
+  }
+}

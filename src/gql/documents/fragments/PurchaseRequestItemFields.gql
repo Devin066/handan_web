@@ -1,5 +1,7 @@
 fragment PurchaseRequestItemFields on PurchaseRequestItem {
   uuid
+  supplierUuid
+  supplierName
   purchaseRequestUuid
   purchaseRequestCode
   itemUuid

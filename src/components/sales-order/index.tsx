@@ -9,6 +9,7 @@ import size from 'lodash.size';
 import { useMessageContext } from '@/components/common/message-context';
 import client from '@/gql/apollo';
 import { useCreateSalesOrderMutation, SalesOrdersDocument, useCreateDeliveryNoteMutation } from '@/gql';
+import useModuleAccess from '@/hooks/use-module-access';
 import { onError } from '@/utils';
 import { fetchCustomers } from '@/utils/api';
 import {
@@ -31,6 +32,7 @@ import SalesOrderDetail from './detail';
 import WorkOrderPrompt from './work-order-prompt';
 
 const SalesOrderList: React.FC = () => {
+  const canEdit = useModuleAccess().canEdit('sales');
   const { messageApi } = useMessageContext();
 
   const [detailVisible, setDetailVisible] = useState(false);
@@ -165,6 +167,13 @@ const SalesOrderList: React.FC = () => {
     },
   ];
 
+  const renderToolbar = () => [
+    <Link key="delivery-notes" href="/stock/delivery-notes">
+      <Button size="small">Delivery Notes</Button>
+    </Link>,
+    <SalesOrderNew key="sales-order-new" onCreate={(values: any) => handleCreate(values)} />,
+  ];
+
   return (
     <>
       <DataTable
@@ -184,12 +193,7 @@ const SalesOrderList: React.FC = () => {
             success: true,
           };
         }}
-        toolBarRender={() => [
-          <Link key="delivery-notes" href="/stock/delivery-notes">
-            <Button size="small">Delivery Notes</Button>
-          </Link>,
-          <SalesOrderNew key="sales-order-new" onCreate={(values: any) => handleCreate(values)} />,
-        ]}
+        toolBarRender={canEdit ? renderToolbar : undefined}
       />
 
       <WorkOrderPrompt salesOrderUuid={workOrdersFor} onClose={() => setWorkOrdersFor(undefined)} />

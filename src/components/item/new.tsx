@@ -16,23 +16,30 @@ import { onError } from '@/utils';
 import useConfigStore from '@/stores/useConfig';
 import { itemTypeEnum } from '@/utils/enum';
 
+/** The row's values, prefilled into the Edit dialog. A new material starts blank. */
+const editInitialValues = (item: any) => ({
+  itemType: item.itemType,
+  sku: item.sku,
+  category: item.category,
+  name: item.name,
+  spec: item.spec,
+  sellingPrice: item.sellingPrice,
+  standardCost: item.standardCost,
+  minStockThreshold: item.minStockThreshold,
+  uomName: item.defaultStockUomName,
+});
+
 const ItemNew = (props: any) => {
   const currency = useConfigStore((state) => state.currency);
-  const { onCreate } = props;
+  const { onCreate, onUpdate, record, onClose } = props;
+
+  // With a record this is the Edit dialog: no button, open while mounted.
+  const editing = !!record;
 
   const [form] = ProForm.useForm();
-  const [modalVisible, setModalVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState(editing);
   const [uoms, setUoms] = useState([]);
-  const [warehouses, setWarehouses] = useState([]);
   const [stockItems, setStockItems] = useState([]);
-
-  const waitTime = (time: number = 100) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(true);
-      }, time);
-    });
-  };
 
   const [fetchUoMs] = useUoMsLazyQuery({
     fetchPolicy: 'no-cache',
@@ -68,7 +75,8 @@ const ItemNew = (props: any) => {
 
   useEffect(() => {
     fetchUoMs();
-    fetchWarehouses();
+    // Opening stock is set once, when the material is first created.
+    if (!editing) fetchWarehouses();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAdjustDataSource = (values: any) => {
@@ -76,6 +84,29 @@ const ItemNew = (props: any) => {
   };
 
   const onFinish = async (values: any) => {
+    if (editing) {
+      // Class, unit and stock are deliberately absent: the server rejects them,
+      // and the form shows them read-only for the same reason.
+      const result = await onUpdate(record.uuid, {
+        name: values.name,
+        sku: values.sku,
+        category: values.category ?? '',
+        spec: values.spec ?? '',
+        standardCost: Number(values.standardCost ?? 0),
+        minStockThreshold: Number(values.minStockThreshold ?? 0),
+        sellingPrice: parseFloat(values.sellingPrice ?? 0),
+      });
+
+      // A rejected save (a code another material already uses, say) must leave
+      // the dialog up with the typed values still in it. Closing would show the
+      // operator an error toast over a list that never changed, and lose the
+      // edit they would have to type again.
+      if (!result?.data?.updateItem) return false;
+
+      onClose?.();
+      return;
+    }
+
     const stockUoms = [
       {
         uomUuid: values.uomUuid,
@@ -148,27 +179,35 @@ const ItemNew = (props: any) => {
 
   return (
     <>
-      <Button
-        type="primary"
-        size="small"
-        onClick={() => {
-          setModalVisible(true);
-        }}
-      >
-        New Material
-      </Button>
+      {editing ? null : (
+        <Button
+          type="primary"
+          size="small"
+          onClick={() => {
+            setModalVisible(true);
+          }}
+        >
+          New Material
+        </Button>
+      )}
 
       <ModalForm
         form={form}
         modalProps={{
           destroyOnClose: true,
+          onCancel: () => onClose?.(),
         }}
         width={'70%'}
-        onOpenChange={setModalVisible}
-        title={<Space>New Material</Space>}
+        onOpenChange={(open) => {
+          setModalVisible(open);
+          if (!open) onClose?.();
+        }}
+        title={<Space>{editing ? `Edit ${record.name}` : 'New Material'}</Space>}
         submitTimeout={2000}
+        submitter={editing ? { searchConfig: { submitText: 'Save changes' } } : undefined}
         autoFocusFirstInput
         open={modalVisible}
+        initialValues={editing ? editInitialValues(record) : undefined}
         onFinish={onFinish}
       >
         <ProForm.Group>
@@ -176,20 +215,32 @@ const ItemNew = (props: any) => {
             width="sm"
             name="itemType"
             label="Class"
-            initialValue="raw_material"
+            // A field-level default would collide with the form's initialValues
+            // when editing, and React logs it: the class is only defaulted for a
+            // material that does not have one yet.
+            initialValue={editing ? undefined : 'raw_material'}
+            disabled={editing}
             options={Object.entries(itemTypeEnum).map(([value, t]) => ({
               value,
               label: `${t.prefix} · ${t.text}`,
             }))}
             rules={[{ required: true, message: 'Choose a class' }]}
-            tooltip="Raw materials are bought in, manufactured parts are made for larger assemblies, finished goods are sold."
+            tooltip={
+              editing
+                ? 'Fixed after creation: the code was issued from this class, and orders and documents already quote that code.'
+                : 'Raw materials are bought in, manufactured parts are made for larger assemblies, finished goods are sold.'
+            }
           />
           <ProFormText
             width="sm"
             name="sku"
             label="Code"
             placeholder="Generated from the class"
-            tooltip="Leave blank to get the next RM-, MP- or FG- number."
+            tooltip={
+              editing
+                ? 'Changing this changes the code on every screen that lists this material. Past documents keep the code they were printed with.'
+                : 'Leave blank to get the next RM-, MP- or FG- number.'
+            }
           />
           <ProFormText width="sm" name="category" label="Category" placeholder="e.g. Billet, Tubing, Fasteners" />
         </ProForm.Group>
@@ -227,39 +278,55 @@ const ItemNew = (props: any) => {
           <ProFormDigit
             width="sm"
             name="minStockThreshold"
-            label="Reorder Level"
+            label="Low-Stock Alert At"
             min={0}
             placeholder="0"
-            tooltip="At or below this, the dashboard warns of low stock."
+            tooltip="When available stock drops to this level or below, the material shows as Low here and on the dashboard. 0 warns only when it runs out."
           />
 
-          <ProFormSelect
-            width="sm"
-            name="uomUuid"
-            label="UOM"
-            options={uoms}
-            placeholder="Select unit"
-            fieldProps={{
-              showSearch: true,
-              filterOption: true,
-            }}
-          />
+          {/* Read-only when editing, and shown as the unit's name rather than as a
+              disabled picker holding a uuid the operator cannot read. */}
+          {editing ? (
+            <ProFormText
+              width="sm"
+              name="uomName"
+              label="UOM"
+              disabled
+              tooltip="Fixed after creation: every quantity on hand, on order and in the ledger is counted in this unit."
+            />
+          ) : (
+            <ProFormSelect
+              width="sm"
+              name="uomUuid"
+              label="UOM"
+              options={uoms}
+              placeholder="Select unit"
+              fieldProps={{
+                showSearch: true,
+                filterOption: true,
+              }}
+            />
+          )}
         </ProForm.Group>
 
-        <EditableProTable
-          rowKey="uuid"
-          size="small"
-          maxLength={20}
-          controlled
-          recordCreatorProps={false}
-          loading={false}
-          columns={columns}
-          value={stockItems}
-          onChange={(values) => handleAdjustDataSource(values)}
-          editable={{
-            actionRender: (row, config, defaultDom) => [defaultDom.save, defaultDom.cancel],
-          }}
-        />
+        {/* Opening stock belongs to creation. Afterwards quantities move through
+            receipts, issues and adjustments so the ledger stays whole. */}
+        {editing ? null : (
+          <EditableProTable
+            rowKey="uuid"
+            size="small"
+            maxLength={20}
+            controlled
+            recordCreatorProps={false}
+            loading={false}
+            columns={columns}
+            value={stockItems}
+            onChange={(values) => handleAdjustDataSource(values)}
+            editable={{
+              actionRender: (row, config, defaultDom) => [defaultDom.save, defaultDom.cancel],
+            }}
+          />
+        )}
       </ModalForm>
     </>
   );

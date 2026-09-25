@@ -1,0 +1,5 @@
+mutation UpdateSupplier($uuid: ID!, $request: CreateSupplierRequest!) {
+  updateSupplier(uuid: $uuid, request: $request) {
+    ...SupplierFields
+  }
+}

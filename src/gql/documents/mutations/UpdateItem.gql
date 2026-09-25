@@ -1,0 +1,5 @@
+mutation UpdateItem($uuid: ID!, $request: UpdateItemRequest!) {
+  updateItem(uuid: $uuid, request: $request) {
+    ...ItemFields
+  }
+}

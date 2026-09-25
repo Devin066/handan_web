@@ -6,7 +6,10 @@ import React, { createContext, useContext, useState } from 'react';
 import type { FC, ReactNode } from 'react';
 
 import menuProps from './_menu';
+import { Alert } from 'antd';
 import { useMyModulesQuery } from '@/gql';
+import useModuleAccess from '@/hooks/use-module-access';
+import { MODULE_LABELS } from '@/config/modules';
 import { tokens } from './theme';
 import brand from '@/config/brand';
 import GlobalFloatButtons from './global-float-buttons';
@@ -84,6 +87,20 @@ const GlobalLayout: FC<LayoutProps> = ({ children }) => {
     return menuListTemp;
   };
 
+  // The module the current page belongs to, from the menu tree.
+  const moduleForPath = (routes: any[], module?: string): string | undefined => {
+    for (const route of routes) {
+      const owner = route.module ?? module;
+      if (route.path === router.pathname) return owner;
+      const found = route.routes ? moduleForPath(route.routes, owner) : undefined;
+      if (found) return found;
+    }
+    return undefined;
+  };
+  const pageModule = moduleForPath(menuProps.route.routes as any[]);
+  const moduleAccess = useModuleAccess();
+  const viewOnly = !!pageModule && moduleAccess.canView(pageModule) && !moduleAccess.canEdit(pageModule);
+
   const renderTitle = () => {
     if (!layoutConfig.title) return false;
     return layoutConfig.title;
@@ -134,15 +151,15 @@ const GlobalLayout: FC<LayoutProps> = ({ children }) => {
               colorMenuBackground: tokens.chrome,
               colorBgMenuItemCollapsedElevated: tokens.chrome,
               colorMenuItemDivider: tokens.chromeHover,
-              colorTextMenuTitle: tokens.text,
+              colorTextMenuTitle: '#FFFFFF',
               colorTextMenu: tokens.chromeText,
               colorTextMenuSecondary: tokens.chromeTextMuted,
-              colorTextMenuSelected: tokens.onPrimaryContainer,
-              colorTextMenuActive: tokens.text,
-              colorTextMenuItemHover: tokens.text,
+              colorTextMenuSelected: tokens.onPrimary,
+              colorTextMenuActive: '#FFFFFF',
+              colorTextMenuItemHover: '#FFFFFF',
               colorBgMenuItemHover: tokens.chromeHover,
               colorBgMenuItemSelected: tokens.chromeSelected,
-              colorTextSubMenuSelected: tokens.text,
+              colorTextSubMenuSelected: '#FFFFFF',
             },
             header: {
               colorBgHeader: tokens.background,
@@ -176,7 +193,17 @@ const GlobalLayout: FC<LayoutProps> = ({ children }) => {
             },
           }}
         >
-          <div style={{ padding: '12px 20px 24px' }}>{children}</div>
+          <div style={{ padding: '12px 20px 24px' }}>
+            {viewOnly ? (
+              <Alert
+                type="info"
+                showIcon
+                style={{ marginBottom: 12 }}
+                message={`View only: your role can look at ${MODULE_LABELS[pageModule!] ?? 'this module'} but not change it.`}
+              />
+            ) : null}
+            {children}
+          </div>
         </PageContainer>
       </ProLayout>
 

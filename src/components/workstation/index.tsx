@@ -4,6 +4,7 @@ import { Badge, Button, Col, Form, Input, InputNumber, Modal, Row, Switch, Typog
 
 import client from '@/gql/apollo';
 import { WorkstationsDocument, useCreateWorkstationMutation, useUpdateWorkstationMutation } from '@/gql';
+import useModuleAccess from '@/hooks/use-module-access';
 import DataTable from '@/components/shared/data-table';
 import { useMessageContext } from '@/components/common/message-context';
 import { onError } from '@/utils';
@@ -42,7 +43,7 @@ const WorkstationForm = ({ station, onClose, onSaved }: { station: any; onClose:
   return (
     <Modal
       open={!!station}
-      title={editing ? `Edit ${station.name}` : 'New workstation'}
+      title={editing ? `Edit ${station.name}` : 'New Workstation'}
       okText={editing ? 'Save Changes' : 'Add Workstation'}
       onOk={() => form.submit()}
       onCancel={onClose}
@@ -127,6 +128,7 @@ const WorkstationForm = ({ station, onClose, onSaved }: { station: any; onClose:
 };
 
 const WorkstationList: React.FC = () => {
+  const canEdit = useModuleAccess().canEdit('production');
   const actionRef = useRef<ActionType | null>(null);
   const [editing, setEditing] = useState<any>(null);
 
@@ -185,6 +187,12 @@ const WorkstationList: React.FC = () => {
     },
   ];
 
+  const renderToolbar = () => [
+    <Button key="new" type="primary" size="small" onClick={() => setEditing({})}>
+      New Workstation
+    </Button>,
+  ];
+
   return (
     <>
       <DataTable
@@ -197,11 +205,7 @@ const WorkstationList: React.FC = () => {
           const rows = data?.workstations ?? [];
           return { data: rows, total: rows.length, success: true };
         }}
-        toolBarRender={() => [
-          <Button key="new" type="primary" size="small" onClick={() => setEditing({})}>
-            New Workstation
-          </Button>,
-        ]}
+        toolBarRender={canEdit ? renderToolbar : undefined}
       />
       <WorkstationForm station={editing} onClose={() => setEditing(null)} onSaved={() => actionRef.current?.reload()} />
     </>

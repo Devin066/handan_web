@@ -20,6 +20,8 @@ const menuProps = {
         icon: <DashboardOutlined />,
         module: 'dashboard',
       },
+      // Opened from the account menu; listed so the page gets its title and breadcrumb.
+      { path: '/profile', name: 'Profile Settings', hideInMenu: true },
       {
         path: '/selling',
         name: 'Sales',

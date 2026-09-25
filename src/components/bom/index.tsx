@@ -7,12 +7,14 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { useMessageContext } from '../common/message-context';
 import client from '@/gql/apollo';
 import { BomsDocument, useCreateBomMutation } from '@/gql';
+import useModuleAccess from '@/hooks/use-module-access';
 import { onError } from '@/utils';
 
 import BOMNew from './new';
 import BOMDetail from './detail';
 
 const BOMList: React.FC = () => {
+  const canEdit = useModuleAccess().canEdit('inventory');
   const { messageApi } = useMessageContext();
 
   const [detailVisible, setDetailVisible] = useState(false);
@@ -66,6 +68,8 @@ const BOMList: React.FC = () => {
     },
   ];
 
+  const renderToolbar = () => [<BOMNew key="bom-new" onCreate={(values: any) => handleCreate(values)} />];
+
   return (
     <>
       <ProTable
@@ -96,7 +100,7 @@ const BOMList: React.FC = () => {
         //   defaultCollapsed: true,
         // }}
         dateFormatter="string"
-        toolBarRender={() => [<BOMNew key="bom-new" onCreate={(values: any) => handleCreate(values)} />]}
+        toolBarRender={canEdit ? renderToolbar : undefined}
       />
 
       <BOMDetail uuid={record?.uuid} visible={detailVisible} record={record} onClose={() => setDetailVisible(false)} />
