@@ -96,7 +96,7 @@ const menuProps = {
       },
       {
         path: '/system',
-        name: 'Settings',
+        name: 'System Settings',
         module: 'settings',
         icon: <SettingOutlined />,
         routes: [

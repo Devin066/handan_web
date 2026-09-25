@@ -32,7 +32,7 @@ import SalesOrderDetail from './detail';
 import WorkOrderPrompt from './work-order-prompt';
 
 const SalesOrderList: React.FC = () => {
-  const canEdit = useModuleAccess().canEdit('sales');
+  const canEdit = useModuleAccess().canEdit('sales.orders');
   const { messageApi } = useMessageContext();
 
   const [detailVisible, setDetailVisible] = useState(false);

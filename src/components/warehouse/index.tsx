@@ -5,7 +5,7 @@ import { Button, Col, Form, Input, Modal, Row, Select, Switch, Tag, Typography }
 import client from '@/gql/apollo';
 import { WarehousesDocument, useListStaffQuery, useSaveWarehouseMutation } from '@/gql';
 import useModuleAccess from '@/hooks/use-module-access';
-import { ROLE_LABELS } from '@/components/roles';
+import useRoles from '@/hooks/use-roles';
 import { SUPERVISOR_ROLES } from '@/config/production-stage';
 import DataTable from '@/components/shared/data-table';
 import { useMessageContext } from '@/components/common/message-context';
@@ -26,6 +26,7 @@ const WarehouseForm = ({
   const { messageApi } = useMessageContext();
   const editing = !!warehouse?.uuid;
   const { data: staffData } = useListStaffQuery({ skip: !warehouse });
+  const { roleLabel } = useRoles();
   const supervisors = ((staffData?.listStaff ?? []) as any[]).filter(
     (s) => s.hasLogin && SUPERVISOR_ROLES.includes(s.role),
   );
@@ -115,7 +116,7 @@ const WarehouseForm = ({
                 notFoundContent="No member has the Owner or Manager role yet."
                 options={supervisors.map((s) => ({
                   value: s.uuid,
-                  label: `${s.name || s.email} · ${ROLE_LABELS[s.role] ?? s.role}`,
+                  label: `${s.name || s.email} · ${roleLabel(s.role)}`,
                 }))}
               />
             </Form.Item>
@@ -141,7 +142,7 @@ const WarehouseForm = ({
 };
 
 const WarehouseList: React.FC = () => {
-  const canEdit = useModuleAccess().canEdit('settings');
+  const canEdit = useModuleAccess().canEdit('settings.warehouses');
   const actionRef = useRef<ActionType | null>(null);
   const [editing, setEditing] = useState<any>(null);
 

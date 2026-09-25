@@ -25,7 +25,7 @@ const isOverdue = (record: any) =>
   dayjs(record.dueDate).isBefore(dayjs(), 'day');
 
 const SalesInvoiceList: React.FC = () => {
-  const canEdit = useModuleAccess().canEdit('finance');
+  const canEdit = useModuleAccess().canEdit('finance.salesInvoices');
   const actionRef = useRef<ActionType | null>(null);
 
   const [creating, setCreating] = useState(false);

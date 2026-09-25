@@ -8,5 +8,5 @@ export const MODULE_LABELS: Record<string, string> = {
   finance: 'Finance',
   partners: 'Business Partners',
   hr: 'HR',
-  settings: 'Settings',
+  settings: 'System Settings',
 };

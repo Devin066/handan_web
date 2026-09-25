@@ -20,15 +20,9 @@ import {
 
 import client from '@/gql/apollo';
 import { CheckCircleFilled, MinusCircleOutlined } from '@ant-design/icons';
-import {
-  ListStaffDocument,
-  useMyModulesQuery,
-  useRolePermissionsQuery,
-  useSaveStaffMutation,
-  useSetMemberLoginMutation,
-} from '@/gql';
+import { ListStaffDocument, useRolePermissionsQuery, useSaveStaffMutation, useSetMemberLoginMutation } from '@/gql';
 import useModuleAccess from '@/hooks/use-module-access';
-import { ROLE_LABELS } from '@/components/roles';
+import useRoles from '@/hooks/use-roles';
 import { tokens } from '@/components/common/theme';
 import DataTable from '@/components/shared/data-table';
 import { useMessageContext } from '@/components/common/message-context';
@@ -47,14 +41,15 @@ const MemberForm = ({ member, open, onClose, onSaved }: any) => {
   const { messageApi } = useMessageContext();
   const editing = !!member?.uuid;
 
-  const { data: access } = useMyModulesQuery();
+  // Giving out logins is part of User Management; it needs Edit there.
   // Logins are a Settings permission; HR can edit the profile without them.
-  const canManageLogins = ((access?.myModules ?? []) as string[]).includes('settings');
+  const canManageLogins = useModuleAccess().canEdit('settings.members');
   const { data: rolesData } = useRolePermissionsQuery({ skip: !canManageLogins });
   const loginRoles = ((rolesData?.rolePermissions ?? []) as any[]).filter(
     (r) => r.canLogin !== false || r.role === member?.role,
   );
   const loginEnabled = Form.useWatch('loginEnabled', form);
+  const { roleLabel } = useRoles();
 
   const [saveStaff, { loading }] = useSaveStaffMutation({ onError });
   const [setMemberLogin, { loading: savingLogin }] = useSetMemberLoginMutation({ onError });
@@ -197,16 +192,14 @@ const MemberForm = ({ member, open, onClose, onSaved }: any) => {
             </Form.Item>
             <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
               {loginEnabled
-                ? 'They sign in with the email above. What they can open depends on the role (Settings › Roles).'
+                ? 'They sign in with the email above. What they can open depends on the role (System Settings › Roles).'
                 : 'Without a login they still appear on work orders, attendance and payroll.'}
             </Text>
             {loginEnabled ? (
               <Row gutter={16}>
                 <Col xs={24} sm={12}>
                   <Form.Item name="loginRole" label="Role" rules={[{ required: true, message: 'Choose a role.' }]}>
-                    <Select
-                      options={loginRoles.map((r) => ({ value: r.role, label: ROLE_LABELS[r.role] ?? r.role }))}
-                    />
+                    <Select options={loginRoles.map((r) => ({ value: r.role, label: roleLabel(r.role) }))} />
                   </Form.Item>
                 </Col>
                 <Col xs={24} sm={12}>
@@ -234,7 +227,8 @@ const MemberForm = ({ member, open, onClose, onSaved }: any) => {
 };
 
 const Members: React.FC = () => {
-  const canEdit = useModuleAccess().canEdit('hr');
+  const { roleLabel } = useRoles();
+  const canEdit = useModuleAccess().canEdit('settings.members');
   const actionRef = useRef<ActionType | null>(null);
   const [keyword, setKeyword] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
@@ -282,12 +276,7 @@ const Members: React.FC = () => {
       title: 'Role',
       width: 110,
       key: 'role',
-      render: (_, member) =>
-        member.role ? (
-          <Tag>{member.role.charAt(0).toUpperCase() + member.role.slice(1)}</Tag>
-        ) : (
-          <Text type="secondary">—</Text>
-        ),
+      render: (_, member) => (member.role ? <Tag>{roleLabel(member.role)}</Tag> : <Text type="secondary">—</Text>),
     },
     {
       title: 'Login',

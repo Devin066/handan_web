@@ -27,8 +27,8 @@ const SupplierList: React.FC = () => {
 
   const actionRef = useRef<ActionType | null>(null);
   const [editing, setEditing] = useState<any>(null);
-  // Business Partners at Edit level (Settings › Roles) may add and change partners.
-  const canEdit = useModuleAccess().canEdit('partners');
+  // Business Partners at Edit level (System Settings › Roles) may add and change partners.
+  const canEdit = useModuleAccess().canEdit('partners.suppliers');
   const [updateSupplier] = useUpdateSupplierMutation({
     onCompleted: () => {
       messageApi?.success('Supplier updated');

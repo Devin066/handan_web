@@ -23,7 +23,7 @@ import WorkOrderDetail from './detail';
 import StoredItem from './stored-item';
 
 const WorkOrderList: React.FC = () => {
-  const canEdit = useModuleAccess().canEdit('production');
+  const canEdit = useModuleAccess().canEdit('production.workOrders');
   const { messageApi } = useMessageContext();
 
   const [detailVisible, setDetailVisible] = useState(false);

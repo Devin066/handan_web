@@ -39,7 +39,7 @@ const matches = (item: any, term: string) =>
   [item.name, item.sku, item.spec, item.category].some((field) => field?.toLowerCase().includes(term));
 
 const ItemList: React.FC = () => {
-  const canEdit = useModuleAccess().canEdit('inventory');
+  const canEdit = useModuleAccess().canEdit('inventory.items');
   const { messageApi } = useMessageContext();
   const actionRef = useRef<ActionType | null>(null);
   const [keyword, setKeyword] = useState('');

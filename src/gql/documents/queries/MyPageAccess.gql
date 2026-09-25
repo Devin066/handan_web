@@ -1,0 +1,6 @@
+query MyPageAccess {
+  myPageAccess {
+    page
+    level
+  }
+}

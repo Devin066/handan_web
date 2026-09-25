@@ -1,0 +1,8 @@
+mutation SaveRole($request: SaveRoleRequest!) {
+  saveRole(request: $request) {
+    key
+    label
+    isOwner
+    memberCount
+  }
+}

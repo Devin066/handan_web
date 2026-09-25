@@ -1,9 +1,10 @@
 import { Alert, Button, Card, Col, Descriptions, Form, Input, Row, Skeleton, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
 
-import { useChangeMyPasswordMutation, useMyModulesQuery, useMyProfileQuery, useUpdateMyProfileMutation } from '@/gql';
+import { useChangeMyPasswordMutation, useMyProfileQuery, useUpdateMyProfileMutation } from '@/gql';
+import useModuleAccess from '@/hooks/use-module-access';
 import { useMessageContext } from '@/components/common/message-context';
-import { ROLE_LABELS } from '@/components/roles';
+import useRoles from '@/hooks/use-roles';
 import { EMPLOYMENT_TYPES } from '@/config/staff';
 import { MOBILE_HINT, isValidMobile } from '@/config/ph-contact';
 import useAuthUserStore from '@/stores/persisted/useAuthUser';
@@ -20,9 +21,9 @@ const Profile = () => {
   const { messageApi } = useMessageContext();
   const { currentUser } = useAuthUserStore();
   const { data, loading, error } = useMyProfileQuery({ fetchPolicy: 'network-only' });
-  const { data: access } = useMyModulesQuery();
-  // Names feed payroll and records; only roles with Settings access change them.
-  const canRename = ((access?.myModules ?? []) as string[]).includes('settings');
+  // Names feed payroll and records; only roles with System Settings access change them.
+  const canRename = useModuleAccess().canEdit('settings.members');
+  const { roleLabel } = useRoles();
   const [detailsForm] = Form.useForm();
   const [passwordForm] = Form.useForm();
 
@@ -64,7 +65,7 @@ const Profile = () => {
                 <Form.Item
                   name="name"
                   label="Full Name"
-                  extra={canRename ? undefined : 'Only someone with Settings access can change names.'}
+                  extra={canRename ? undefined : 'Only someone who can edit User Management can change names.'}
                   rules={[{ required: canRename, whitespace: true, message: 'Enter your name.' }]}
                 >
                   <Input autoComplete="name" maxLength={80} disabled={!canRename} />
@@ -103,7 +104,7 @@ const Profile = () => {
         </Text>
         <Descriptions column={{ xs: 1, sm: 2 }} size="small">
           <Descriptions.Item label="Email">{me?.email ?? currentUser?.email ?? '—'}</Descriptions.Item>
-          <Descriptions.Item label="Role">{ROLE_LABELS[me?.role ?? currentUser?.role] ?? '—'}</Descriptions.Item>
+          <Descriptions.Item label="Role">{roleLabel(me?.role ?? currentUser?.role) || '—'}</Descriptions.Item>
           <Descriptions.Item label="Position">{me?.position || '—'}</Descriptions.Item>
           <Descriptions.Item label="Employment">{employment ?? '—'}</Descriptions.Item>
           <Descriptions.Item label="Shift">{me?.shift || '—'}</Descriptions.Item>

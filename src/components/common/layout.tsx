@@ -7,9 +7,8 @@ import type { FC, ReactNode } from 'react';
 
 import menuProps from './_menu';
 import { Alert } from 'antd';
-import { useMyModulesQuery } from '@/gql';
 import useModuleAccess from '@/hooks/use-module-access';
-import { MODULE_LABELS } from '@/config/modules';
+import { pageForPath, pageLabel } from '@/config/access';
 import { tokens } from './theme';
 import brand from '@/config/brand';
 import GlobalFloatButtons from './global-float-buttons';
@@ -65,41 +64,25 @@ const GlobalLayout: FC<LayoutProps> = ({ children }) => {
     }
   };
 
-  // Modules this user's role can open (Settings > Roles). Until it loads, show
-  // nothing gated rather than flashing menu entries that will be refused.
-  const { data: access } = useMyModulesQuery({
-    fetchPolicy: 'cache-and-network',
-  });
-  const allowed = new Set((access?.myModules ?? []) as string[]);
-
-  const menuDataRender = (menuList: MenuDataItem[]): MenuDataItem[] => {
-    const menuListTemp = menuList
-      .filter((item: MenuDataItem) => !item.module || allowed.has(item.module))
-      .map((item: MenuDataItem) => {
-        const localItem = {
-          ...item,
-          children: item.children ? menuDataRender(item.children) : [],
-        };
-        return localItem;
-      })
-      .filter((item) => Object.keys(item).length > 0);
-
-    return menuListTemp;
-  };
-
-  // The module the current page belongs to, from the menu tree.
-  const moduleForPath = (routes: any[], module?: string): string | undefined => {
-    for (const route of routes) {
-      const owner = route.module ?? module;
-      if (route.path === router.pathname) return owner;
-      const found = route.routes ? moduleForPath(route.routes, owner) : undefined;
-      if (found) return found;
-    }
-    return undefined;
-  };
-  const pageModule = moduleForPath(menuProps.route.routes as any[]);
+  // Pages this user's role can open (System Settings › Roles). Until access
+  // loads, show nothing gated rather than flashing entries that will be refused.
   const moduleAccess = useModuleAccess();
-  const viewOnly = !!pageModule && moduleAccess.canView(pageModule) && !moduleAccess.canEdit(pageModule);
+
+  const menuDataRender = (menuList: MenuDataItem[]): MenuDataItem[] =>
+    menuList
+      .map((item: MenuDataItem) => {
+        const isSection = !!item.children?.length;
+        return { ...item, isSection, children: isSection ? menuDataRender(item.children!) : [] };
+      })
+      .filter((item) => {
+        // A section (module or Master Data) shows while any page in it is visible.
+        if (item.isSection) return item.children.length > 0;
+        const page = item.path ? pageForPath(item.path) : undefined;
+        return page ? moduleAccess.canView(page) : true;
+      });
+
+  const pageKey = pageForPath(router.pathname);
+  const viewOnly = !!pageKey && moduleAccess.canView(pageKey) && !moduleAccess.canEdit(pageKey);
 
   const renderTitle = () => {
     if (!layoutConfig.title) return false;
@@ -199,7 +182,7 @@ const GlobalLayout: FC<LayoutProps> = ({ children }) => {
                 type="info"
                 showIcon
                 style={{ marginBottom: 12 }}
-                message={`View only: your role can look at ${MODULE_LABELS[pageModule!] ?? 'this module'} but not change it.`}
+                message={`View only: your role can look at ${pageLabel(pageKey!)} but not change it.`}
               />
             ) : null}
             {children}

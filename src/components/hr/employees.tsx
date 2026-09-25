@@ -281,7 +281,7 @@ const EmployeeDrawer = ({ employee, onClose }: { employee: any; onClose: () => v
 
 /** Employee Profile Management (SRS 4.6). */
 const EmployeeList = () => {
-  const canEdit = useModuleAccess().canEdit('hr');
+  const canEdit = useModuleAccess().canEdit('hr.employees');
   const actionRef = useRef<ActionType | null>(null);
   const [editing, setEditing] = useState<any>(null);
   const [viewing, setViewing] = useState<any>(null);

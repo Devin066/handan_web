@@ -1,0 +1,8 @@
+query Roles {
+  roles {
+    key
+    label
+    isOwner
+    memberCount
+  }
+}

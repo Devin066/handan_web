@@ -14,7 +14,7 @@ import BOMNew from './new';
 import BOMDetail from './detail';
 
 const BOMList: React.FC = () => {
-  const canEdit = useModuleAccess().canEdit('inventory');
+  const canEdit = useModuleAccess().canEdit('inventory.boms');
   const { messageApi } = useMessageContext();
 
   const [detailVisible, setDetailVisible] = useState(false);

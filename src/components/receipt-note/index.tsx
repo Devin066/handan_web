@@ -17,7 +17,7 @@ import DeliveryNoteDetail from './detail';
 import ReceiptNoteNew from './new';
 
 const ReceiptNoteList: React.FC = () => {
-  const canEdit = useModuleAccess().canEdit('inventory');
+  const canEdit = useModuleAccess().canEdit('inventory.receipts');
   const { messageApi } = useMessageContext();
 
   const [detailVisible, setDetailVisible] = useState(false);

@@ -128,7 +128,7 @@ const WorkstationForm = ({ station, onClose, onSaved }: { station: any; onClose:
 };
 
 const WorkstationList: React.FC = () => {
-  const canEdit = useModuleAccess().canEdit('production');
+  const canEdit = useModuleAccess().canEdit('production.workOrders');
   const actionRef = useRef<ActionType | null>(null);
   const [editing, setEditing] = useState<any>(null);
 

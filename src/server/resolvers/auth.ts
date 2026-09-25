@@ -3,7 +3,7 @@ import type { Context } from '../context';
 import { requireCompany, requireUser } from '../context';
 import { hashPassword, signToken, verifyPassword } from '../auth';
 import { isValidMobile } from '@/config/ph-contact';
-import { allowedModules, loadLoginRoles } from '../rbac';
+import { loadLoginRoles, userPageAccess } from '../rbac';
 import { normaliseStaff, type StaffInput } from '../domain/staff';
 
 export const authResolvers = {
@@ -55,11 +55,11 @@ export const authResolvers = {
       const userUuid = requireUser(ctx);
       const staff = await ctx.db.staff.findFirst({ where: { companyUuid, userUuid } });
       if (!staff) throw new GraphQLError('Your login is not linked to a member record. Ask the owner to link it.');
-      // Names appear on payroll and records, so only roles with Settings access change them.
+      // Names appear on payroll and records, so only roles with System Settings access change them.
       let name = staff.name;
       if (request.name != null && request.name.trim() !== staff.name) {
-        if (!(await allowedModules(ctx)).includes('settings')) {
-          throw new GraphQLError('Only someone with Settings access can change a name. Ask the owner.', {
+        if ((await userPageAccess(ctx))['settings.members'] !== 'edit') {
+          throw new GraphQLError('Only someone who can edit User Management can change a name. Ask the owner.', {
             extensions: { code: 'FORBIDDEN' },
           });
         }

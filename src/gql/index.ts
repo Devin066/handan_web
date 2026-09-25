@@ -561,7 +561,7 @@ export type MoveWorkOrderStageRequest = {
   uuid: Scalars['ID']['input'];
 };
 
-/** name is only accepted from roles with Settings access. */
+/** name is only accepted from roles with System Settings access. */
 export type MyProfileRequest = {
   name?: InputMaybe<Scalars['String']['input']>;
   phone?: InputMaybe<Scalars['String']['input']>;
@@ -570,6 +570,19 @@ export type MyProfileRequest = {
 export type OpeningStockArg = {
   qty?: InputMaybe<Scalars['Float']['input']>;
   warehouseUuid?: InputMaybe<Scalars['ID']['input']>;
+};
+
+export type PageAccessRequest = {
+  level: Scalars['String']['input'];
+  pages: Array<Scalars['String']['input']>;
+  role: Scalars['String']['input'];
+};
+
+/** A role's level on one page of the access tree: none, view or edit. */
+export type PageLevel = {
+  __typename?: 'PageLevel';
+  level?: Maybe<Scalars['String']['output']>;
+  page?: Maybe<Scalars['String']['output']>;
 };
 
 export type PaymentEntry = {
@@ -860,9 +873,30 @@ export type ReviewPurchaseRequestRequest = {
   uuid: Scalars['ID']['input'];
 };
 
+export type RoleInfo = {
+  __typename?: 'RoleInfo';
+  isOwner?: Maybe<Scalars['Boolean']['output']>;
+  /** Stable id stored on users; never changes. */
+  key?: Maybe<Scalars['String']['output']>;
+  label?: Maybe<Scalars['String']['output']>;
+  /** Active logins holding this role. */
+  memberCount?: Maybe<Scalars['Int']['output']>;
+};
+
+export type RoleKeyRequest = {
+  key: Scalars['String']['input'];
+};
+
 export type RoleLoginRequest = {
   canLogin: Scalars['Boolean']['input'];
   role: Scalars['String']['input'];
+};
+
+export type RolePageAccess = {
+  __typename?: 'RolePageAccess';
+  canLogin?: Maybe<Scalars['Boolean']['output']>;
+  pages?: Maybe<Array<Maybe<PageLevel>>>;
+  role?: Maybe<Scalars['String']['output']>;
 };
 
 export type RolePermission = {
@@ -905,6 +939,8 @@ export type RootMutationType = {
   createSupplier?: Maybe<Supplier>;
   createWorkOrder?: Maybe<WorkOrder>;
   createWorkstation?: Maybe<Workstation>;
+  /** Delete a role nobody holds. The owner can't be deleted. */
+  deleteRole?: Maybe<Scalars['Boolean']['output']>;
   deleteSupplierPrice?: Maybe<Scalars['Boolean']['output']>;
   finalizePayroll?: Maybe<PayrollPeriod>;
   generatePayroll?: Maybe<PayrollPeriod>;
@@ -915,6 +951,8 @@ export type RootMutationType = {
   reportJobCard?: Maybe<WorkOrder>;
   reviewPurchaseRequest?: Maybe<PurchaseRequest>;
   saveAttendance?: Maybe<AttendanceRecord>;
+  /** Add a role (no key) or rename one. The owner can't be renamed. */
+  saveRole?: Maybe<RoleInfo>;
   saveStaff?: Maybe<Staff>;
   /** Add or change one supplier's price for a material. Purchase orders also update it. */
   saveSupplierPrice?: Maybe<SupplierPrice>;
@@ -923,6 +961,8 @@ export type RootMutationType = {
   /** The on-hand level at or below which the material shows as low stock. */
   setLowStockLevel?: Maybe<Item>;
   setMemberLogin?: Maybe<Staff>;
+  /** Set one level on several pages for a role (one page, or a whole module). */
+  setPageAccess?: Maybe<RolePageAccess>;
   setRoleLogin?: Maybe<RolePermission>;
   setUserRole?: Maybe<Staff>;
   storeFinishItem?: Maybe<WorkOrder>;
@@ -1069,6 +1109,12 @@ export type RootMutationTypeCreateWorkstationArgs = {
 
 
 /** the root of mutaion. */
+export type RootMutationTypeDeleteRoleArgs = {
+  request: RoleKeyRequest;
+};
+
+
+/** the root of mutaion. */
 export type RootMutationTypeDeleteSupplierPriceArgs = {
   request: IdRequest;
 };
@@ -1123,6 +1169,12 @@ export type RootMutationTypeSaveAttendanceArgs = {
 
 
 /** the root of mutaion. */
+export type RootMutationTypeSaveRoleArgs = {
+  request: SaveRoleRequest;
+};
+
+
+/** the root of mutaion. */
 export type RootMutationTypeSaveStaffArgs = {
   request: StaffRequest;
 };
@@ -1155,6 +1207,12 @@ export type RootMutationTypeSetLowStockLevelArgs = {
 /** the root of mutaion. */
 export type RootMutationTypeSetMemberLoginArgs = {
   request: MemberLoginRequest;
+};
+
+
+/** the root of mutaion. */
+export type RootMutationTypeSetPageAccessArgs = {
+  request: PageAccessRequest;
 };
 
 
@@ -1260,9 +1318,13 @@ export type RootQueryType = {
   /** Modules the signed-in user can change data in. */
   myEditModules?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   myModules?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  /** The signed-in user's level on every page. */
+  myPageAccess?: Maybe<Array<Maybe<PageLevel>>>;
   /** The member record of the signed-in person, if they have one. */
   myProfile?: Maybe<Staff>;
   openPurchaseRequestItems?: Maybe<Array<Maybe<PurchaseRequestItem>>>;
+  /** Every role's level on every page of the access tree. */
+  pageAccess?: Maybe<Array<Maybe<RolePageAccess>>>;
   paymentEntries?: Maybe<Array<Maybe<PaymentEntry>>>;
   paymentEntry?: Maybe<PaymentEntry>;
   paymentMethod?: Maybe<PaymentMethod>;
@@ -1282,6 +1344,8 @@ export type RootQueryType = {
   receiptNote?: Maybe<ReceiptNote>;
   receiptNotes?: Maybe<Array<Maybe<ReceiptNote>>>;
   rolePermissions?: Maybe<Array<Maybe<RolePermission>>>;
+  /** The company's roles, owner last. */
+  roles?: Maybe<Array<Maybe<RoleInfo>>>;
   salesInvoice?: Maybe<SalesInvoice>;
   salesInvoices?: Maybe<Array<Maybe<SalesInvoice>>>;
   salesOrder?: Maybe<SalesOrder>;
@@ -1578,6 +1642,11 @@ export type SaveAttendanceRequest = {
   timeIn?: InputMaybe<Scalars['DateTime']['input']>;
   timeOut?: InputMaybe<Scalars['DateTime']['input']>;
   workDate?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type SaveRoleRequest = {
+  key?: InputMaybe<Scalars['String']['input']>;
+  label: Scalars['String']['input'];
 };
 
 export type Staff = {
@@ -1894,7 +1963,7 @@ export type DeliveryNoteFieldsFragment = { __typename?: 'DeliveryNote', uuid?: s
 
 export type DeliveryNoteItemFieldsFragment = { __typename?: 'DeliveryNoteItem', uuid?: string | null, itemName?: string | null, actualQty?: any | null, unitPrice?: any | null, amount?: any | null, uomName?: string | null, insertedAt?: any | null, updatedAt?: any | null };
 
-export type ItemFieldsFragment = { __typename?: 'Item', uuid?: string | null, name?: string | null, itemType?: string | null, standardCost?: any | null, stockValue?: any | null, sku?: string | null, category?: string | null, spec?: string | null, description?: string | null, sellingPrice?: any | null, minStockThreshold?: any | null, onHandQty?: any | null, reservedQty?: any | null, availableQty?: any | null, defaultStockUomUuid?: string | null, defaultStockUomName?: string | null, insertedAt?: any | null, updatedAt?: any | null };
+export type ItemFieldsFragment = { __typename?: 'Item', uuid?: string | null, name?: string | null, itemType?: string | null, standardCost?: any | null, stockValue?: any | null, sku?: string | null, category?: string | null, spec?: string | null, sellingPrice?: any | null, minStockThreshold?: any | null, onHandQty?: any | null, reservedQty?: any | null, availableQty?: any | null, defaultStockUomUuid?: string | null, defaultStockUomName?: string | null, insertedAt?: any | null, updatedAt?: any | null };
 
 export type JobCardFieldsFragment = { __typename?: 'JobCard', uuid?: string | null, startTime?: any | null, endTime?: any | null, status?: string | null, defectiveQty?: any | null, producedQty?: any | null, workOrderItemUuid?: string | null, workOrderUuid?: string | null, operatorStaff?: { __typename?: 'Staff', email?: string | null } | null };
 
@@ -2080,6 +2149,13 @@ export type CreateWorkstationMutationVariables = Exact<{
 
 export type CreateWorkstationMutation = { __typename?: 'RootMutationType', createWorkstation?: { __typename?: 'Workstation', uuid?: string | null, name?: string | null, code?: string | null, location?: string | null, description?: string | null, capacityHours?: any | null, isActive?: boolean | null, insertedAt?: any | null, updatedAt?: any | null } | null };
 
+export type DeleteRoleMutationVariables = Exact<{
+  request: RoleKeyRequest;
+}>;
+
+
+export type DeleteRoleMutation = { __typename?: 'RootMutationType', deleteRole?: boolean | null };
+
 export type DeleteSupplierPriceMutationVariables = Exact<{
   request: IdRequest;
 }>;
@@ -2143,6 +2219,13 @@ export type SaveAttendanceMutationVariables = Exact<{
 
 export type SaveAttendanceMutation = { __typename?: 'RootMutationType', saveAttendance?: { __typename?: 'AttendanceRecord', uuid?: string | null } | null };
 
+export type SaveRoleMutationVariables = Exact<{
+  request: SaveRoleRequest;
+}>;
+
+
+export type SaveRoleMutation = { __typename?: 'RootMutationType', saveRole?: { __typename?: 'RoleInfo', key?: string | null, label?: string | null, isOwner?: boolean | null, memberCount?: number | null } | null };
+
 export type SaveStaffMutationVariables = Exact<{
   request: StaffRequest;
 }>;
@@ -2177,6 +2260,13 @@ export type SetMemberLoginMutationVariables = Exact<{
 
 
 export type SetMemberLoginMutation = { __typename?: 'RootMutationType', setMemberLogin?: { __typename?: 'Staff', uuid?: string | null, hasLogin?: boolean | null, role?: string | null } | null };
+
+export type SetPageAccessMutationVariables = Exact<{
+  request: PageAccessRequest;
+}>;
+
+
+export type SetPageAccessMutation = { __typename?: 'RootMutationType', setPageAccess?: { __typename?: 'RolePageAccess', role?: string | null, canLogin?: boolean | null, pages?: Array<{ __typename?: 'PageLevel', page?: string | null, level?: string | null } | null> | null } | null };
 
 export type SetRoleLoginMutationVariables = Exact<{
   request: RoleLoginRequest;
@@ -2227,7 +2317,7 @@ export type UpdateItemMutationVariables = Exact<{
 }>;
 
 
-export type UpdateItemMutation = { __typename?: 'RootMutationType', updateItem?: { __typename?: 'Item', uuid?: string | null, name?: string | null, itemType?: string | null, standardCost?: any | null, stockValue?: any | null, sku?: string | null, category?: string | null, spec?: string | null, description?: string | null, sellingPrice?: any | null, minStockThreshold?: any | null, onHandQty?: any | null, reservedQty?: any | null, availableQty?: any | null, defaultStockUomUuid?: string | null, defaultStockUomName?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null };
+export type UpdateItemMutation = { __typename?: 'RootMutationType', updateItem?: { __typename?: 'Item', uuid?: string | null, name?: string | null, itemType?: string | null, standardCost?: any | null, stockValue?: any | null, sku?: string | null, category?: string | null, spec?: string | null, sellingPrice?: any | null, minStockThreshold?: any | null, onHandQty?: any | null, reservedQty?: any | null, availableQty?: any | null, defaultStockUomUuid?: string | null, defaultStockUomName?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null };
 
 export type UpdateMyProfileMutationVariables = Exact<{
   request: MyProfileRequest;
@@ -2350,7 +2440,7 @@ export type DeliveryNotesQuery = { __typename?: 'RootQueryType', deliveryNotes?:
 export type InventoryEntriesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type InventoryEntriesQuery = { __typename?: 'RootQueryType', inventoryEntries?: Array<{ __typename?: 'InventoryEntry', code?: string | null, actualQty?: any | null, type?: string | null, qtyAfterTransaction?: any | null, threadType?: string | null, stockUomUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null, item?: { __typename?: 'Item', uuid?: string | null, name?: string | null, itemType?: string | null, standardCost?: any | null, stockValue?: any | null, sku?: string | null, category?: string | null, spec?: string | null, description?: string | null, sellingPrice?: any | null, minStockThreshold?: any | null, onHandQty?: any | null, reservedQty?: any | null, availableQty?: any | null, defaultStockUomUuid?: string | null, defaultStockUomName?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null, warehouse?: { __typename?: 'Warehouse', uuid?: string | null, name?: string | null, address?: string | null, area?: string | null, contactName?: string | null, contactEmail?: string | null, isDefault?: boolean | null, insertedAt?: any | null, updatedAt?: any | null } | null, stockUom?: { __typename?: 'StockUom', uuid?: string | null, uomName?: string | null } | null } | null> | null };
+export type InventoryEntriesQuery = { __typename?: 'RootQueryType', inventoryEntries?: Array<{ __typename?: 'InventoryEntry', code?: string | null, actualQty?: any | null, type?: string | null, qtyAfterTransaction?: any | null, threadType?: string | null, stockUomUuid?: string | null, insertedAt?: any | null, updatedAt?: any | null, item?: { __typename?: 'Item', uuid?: string | null, name?: string | null, itemType?: string | null, standardCost?: any | null, stockValue?: any | null, sku?: string | null, category?: string | null, spec?: string | null, sellingPrice?: any | null, minStockThreshold?: any | null, onHandQty?: any | null, reservedQty?: any | null, availableQty?: any | null, defaultStockUomUuid?: string | null, defaultStockUomName?: string | null, insertedAt?: any | null, updatedAt?: any | null } | null, warehouse?: { __typename?: 'Warehouse', uuid?: string | null, name?: string | null, address?: string | null, area?: string | null, contactName?: string | null, contactEmail?: string | null, isDefault?: boolean | null, insertedAt?: any | null, updatedAt?: any | null } | null, stockUom?: { __typename?: 'StockUom', uuid?: string | null, uomName?: string | null } | null } | null> | null };
 
 export type ItemQueryVariables = Exact<{
   request: IdRequest;
@@ -2369,7 +2459,7 @@ export type ItemSupplierPricesQuery = { __typename?: 'RootQueryType', item?: { _
 export type ItemsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ItemsQuery = { __typename?: 'RootQueryType', items?: Array<{ __typename?: 'Item', uuid?: string | null, name?: string | null, itemType?: string | null, standardCost?: any | null, stockValue?: any | null, sku?: string | null, category?: string | null, spec?: string | null, description?: string | null, sellingPrice?: any | null, minStockThreshold?: any | null, onHandQty?: any | null, reservedQty?: any | null, availableQty?: any | null, defaultStockUomUuid?: string | null, defaultStockUomName?: string | null, insertedAt?: any | null, updatedAt?: any | null, stockUoms?: Array<{ __typename?: 'StockUom', uuid?: string | null, conversionFactor?: number | null, uomName?: string | null } | null> | null } | null> | null };
+export type ItemsQuery = { __typename?: 'RootQueryType', items?: Array<{ __typename?: 'Item', uuid?: string | null, name?: string | null, itemType?: string | null, standardCost?: any | null, stockValue?: any | null, sku?: string | null, category?: string | null, spec?: string | null, sellingPrice?: any | null, minStockThreshold?: any | null, onHandQty?: any | null, reservedQty?: any | null, availableQty?: any | null, defaultStockUomUuid?: string | null, defaultStockUomName?: string | null, insertedAt?: any | null, updatedAt?: any | null, stockUoms?: Array<{ __typename?: 'StockUom', uuid?: string | null, conversionFactor?: number | null, uomName?: string | null } | null> | null } | null> | null };
 
 export type JournalEntriesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2398,6 +2488,11 @@ export type MyModulesQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type MyModulesQuery = { __typename?: 'RootQueryType', myModules?: Array<string | null> | null };
 
+export type MyPageAccessQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyPageAccessQuery = { __typename?: 'RootQueryType', myPageAccess?: Array<{ __typename?: 'PageLevel', page?: string | null, level?: string | null } | null> | null };
+
 export type MyProfileQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2407,6 +2502,11 @@ export type OpenPurchaseRequestItemsQueryVariables = Exact<{ [key: string]: neve
 
 
 export type OpenPurchaseRequestItemsQuery = { __typename?: 'RootQueryType', openPurchaseRequestItems?: Array<{ __typename?: 'PurchaseRequestItem', uuid?: string | null, supplierUuid?: string | null, supplierName?: string | null, purchaseRequestUuid?: string | null, purchaseRequestCode?: string | null, itemUuid?: string | null, itemName?: string | null, uomName?: string | null, stockUomUuid?: string | null, requestedQty?: any | null, orderedQty?: any | null, remainingQty?: any | null, estimatedUnitPrice?: any | null } | null> | null };
+
+export type PageAccessQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type PageAccessQuery = { __typename?: 'RootQueryType', pageAccess?: Array<{ __typename?: 'RolePageAccess', role?: string | null, canLogin?: boolean | null, pages?: Array<{ __typename?: 'PageLevel', page?: string | null, level?: string | null } | null> | null } | null> | null };
 
 export type PaymentEntriesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2506,6 +2606,11 @@ export type RolePermissionsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type RolePermissionsQuery = { __typename?: 'RootQueryType', rolePermissions?: Array<{ __typename?: 'RolePermission', role?: string | null, modules?: Array<string | null> | null, canLogin?: boolean | null, viewOnly?: Array<string | null> | null } | null> | null, modules?: Array<{ __typename?: 'ModuleOption', key?: string | null, label?: string | null } | null> | null };
+
+export type RolesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type RolesQuery = { __typename?: 'RootQueryType', roles?: Array<{ __typename?: 'RoleInfo', key?: string | null, label?: string | null, isOwner?: boolean | null, memberCount?: number | null } | null> | null };
 
 export type SalesInvoiceQueryVariables = Exact<{
   request: SalesInvoiceRequest;
@@ -2731,7 +2836,6 @@ export const ItemFieldsFragmentDoc = gql`
   sku
   category
   spec
-  description
   sellingPrice
   minStockThreshold
   onHandQty
@@ -3808,6 +3912,37 @@ export function useCreateWorkstationMutation(baseOptions?: Apollo.MutationHookOp
 export type CreateWorkstationMutationHookResult = ReturnType<typeof useCreateWorkstationMutation>;
 export type CreateWorkstationMutationResult = Apollo.MutationResult<CreateWorkstationMutation>;
 export type CreateWorkstationMutationOptions = Apollo.BaseMutationOptions<CreateWorkstationMutation, CreateWorkstationMutationVariables>;
+export const DeleteRoleDocument = gql`
+    mutation DeleteRole($request: RoleKeyRequest!) {
+  deleteRole(request: $request)
+}
+    `;
+export type DeleteRoleMutationFn = Apollo.MutationFunction<DeleteRoleMutation, DeleteRoleMutationVariables>;
+
+/**
+ * __useDeleteRoleMutation__
+ *
+ * To run a mutation, you first call `useDeleteRoleMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteRoleMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteRoleMutation, { data, loading, error }] = useDeleteRoleMutation({
+ *   variables: {
+ *      request: // value for 'request'
+ *   },
+ * });
+ */
+export function useDeleteRoleMutation(baseOptions?: Apollo.MutationHookOptions<DeleteRoleMutation, DeleteRoleMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteRoleMutation, DeleteRoleMutationVariables>(DeleteRoleDocument, options);
+      }
+export type DeleteRoleMutationHookResult = ReturnType<typeof useDeleteRoleMutation>;
+export type DeleteRoleMutationResult = Apollo.MutationResult<DeleteRoleMutation>;
+export type DeleteRoleMutationOptions = Apollo.BaseMutationOptions<DeleteRoleMutation, DeleteRoleMutationVariables>;
 export const DeleteSupplierPriceDocument = gql`
     mutation DeleteSupplierPrice($request: IdRequest!) {
   deleteSupplierPrice(request: $request)
@@ -4111,6 +4246,42 @@ export function useSaveAttendanceMutation(baseOptions?: Apollo.MutationHookOptio
 export type SaveAttendanceMutationHookResult = ReturnType<typeof useSaveAttendanceMutation>;
 export type SaveAttendanceMutationResult = Apollo.MutationResult<SaveAttendanceMutation>;
 export type SaveAttendanceMutationOptions = Apollo.BaseMutationOptions<SaveAttendanceMutation, SaveAttendanceMutationVariables>;
+export const SaveRoleDocument = gql`
+    mutation SaveRole($request: SaveRoleRequest!) {
+  saveRole(request: $request) {
+    key
+    label
+    isOwner
+    memberCount
+  }
+}
+    `;
+export type SaveRoleMutationFn = Apollo.MutationFunction<SaveRoleMutation, SaveRoleMutationVariables>;
+
+/**
+ * __useSaveRoleMutation__
+ *
+ * To run a mutation, you first call `useSaveRoleMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSaveRoleMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [saveRoleMutation, { data, loading, error }] = useSaveRoleMutation({
+ *   variables: {
+ *      request: // value for 'request'
+ *   },
+ * });
+ */
+export function useSaveRoleMutation(baseOptions?: Apollo.MutationHookOptions<SaveRoleMutation, SaveRoleMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<SaveRoleMutation, SaveRoleMutationVariables>(SaveRoleDocument, options);
+      }
+export type SaveRoleMutationHookResult = ReturnType<typeof useSaveRoleMutation>;
+export type SaveRoleMutationResult = Apollo.MutationResult<SaveRoleMutation>;
+export type SaveRoleMutationOptions = Apollo.BaseMutationOptions<SaveRoleMutation, SaveRoleMutationVariables>;
 export const SaveStaffDocument = gql`
     mutation SaveStaff($request: StaffRequest!) {
   saveStaff(request: $request) {
@@ -4283,6 +4454,44 @@ export function useSetMemberLoginMutation(baseOptions?: Apollo.MutationHookOptio
 export type SetMemberLoginMutationHookResult = ReturnType<typeof useSetMemberLoginMutation>;
 export type SetMemberLoginMutationResult = Apollo.MutationResult<SetMemberLoginMutation>;
 export type SetMemberLoginMutationOptions = Apollo.BaseMutationOptions<SetMemberLoginMutation, SetMemberLoginMutationVariables>;
+export const SetPageAccessDocument = gql`
+    mutation SetPageAccess($request: PageAccessRequest!) {
+  setPageAccess(request: $request) {
+    role
+    canLogin
+    pages {
+      page
+      level
+    }
+  }
+}
+    `;
+export type SetPageAccessMutationFn = Apollo.MutationFunction<SetPageAccessMutation, SetPageAccessMutationVariables>;
+
+/**
+ * __useSetPageAccessMutation__
+ *
+ * To run a mutation, you first call `useSetPageAccessMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSetPageAccessMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [setPageAccessMutation, { data, loading, error }] = useSetPageAccessMutation({
+ *   variables: {
+ *      request: // value for 'request'
+ *   },
+ * });
+ */
+export function useSetPageAccessMutation(baseOptions?: Apollo.MutationHookOptions<SetPageAccessMutation, SetPageAccessMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<SetPageAccessMutation, SetPageAccessMutationVariables>(SetPageAccessDocument, options);
+      }
+export type SetPageAccessMutationHookResult = ReturnType<typeof useSetPageAccessMutation>;
+export type SetPageAccessMutationResult = Apollo.MutationResult<SetPageAccessMutation>;
+export type SetPageAccessMutationOptions = Apollo.BaseMutationOptions<SetPageAccessMutation, SetPageAccessMutationVariables>;
 export const SetRoleLoginDocument = gql`
     mutation SetRoleLogin($request: RoleLoginRequest!) {
   setRoleLogin(request: $request) {
@@ -5686,6 +5895,46 @@ export type MyModulesQueryHookResult = ReturnType<typeof useMyModulesQuery>;
 export type MyModulesLazyQueryHookResult = ReturnType<typeof useMyModulesLazyQuery>;
 export type MyModulesSuspenseQueryHookResult = ReturnType<typeof useMyModulesSuspenseQuery>;
 export type MyModulesQueryResult = Apollo.QueryResult<MyModulesQuery, MyModulesQueryVariables>;
+export const MyPageAccessDocument = gql`
+    query MyPageAccess {
+  myPageAccess {
+    page
+    level
+  }
+}
+    `;
+
+/**
+ * __useMyPageAccessQuery__
+ *
+ * To run a query within a React component, call `useMyPageAccessQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMyPageAccessQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMyPageAccessQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMyPageAccessQuery(baseOptions?: Apollo.QueryHookOptions<MyPageAccessQuery, MyPageAccessQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MyPageAccessQuery, MyPageAccessQueryVariables>(MyPageAccessDocument, options);
+      }
+export function useMyPageAccessLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MyPageAccessQuery, MyPageAccessQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MyPageAccessQuery, MyPageAccessQueryVariables>(MyPageAccessDocument, options);
+        }
+export function useMyPageAccessSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyPageAccessQuery, MyPageAccessQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MyPageAccessQuery, MyPageAccessQueryVariables>(MyPageAccessDocument, options);
+        }
+export type MyPageAccessQueryHookResult = ReturnType<typeof useMyPageAccessQuery>;
+export type MyPageAccessLazyQueryHookResult = ReturnType<typeof useMyPageAccessLazyQuery>;
+export type MyPageAccessSuspenseQueryHookResult = ReturnType<typeof useMyPageAccessSuspenseQuery>;
+export type MyPageAccessQueryResult = Apollo.QueryResult<MyPageAccessQuery, MyPageAccessQueryVariables>;
 export const MyProfileDocument = gql`
     query MyProfile {
   myProfile {
@@ -5764,6 +6013,50 @@ export type OpenPurchaseRequestItemsQueryHookResult = ReturnType<typeof useOpenP
 export type OpenPurchaseRequestItemsLazyQueryHookResult = ReturnType<typeof useOpenPurchaseRequestItemsLazyQuery>;
 export type OpenPurchaseRequestItemsSuspenseQueryHookResult = ReturnType<typeof useOpenPurchaseRequestItemsSuspenseQuery>;
 export type OpenPurchaseRequestItemsQueryResult = Apollo.QueryResult<OpenPurchaseRequestItemsQuery, OpenPurchaseRequestItemsQueryVariables>;
+export const PageAccessDocument = gql`
+    query PageAccess {
+  pageAccess {
+    role
+    canLogin
+    pages {
+      page
+      level
+    }
+  }
+}
+    `;
+
+/**
+ * __usePageAccessQuery__
+ *
+ * To run a query within a React component, call `usePageAccessQuery` and pass it any options that fit your needs.
+ * When your component renders, `usePageAccessQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = usePageAccessQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function usePageAccessQuery(baseOptions?: Apollo.QueryHookOptions<PageAccessQuery, PageAccessQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<PageAccessQuery, PageAccessQueryVariables>(PageAccessDocument, options);
+      }
+export function usePageAccessLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<PageAccessQuery, PageAccessQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<PageAccessQuery, PageAccessQueryVariables>(PageAccessDocument, options);
+        }
+export function usePageAccessSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<PageAccessQuery, PageAccessQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<PageAccessQuery, PageAccessQueryVariables>(PageAccessDocument, options);
+        }
+export type PageAccessQueryHookResult = ReturnType<typeof usePageAccessQuery>;
+export type PageAccessLazyQueryHookResult = ReturnType<typeof usePageAccessLazyQuery>;
+export type PageAccessSuspenseQueryHookResult = ReturnType<typeof usePageAccessSuspenseQuery>;
+export type PageAccessQueryResult = Apollo.QueryResult<PageAccessQuery, PageAccessQueryVariables>;
 export const PaymentEntriesDocument = gql`
     query PaymentEntries {
   paymentEntries {
@@ -6516,6 +6809,48 @@ export type RolePermissionsQueryHookResult = ReturnType<typeof useRolePermission
 export type RolePermissionsLazyQueryHookResult = ReturnType<typeof useRolePermissionsLazyQuery>;
 export type RolePermissionsSuspenseQueryHookResult = ReturnType<typeof useRolePermissionsSuspenseQuery>;
 export type RolePermissionsQueryResult = Apollo.QueryResult<RolePermissionsQuery, RolePermissionsQueryVariables>;
+export const RolesDocument = gql`
+    query Roles {
+  roles {
+    key
+    label
+    isOwner
+    memberCount
+  }
+}
+    `;
+
+/**
+ * __useRolesQuery__
+ *
+ * To run a query within a React component, call `useRolesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useRolesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useRolesQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useRolesQuery(baseOptions?: Apollo.QueryHookOptions<RolesQuery, RolesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<RolesQuery, RolesQueryVariables>(RolesDocument, options);
+      }
+export function useRolesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<RolesQuery, RolesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<RolesQuery, RolesQueryVariables>(RolesDocument, options);
+        }
+export function useRolesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<RolesQuery, RolesQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<RolesQuery, RolesQueryVariables>(RolesDocument, options);
+        }
+export type RolesQueryHookResult = ReturnType<typeof useRolesQuery>;
+export type RolesLazyQueryHookResult = ReturnType<typeof useRolesLazyQuery>;
+export type RolesSuspenseQueryHookResult = ReturnType<typeof useRolesSuspenseQuery>;
+export type RolesQueryResult = Apollo.QueryResult<RolesQuery, RolesQueryVariables>;
 export const SalesInvoiceDocument = gql`
     query SalesInvoice($request: SalesInvoiceRequest!) {
   salesInvoice(request: $request) {

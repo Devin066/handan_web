@@ -778,6 +778,27 @@ type RolePermission {
   viewOnly: [String]
 }
 
+"""A role's level on one page of the access tree: none, view or edit."""
+type PageLevel {
+  page: String
+  level: String
+}
+
+type RoleInfo {
+  "Stable id stored on users; never changes."
+  key: String
+  label: String
+  isOwner: Boolean
+  "Active logins holding this role."
+  memberCount: Int
+}
+
+type RolePageAccess {
+  role: String
+  canLogin: Boolean
+  pages: [PageLevel]
+}
+
 type ModuleOption {
   key: String
   label: String
@@ -835,9 +856,12 @@ input GeneratePayrollRequest { uuid: ID, name: String, startDate: String!, endDa
 """modules: what the role can open. viewOnly: which of those it can't change; omitted keeps the current list."""
 input RolePermissionRequest { role: String!, modules: [String]!, viewOnly: [String] }
 input UserRoleRequest { staffUuid: ID!, role: String! }
-"""name is only accepted from roles with Settings access."""
+"""name is only accepted from roles with System Settings access."""
 input MyProfileRequest { name: String, phone: String }
 input ChangePasswordRequest { currentPassword: String!, newPassword: String! }
+input SaveRoleRequest { key: String, label: String! }
+input RoleKeyRequest { key: String! }
+input PageAccessRequest { role: String!, pages: [String!]!, level: String! }
 input RoleLoginRequest { role: String!, canLogin: Boolean! }
 """Turn a member's login on or off. A new login needs a password; an existing one keeps its password unless one is sent."""
 input MemberLoginRequest { staffUuid: ID!, enabled: Boolean!, role: String, password: String }
@@ -1207,6 +1231,12 @@ type RootQueryType {
   rolePermissions: [RolePermission]
   "Modules the signed-in user can change data in."
   myEditModules: [String]
+  "The company's roles, owner last."
+  roles: [RoleInfo]
+  "Every role's level on every page of the access tree."
+  pageAccess: [RolePageAccess]
+  "The signed-in user's level on every page."
+  myPageAccess: [PageLevel]
   "The member record of the signed-in person, if they have one."
   myProfile: Staff
   modules: [ModuleOption]
@@ -1280,6 +1310,12 @@ type RootMutationType {
   updateRolePermissions(request: RolePermissionRequest!): RolePermission
   setUserRole(request: UserRoleRequest!): Staff
   setRoleLogin(request: RoleLoginRequest!): RolePermission
+  "Add a role (no key) or rename one. The owner can't be renamed."
+  saveRole(request: SaveRoleRequest!): RoleInfo
+  "Delete a role nobody holds. The owner can't be deleted."
+  deleteRole(request: RoleKeyRequest!): Boolean
+  "Set one level on several pages for a role (one page, or a whole module)."
+  setPageAccess(request: PageAccessRequest!): RolePageAccess
   setMemberLogin(request: MemberLoginRequest!): Staff
   "Change the signed-in person's own mobile, and their name if their role has Settings access. Role, email and employment stay with the owner."
   updateMyProfile(request: MyProfileRequest!): Staff

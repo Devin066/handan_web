@@ -174,7 +174,7 @@ const PaymentMethodForm = ({ method, onClose, onSaved }: { method: any; onClose:
 };
 
 const PaymentMethodList: React.FC = () => {
-  const canEdit = useModuleAccess().canEdit('settings');
+  const canEdit = useModuleAccess().canEdit('settings.paymentMethods');
   const actionRef = useRef<ActionType | null>(null);
   const [editing, setEditing] = useState<any>(null);
 

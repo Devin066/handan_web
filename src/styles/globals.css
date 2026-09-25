@@ -857,3 +857,251 @@ body {
   background: #262626;
   color: #ffffff;
 }
+/* Access tree: module and group rows read as headings; Mixed is shown in italics. */
+.access-row-module > td {
+  background: #fafafa;
+}
+.access-level.access-mixed .ant-select-selection-placeholder {
+  font-style: italic;
+  color: #5e5e5e;
+}
+
+/*
+ * Roles: role list on the left, the selected role's access on the right.
+ * One role at a time keeps the tree readable however many roles exist.
+ */
+.roles-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.roles-list {
+  position: sticky;
+  top: 16px;
+}
+.roles-picker {
+  display: none !important;
+  width: 100%;
+  margin-bottom: 12px;
+}
+.roles-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.roles-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: 48px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #1f1f1f;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 150ms ease-out;
+}
+.roles-nav-item:hover {
+  background: #f1f3f4;
+}
+.roles-nav-item.is-active {
+  background: #fff1e6;
+  box-shadow: inset 3px 0 0 #f86901;
+}
+.roles-nav-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+.roles-nav-item.is-active .roles-nav-name {
+  color: #c2410c;
+  font-weight: 600;
+}
+.roles-nav-meta {
+  color: #5e5e5e;
+  font-size: 13px;
+}
+.roles-compare {
+  margin-top: 12px;
+}
+.role-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.role-actions {
+  display: flex;
+  gap: 8px;
+}
+.role-login {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  background: #f8f9fa;
+}
+.access-tree {
+  border: 1px solid #e3e3e3;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.access-tree-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e3e3e3;
+}
+.access-tree-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  padding: 6px 16px;
+  border-bottom: 1px solid #f1f3f4;
+}
+.access-tree-row.is-parent.depth-0 {
+  background: #fcfcfc;
+}
+.access-tree-row.depth-1 {
+  padding-left: 44px;
+}
+.access-tree-row.depth-2 {
+  padding-left: 72px;
+}
+.access-tree-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-width: 0;
+}
+.access-tree-toggle,
+.access-tree-spacer {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+}
+.access-tree-toggle {
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #444746;
+  cursor: pointer;
+}
+.access-tree-toggle:hover {
+  background: #f1f3f4;
+}
+.access-tree-icon {
+  color: #444746;
+}
+.access-tree-row.is-parent .access-tree-name,
+.access-tree-row.depth-0 .access-tree-name {
+  font-weight: 600;
+}
+.access-tree-hint {
+  font-size: 12px;
+}
+.access-tree-mixed {
+  color: #b45309;
+}
+/* The three levels: Edit filled orange, View tonal grey, None plain. Each keeps its icon and word. */
+.access-segmented {
+  flex: none;
+  padding: 3px;
+  border-radius: 20px;
+  background: #f1f3f4;
+}
+.access-segmented .ant-segmented-item {
+  border-radius: 16px;
+  min-width: 72px;
+}
+.access-segmented .ant-segmented-item-label {
+  min-height: 30px;
+  line-height: 30px;
+  padding: 0 12px;
+}
+.access-segmented.access-edit .ant-segmented-item-selected {
+  background: #f86901;
+  color: #ffffff;
+}
+.access-segmented.access-view .ant-segmented-item-selected {
+  background: #ffffff;
+  color: #1f1f1f;
+  box-shadow: 0 0 0 1px #747775;
+}
+.access-segmented.access-none .ant-segmented-item-selected {
+  background: #ffffff;
+  color: #5e5e5e;
+}
+.access-segmented .ant-segmented-thumb {
+  display: none;
+}
+.compare-level {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.compare-edit {
+  color: #c2410c;
+  font-weight: 600;
+}
+.compare-none {
+  color: #5e5e5e;
+}
+.role-people {
+  margin-top: 20px;
+}
+.role-people ul {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.role-people li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f3f4;
+}
+@media (max-width: 900px) {
+  .roles-layout {
+    grid-template-columns: 1fr;
+  }
+  .roles-list {
+    position: static;
+  }
+  .roles-picker {
+    display: block !important;
+  }
+  .roles-nav {
+    display: none;
+  }
+  .access-tree-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .access-tree-row.depth-1,
+  .access-tree-row.depth-2 {
+    padding-left: 16px;
+  }
+}

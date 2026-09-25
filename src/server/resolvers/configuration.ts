@@ -9,12 +9,17 @@ import {
   loadViewOnly,
   editableModules,
   VIEW_ONLY_KEY,
+  loadPageAccess,
+  userPageAccess,
+  PAGE_ACCESS_KEY,
   allowedModules,
   PERMISSIONS_KEY,
   LOGIN_ROLES_KEY,
   type Module,
 } from '../rbac';
 import { hashPassword } from '../auth';
+import { assertRole, loadRoles, saveRoles } from '../roles';
+import { PAGE_KEYS, isAccessLevel } from '@/config/access';
 import { ROLE } from '../domain/status';
 
 const TIMEZONE_KEY = 'timezone';
@@ -92,6 +97,32 @@ export const configurationResolvers = {
     myModules: async (_: unknown, __: unknown, ctx: Context) => allowedModules(ctx),
 
     myEditModules: async (_: unknown, __: unknown, ctx: Context) => editableModules(ctx),
+
+    roles: async (_: unknown, __: unknown, ctx: Context) => {
+      const companyUuid = requireCompany(ctx);
+      const [roles, users] = await Promise.all([
+        loadRoles(ctx.db, companyUuid),
+        ctx.db.user.groupBy({ by: ['role'], where: { companyUuid, isActive: true }, _count: true }),
+      ]);
+      const counts = new Map(users.map((u) => [u.role, u._count]));
+      return roles.map((r) => ({ ...r, isOwner: r.key === ROLE.owner, memberCount: counts.get(r.key) ?? 0 }));
+    },
+
+    pageAccess: async (_: unknown, __: unknown, ctx: Context) => {
+      const companyUuid = requireCompany(ctx);
+      const [access, loginRoles] = await Promise.all([
+        loadPageAccess(ctx.db, companyUuid),
+        loadLoginRoles(ctx.db, companyUuid),
+      ]);
+      return Object.entries(access).map(([role, pages]) => ({
+        role,
+        canLogin: loginRoles[role],
+        pages: Object.entries(pages).map(([page, level]) => ({ page, level })),
+      }));
+    },
+
+    myPageAccess: async (_: unknown, __: unknown, ctx: Context) =>
+      Object.entries(await userPageAccess(ctx)).map(([page, level]) => ({ page, level })),
   },
 
   RootMutationType: {
@@ -132,7 +163,7 @@ export const configurationResolvers = {
       ctx: Context,
     ) => {
       const companyUuid = requireCompany(ctx);
-      if (!Object.values(ROLE).includes(request.role as never)) throw new GraphQLError(`Unknown role: ${request.role}`);
+      await assertRole(ctx.db, companyUuid, request.role);
       if (request.role === ROLE.owner) throw new GraphQLError('The owner always has access to everything.');
 
       const current = await loadPermissions(ctx.db, companyUuid);
@@ -160,9 +191,93 @@ export const configurationResolvers = {
       };
     },
 
+    saveRole: async (_: unknown, { request }: { request: { key?: string | null; label: string } }, ctx: Context) => {
+      const companyUuid = requireCompany(ctx);
+      const label = request.label?.trim().replace(/\s+/g, ' ');
+      if (!label) throw new GraphQLError('Enter a role name.');
+      if (label.length > 40) throw new GraphQLError('Keep the role name under 40 characters.');
+      if (request.key === ROLE.owner) throw new GraphQLError('The Owner role cannot be renamed.');
+
+      const roles = await loadRoles(ctx.db, companyUuid);
+      const clash = roles.find((r) => r.label.toLowerCase() === label.toLowerCase() && r.key !== request.key);
+      if (clash) throw new GraphQLError(`There is already a role called ${clash.label}.`);
+
+      let key = request.key;
+      if (key) {
+        await assertRole(ctx.db, companyUuid, key);
+      } else {
+        // A stable id; the label can change later without touching users.
+        const slug =
+          label
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_|_$/g, '')
+            .slice(0, 24) || 'role';
+        key = `${slug}_${Math.random().toString(36).slice(2, 6)}`;
+      }
+      const next = roles.filter((r) => r.key !== ROLE.owner);
+      const index = next.findIndex((r) => r.key === key);
+      if (index >= 0) next[index] = { key, label };
+      else next.push({ key, label });
+      await saveRoles(ctx.db, companyUuid, next);
+      return {
+        key,
+        label,
+        isOwner: false,
+        memberCount: await ctx.db.user.count({ where: { companyUuid, role: key } }),
+      };
+    },
+
+    deleteRole: async (_: unknown, { request }: { request: { key: string } }, ctx: Context) => {
+      const companyUuid = requireCompany(ctx);
+      if (request.key === ROLE.owner) throw new GraphQLError('The Owner role cannot be deleted.');
+      const role = await assertRole(ctx.db, companyUuid, request.key);
+      const holders = await ctx.db.user.count({ where: { companyUuid, role: role.key } });
+      if (holders) {
+        throw new GraphQLError(
+          `${holders} ${holders === 1 ? 'person has' : 'people have'} the ${role.label} role. Give them another role first.`,
+        );
+      }
+      const roles = await loadRoles(ctx.db, companyUuid);
+      await saveRoles(
+        ctx.db,
+        companyUuid,
+        roles.filter((r) => r.key !== role.key && r.key !== ROLE.owner),
+      );
+      return true;
+    },
+
+    setPageAccess: async (
+      _: unknown,
+      { request }: { request: { role: string; pages: string[]; level: string } },
+      ctx: Context,
+    ) => {
+      const companyUuid = requireCompany(ctx);
+      await assertRole(ctx.db, companyUuid, request.role);
+      if (request.role === ROLE.owner) throw new GraphQLError('The owner always has access to everything.');
+      if (!isAccessLevel(request.level)) throw new GraphQLError('Choose None, View or Edit.');
+      const unknown = request.pages.filter((p) => !PAGE_KEYS.includes(p));
+      if (unknown.length) throw new GraphQLError(`Unknown page: ${unknown.join(', ')}`);
+
+      // Store the full resolved map, so later changes to the module defaults can't shift it.
+      const access = await loadPageAccess(ctx.db, companyUuid);
+      for (const page of request.pages) access[request.role][page] = request.level;
+      await ctx.db.appSetting.upsert({
+        where: { companyUuid_key: { companyUuid, key: PAGE_ACCESS_KEY } },
+        create: { companyUuid, key: PAGE_ACCESS_KEY, value: access },
+        update: { value: access },
+      });
+      const loginRoles = await loadLoginRoles(ctx.db, companyUuid);
+      return {
+        role: request.role,
+        canLogin: loginRoles[request.role],
+        pages: Object.entries(access[request.role]).map(([page, level]) => ({ page, level })),
+      };
+    },
+
     setRoleLogin: async (_: unknown, { request }: { request: { role: string; canLogin: boolean } }, ctx: Context) => {
       const companyUuid = requireCompany(ctx);
-      if (!Object.values(ROLE).includes(request.role as never)) throw new GraphQLError(`Unknown role: ${request.role}`);
+      await assertRole(ctx.db, companyUuid, request.role);
       if (request.role === ROLE.owner) throw new GraphQLError('The owner can always sign in.');
 
       const current = await loadLoginRoles(ctx.db, companyUuid);
@@ -196,10 +311,10 @@ export const configurationResolvers = {
       }
 
       const role = request.role ?? user?.role;
-      if (!role || !Object.values(ROLE).includes(role as never))
+      if (!role || !(await loadRoles(ctx.db, companyUuid)).some((r) => r.key === role))
         throw new GraphQLError('Choose a role for this login.');
       if (!(await loadLoginRoles(ctx.db, companyUuid))[role]) {
-        throw new GraphQLError('That role is not allowed to sign in. Turn it on under Settings › Roles.');
+        throw new GraphQLError('That role is not allowed to sign in. Turn it on under System Settings › Roles.');
       }
       if (role === ROLE.owner && me?.role !== ROLE.owner && user?.role !== ROLE.owner) {
         throw new GraphQLError('Only the owner can give someone the owner role.');
@@ -236,7 +351,7 @@ export const configurationResolvers = {
 
     setUserRole: async (_: unknown, { request }: { request: { staffUuid: string; role: string } }, ctx: Context) => {
       const companyUuid = requireCompany(ctx);
-      if (!Object.values(ROLE).includes(request.role as never)) throw new GraphQLError(`Unknown role: ${request.role}`);
+      await assertRole(ctx.db, companyUuid, request.role);
 
       const staff = await ctx.db.staff.findFirst({ where: { uuid: request.staffUuid, companyUuid } });
       if (!staff?.userUuid) throw new GraphQLError('This member has no login to give a role to.');

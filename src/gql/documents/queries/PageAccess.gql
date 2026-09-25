@@ -1,0 +1,10 @@
+query PageAccess {
+  pageAccess {
+    role
+    canLogin
+    pages {
+      page
+      level
+    }
+  }
+}

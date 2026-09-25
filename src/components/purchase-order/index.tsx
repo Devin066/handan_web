@@ -17,7 +17,7 @@ import PurchaseOrderNew from './new';
 import PurchaseOrderDetail from './detail';
 
 const PurchaseOrderList: React.FC = () => {
-  const canEdit = useModuleAccess().canEdit('purchasing');
+  const canEdit = useModuleAccess().canEdit('purchasing.orders');
   const { messageApi } = useMessageContext();
   const router = useRouter();
 

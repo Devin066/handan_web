@@ -13,7 +13,7 @@ import { onError } from '@/utils';
 import ProcessNew from './new';
 
 const ProcessList: React.FC = () => {
-  const canEdit = useModuleAccess().canEdit('settings');
+  const canEdit = useModuleAccess().canEdit('settings.processes');
   const router = useRouter();
   const { messageApi } = useMessageContext();
 

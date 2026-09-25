@@ -205,7 +205,7 @@ const PurchaseRequestNew = ({ onCreated }: { onCreated: () => void }) => {
 
 /** Purchase Requests (SRS 4.2): approved lines become selectable on a new PO. */
 const PurchaseRequestList = () => {
-  const canEdit = useModuleAccess().canEdit('purchasing');
+  const canEdit = useModuleAccess().canEdit('purchasing.requests');
   const actionRef = useRef<ActionType | null>(null);
   const { messageApi } = useMessageContext();
   const reload = () => actionRef.current?.reload();

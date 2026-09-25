@@ -6,6 +6,7 @@ import { useListStaffQuery } from '@/gql';
 import brand from '@/config/brand';
 import useAuthUserStore from '@/stores/persisted/useAuthUser';
 import { tokens } from './theme';
+import useRoles from '@/hooks/use-roles';
 
 /** A left-panel glyph with an arrow: reads as "open / close the sidebar". */
 const PanelIcon = ({ collapsed }: { collapsed: boolean }) => (
@@ -22,8 +23,6 @@ const PanelIcon = ({ collapsed }: { collapsed: boolean }) => (
   </svg>
 );
 
-const titleCase = (value?: string | null) => (value ? value.charAt(0).toUpperCase() + value.slice(1) : '');
-
 /**
  * Foot of the sidebar: who is signed in, with their account menu, and the
  * toggle that collapses the rail to icons.
@@ -37,7 +36,8 @@ const SiderFooter = ({ collapsed, onToggle }: { collapsed: boolean; onToggle: ()
   const { data } = useListStaffQuery({ fetchPolicy: 'cache-first', skip: !email });
   const me: any = (data?.listStaff ?? []).find((staff: any) => staff?.email === email);
   const name = me?.name || email || 'Account';
-  const role = [titleCase(me?.role), me?.position].filter(Boolean).join(' · ') || email;
+  const { roleLabel } = useRoles();
+  const role = [roleLabel(me?.role), me?.position].filter(Boolean).join(' · ') || email;
 
   const signOut = async () => {
     localStorage.removeItem('accessToken');

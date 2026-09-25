@@ -1,0 +1,10 @@
+mutation SetPageAccess($request: PageAccessRequest!) {
+  setPageAccess(request: $request) {
+    role
+    canLogin
+    pages {
+      page
+      level
+    }
+  }
+}
